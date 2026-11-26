@@ -125,7 +125,6 @@ const langSelect = document.getElementById("lang-select");
 const uploadBtn = document.getElementById("upload-btn");
 const imageUpload = document.getElementById("image-upload");
 const newChatBtn = document.getElementById("new-chat-btn");
-const clearBtn = document.getElementById("clear-btn");
 
 // --- 1. INITIALIZE ---
 async function init() {
@@ -183,7 +182,7 @@ function applyLanguageUI(lang) {
   if (!db || !db.ui[lang]) return;
   const ui = db.ui[lang];
 
-  welcomeTitle.innerHTML = `<span class="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">${escapeHtml(ui.title)}</span>`;
+  welcomeTitle.innerHTML = `<span class="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">${escapeHtml(ui.title)}</span>`;
   welcomeSubtitle.textContent = ui.subtitle;
   userInput.placeholder = ui.placeholder;
   footerNote.textContent = ui.footer;
@@ -191,7 +190,7 @@ function applyLanguageUI(lang) {
   starterChipsContainer.innerHTML = "";
   for (const prompt of ui.starters) {
     const btn = document.createElement("button");
-    btn.className = "starter-chip p-3.5 rounded-2xl bg-white dark:bg-[#1e1f20] hover:bg-emerald-50/70 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 shadow-sm dark:shadow-none transition";
+    btn.className = "starter-chip p-3.5 rounded-2xl bg-white dark:bg-[#191c24] hover:bg-blue-50/70 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 shadow-sm dark:shadow-none transition";
     btn.textContent = `"${prompt}"`;
     starterChipsContainer.appendChild(btn);
   }
@@ -199,14 +198,13 @@ function applyLanguageUI(lang) {
   renderSidebarList();
 }
 
-// --- 4. MULTI-CHAT STORAGE (OPTION 1) ---
+// --- 4. MULTI-CHAT STORAGE ---
 function loadAllSessions() {
   try {
     const raw = localStorage.getItem(SESSIONS_KEY);
     if (raw) {
       sessions = JSON.parse(raw);
     } else {
-      // Automatically migrate any old single-chat history into a saved session
       const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || "[]");
       if (legacy.length) {
         const firstUser = legacy.find(m => m.role === "user");
@@ -232,7 +230,6 @@ function loadAllSessions() {
 
 function persistSessions() {
   try {
-    // Keep up to 25 saved chats, each with up to 40 messages
     const trimmed = sessions.slice(0, 25).map(s => ({
       ...s,
       messages: s.messages.slice(-40)
@@ -258,7 +255,6 @@ function ensureActiveSession(firstPromptText) {
     activeSessionId = session.id;
   } else {
     session.updatedAt = Date.now();
-    // Move active session to top of sidebar
     sessions = [session, ...sessions.filter(s => s.id !== session.id)];
   }
   persistSessions();
@@ -294,8 +290,8 @@ function renderSidebarList() {
     const row = document.createElement("div");
     row.className = `group flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl cursor-pointer transition ${
       isActive
-        ? "bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-800/60"
-        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/70 dark:hover:bg-zinc-800/70"
+        ? "bg-blue-100/90 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-800/60"
+        : "text-zinc-600 dark:text-zinc-400 hover:bg-slate-200/70 dark:hover:bg-zinc-800/70"
     }`;
 
     const titleSpan = document.createElement("span");
@@ -310,7 +306,7 @@ function renderSidebarList() {
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.title = "Delete chat";
-    delBtn.className = "opacity-70 md:opacity-0 md:group-hover:opacity-100 p-1 rounded-md text-zinc-400 hover:text-rose-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition text-xs shrink-0";
+    delBtn.className = "opacity-70 md:opacity-0 md:group-hover:opacity-100 p-1 rounded-md text-zinc-400 hover:text-rose-500 hover:bg-slate-200 dark:hover:bg-zinc-700 transition text-xs shrink-0";
     delBtn.textContent = "✕";
     delBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -377,15 +373,6 @@ function deleteSession(id) {
     }
   } else {
     renderSidebarList();
-  }
-}
-
-function clearCurrentChat() {
-  if (isGenerating) return;
-  if (activeSessionId) {
-    deleteSession(activeSessionId);
-  } else {
-    startNewChat();
   }
 }
 
@@ -917,7 +904,6 @@ async function handleSend(overrideText = null) {
     finalVisibleText = await renderBotResponse(reply, variableDelay, thinkLabel, meta);
   }
 
-  // Update stored text if {ERASE} or {PAUSE} changed the visible final text
   updateStoredBotMessage(meta.sessionId, meta.msgIndex, finalVisibleText);
 
   isGenerating = false;
@@ -995,13 +981,13 @@ function appendUserMessage(text, imageSrc = null) {
   wrapper.className = "flex justify-end";
 
   const bubble = document.createElement("div");
-  bubble.className = "max-w-[82%] bg-zinc-200 dark:bg-[#282a2c] text-zinc-900 dark:text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
+  bubble.className = "max-w-[82%] bg-slate-200 dark:bg-[#232836] text-zinc-900 dark:text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
 
   if (imageSrc) {
     const img = document.createElement("img");
     img.src = imageSrc;
     img.alt = "Uploaded photo";
-    img.className = "max-w-[220px] rounded-xl border border-zinc-300 dark:border-zinc-700";
+    img.className = "max-w-[220px] rounded-xl border border-slate-300 dark:border-zinc-700";
     bubble.appendChild(img);
   }
 
@@ -1019,7 +1005,7 @@ function appendUserMessage(text, imageSrc = null) {
 
 function createBotAvatar() {
   const avatar = document.createElement("div");
-  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter shadow-sm";
+  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-sky-400 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter shadow-sm";
   avatar.textContent = "NVM";
   return avatar;
 }
@@ -1034,7 +1020,7 @@ async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
 
   const thinkingEl = document.createElement("div");
   thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 animate-pulse";
-  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span><span>${escapeHtml(thinkLabel)}</span>`;
+  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-blue-500"></span><span>${escapeHtml(thinkLabel)}</span>`;
   contentBox.appendChild(thinkingEl);
 
   wrapper.append(avatar, contentBox);
@@ -1088,7 +1074,7 @@ async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
     const img = document.createElement("img");
     img.src = reply.imageUrl;
     img.alt = "ChatNVM Masterpiece";
-    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 mt-2 shadow-md";
+    img.className = "max-w-[260px] w-full rounded-2xl border border-slate-200 dark:border-zinc-700 mt-2 shadow-md";
     img.onerror = () => { img.remove(); };
     contentBox.appendChild(img);
     scrollToBottom();
@@ -1126,7 +1112,7 @@ function renderSavedBotMessage(msg, lastPromptSeen, sessionId, msgIndex) {
     const img = document.createElement("img");
     img.src = msg.imageUrl;
     img.alt = "ChatNVM Masterpiece";
-    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 mt-2 shadow-md";
+    img.className = "max-w-[260px] w-full rounded-2xl border border-slate-200 dark:border-zinc-700 mt-2 shadow-md";
     contentBox.appendChild(img);
   }
 
@@ -1153,9 +1139,9 @@ function attachActionBar(contentBox, textEl, state) {
   bar.className = "flex flex-wrap items-center gap-1 pt-1 text-zinc-400 dark:text-zinc-500 select-none";
 
   const noteEl = document.createElement("div");
-  noteEl.className = "hidden text-xs text-teal-700 dark:text-emerald-300/90 italic pt-0.5 pl-1";
+  noteEl.className = "hidden text-xs text-blue-700 dark:text-blue-300/90 italic pt-0.5 pl-1";
 
-  const btnBase = "p-1.5 rounded-lg hover:bg-zinc-200/80 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 transition flex items-center gap-1 text-xs cursor-pointer";
+  const btnBase = "p-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 transition flex items-center gap-1 text-xs cursor-pointer";
 
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
@@ -1190,7 +1176,7 @@ function attachActionBar(contentBox, textEl, state) {
   dislikeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10zM17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>`;
 
   likeBtn.addEventListener("click", () => {
-    likeBtn.classList.add("text-emerald-600", "dark:text-emerald-400");
+    likeBtn.classList.add("text-blue-600", "dark:text-blue-400");
     dislikeBtn.classList.remove("text-rose-500", "dark:text-rose-400");
     noteEl.textContent = `ChatNVM: "${pickFresh(fb.like)}"`;
     noteEl.classList.remove("hidden");
@@ -1199,7 +1185,7 @@ function attachActionBar(contentBox, textEl, state) {
 
   dislikeBtn.addEventListener("click", () => {
     dislikeBtn.classList.add("text-rose-500", "dark:text-rose-400");
-    likeBtn.classList.remove("text-emerald-600", "dark:text-emerald-400");
+    likeBtn.classList.remove("text-blue-600", "dark:text-blue-400");
     noteEl.textContent = `ChatNVM: "${pickFresh(fb.dislike)}"`;
     noteEl.classList.remove("hidden");
     scrollToBottom();
@@ -1245,8 +1231,8 @@ function attachActionBar(contentBox, textEl, state) {
 
   const shareBtn = document.createElement("button");
   shareBtn.type = "button";
-  shareBtn.className = "ml-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800/80 hover:bg-emerald-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-emerald-700 dark:hover:text-white border border-zinc-200 dark:border-zinc-700/70 shadow-sm dark:shadow-none transition flex items-center gap-1.5 text-xs font-medium cursor-pointer";
-  shareBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>${escapeHtml(fb.cardBtn)}</span>`;
+  shareBtn.className = "ml-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800/80 hover:bg-blue-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-blue-700 dark:hover:text-white border border-slate-200 dark:border-zinc-700/70 shadow-sm dark:shadow-none transition flex items-center gap-1.5 text-xs font-medium cursor-pointer";
+  shareBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>${escapeHtml(fb.cardBtn)}</span>`;
 
   shareBtn.addEventListener("click", () => {
     generateAndShareRoastCard(state.prompt, state.replyText, state.tier, fb.cardToast);
@@ -1256,7 +1242,7 @@ function attachActionBar(contentBox, textEl, state) {
   contentBox.append(bar, noteEl);
 }
 
-// --- THEME-AWARE CANVAS ROAST CARD GENERATOR (Emerald/Teal Light & Dark) ---
+// --- THEME-AWARE CANVAS ROAST CARD GENERATOR (Blue Light & Dark) ---
 async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   if (document.fonts && document.fonts.ready) {
     await document.fonts.ready;
@@ -1294,26 +1280,26 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
 
   const bgGrad = ctx.createLinearGradient(0, 0, W, H);
   if (isDark) {
-    bgGrad.addColorStop(0, "#0f1413");
-    bgGrad.addColorStop(0.55, "#131718");
-    bgGrad.addColorStop(1, "#0f1b1d");
+    bgGrad.addColorStop(0, "#0c111d");
+    bgGrad.addColorStop(0.55, "#111622");
+    bgGrad.addColorStop(1, "#0f172a");
   } else {
     bgGrad.addColorStop(0, "#ffffff");
     bgGrad.addColorStop(0.6, "#f8fafc");
-    bgGrad.addColorStop(1, "#ecfdf5");
+    bgGrad.addColorStop(1, "#eff6ff");
   }
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
   drawRoundedRect(ctx, 28, 28, W - 56, H - 56, 36);
-  ctx.strokeStyle = isDark ? "rgba(16, 185, 129, 0.32)" : "rgba(16, 185, 129, 0.35)";
+  ctx.strokeStyle = isDark ? "rgba(59, 130, 246, 0.35)" : "rgba(37, 99, 235, 0.28)";
   ctx.lineWidth = 3;
   ctx.stroke();
 
   const brandGrad = ctx.createLinearGradient(pad, 0, pad + 260, 0);
-  brandGrad.addColorStop(0, isDark ? "#34d399" : "#059669");
-  brandGrad.addColorStop(0.5, isDark ? "#2dd4bf" : "#0d9488");
-  brandGrad.addColorStop(1, isDark ? "#22d3ee" : "#0891b2");
+  brandGrad.addColorStop(0, isDark ? "#60a5fa" : "#2563eb");
+  brandGrad.addColorStop(0.5, isDark ? "#38bdf8" : "#0284c7");
+  brandGrad.addColorStop(1, isDark ? "#818cf8" : "#4f46e5");
 
   ctx.font = `700 44px ${fontFamily}`;
   ctx.fillStyle = brandGrad;
@@ -1328,12 +1314,12 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   const badgeW = ctx.measureText(badgeText).width + 38;
   const badgeX = W - pad - badgeW;
   drawRoundedRect(ctx, badgeX, pad + 6, badgeW, 44, 22);
-  ctx.fillStyle = isDark ? "#1e2926" : "#ecfdf5";
+  ctx.fillStyle = isDark ? "#172554" : "#eff6ff";
   ctx.fill();
-  ctx.strokeStyle = isDark ? "#2d4a43" : "#a7f3d0";
+  ctx.strokeStyle = isDark ? "#1e40af" : "#bfdbfe";
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.fillStyle = isDark ? "#a7f3d0" : "#047857";
+  ctx.fillStyle = isDark ? "#bfdbfe" : "#1d4ed8";
   ctx.fillText(badgeText, badgeX + 19, pad + 35);
 
   ctx.beginPath();
@@ -1353,7 +1339,7 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   const bubbleX = W - pad - bubbleW;
 
   drawRoundedRect(ctx, bubbleX, y, bubbleW, promptBlockH, 28);
-  ctx.fillStyle = isDark ? "#252b2a" : "#e2e8f0";
+  ctx.fillStyle = isDark ? "#1e293b" : "#e2e8f0";
   ctx.fill();
 
   ctx.fillStyle = isDark ? "#f4f4f5" : "#0f172a";
@@ -1364,9 +1350,9 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   y += promptBlockH + gapBetween;
 
   const avGrad = ctx.createLinearGradient(pad, y, pad + 68, y + 68);
-  avGrad.addColorStop(0, "#10b981");
-  avGrad.addColorStop(0.5, "#14b8a6");
-  avGrad.addColorStop(1, "#06b6d4");
+  avGrad.addColorStop(0, "#2563eb");
+  avGrad.addColorStop(0.5, "#3b82f6");
+  avGrad.addColorStop(1, "#38bdf8");
 
   ctx.beginPath();
   ctx.arc(pad + 34, y + 34, 34, 0, Math.PI * 2);
@@ -1401,7 +1387,7 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
     ? `${window.location.host}${window.location.pathname}`.replace(/\/$/, "")
     : "ChatNVM • Dumb Intelligence";
   ctx.textAlign = "right";
-  ctx.fillStyle = isDark ? "#34d399" : "#059669";
+  ctx.fillStyle = isDark ? "#60a5fa" : "#2563eb";
   ctx.fillText(siteLabel, W - pad, footerY);
   ctx.textAlign = "left";
 
@@ -1526,7 +1512,6 @@ function bindEvents() {
   imageUpload.addEventListener("change", handlePhotoUpload);
 
   newChatBtn.addEventListener("click", startNewChat);
-  clearBtn.addEventListener("click", clearCurrentChat);
 
   starterChipsContainer.addEventListener("click", (e) => {
     const chip = e.target.closest(".starter-chip");
