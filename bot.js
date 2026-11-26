@@ -1,5 +1,5 @@
 // --- SETTINGS ---
-const DB_VERSION = "4.0";
+const DB_VERSION = "4.1";
 const SESSIONS_KEY = "closed_di_sessions_v4";
 const LEGACY_STORAGE_KEY = "closed_di_chatnvm_v3";
 const LANG_STORAGE_KEY = "closed_di_lang_v3";
@@ -184,16 +184,15 @@ async function init() {
     const res = await fetch(`db.json?v=${DB_VERSION}`);
     db = await res.json();
 
-    const noisyWords = ["bhai", "mama", "bro"];
+    const noisyWords = ["bhai", "mama", "bro", "na"];
     for (const langKey of Object.keys(db.languages)) {
-      const greeting = db.languages[langKey].intents.find(i => i.category === "greeting");
-      if (greeting) {
-        greeting.triggers = greeting.triggers.filter(t => !noisyWords.includes(t));
+      for (const intent of db.languages[langKey].intents) {
+        intent.triggers = intent.triggers.filter(t => !noisyWords.includes(t.toLowerCase().trim()));
       }
 
       fuses[langKey] = new Fuse(db.languages[langKey].intents, {
         includeScore: true,
-        threshold: 0.36,
+        threshold: 0.25,
         ignoreLocation: true,
         keys: ["triggers"]
       });
@@ -503,7 +502,7 @@ function makeTitle(text) {
 // --- 6. SMART LANGUAGE DETECTION & TYPO/BANGLISH NORMALIZER ---
 function detectReplyLanguage(text, selectedLang) {
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
-  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire)\b/i;
+  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire|nai|dei)\b/i;
   if (selectedLang === "en" && banglishHints.test(text)) return "banglish";
   return selectedLang;
 }
@@ -514,7 +513,6 @@ function normalizeText(rawInput) {
   // Collapse 3+ repeated letters into 2 (e.g. "helloooo" -> "helloo", "kenoooo" -> "kenoo")
   s = s.replace(/([a-z\u0980-\u09FF])\1{2,}/g, "$1$1");
 
-  // Common shorthand & spelling fixes
   const replacements = [
     [/\bkmn\b/g, "kemon"],
     [/\bkmn\s+aso\b/g, "kemon acho"],
@@ -575,7 +573,27 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const langPack = db.languages[replyLang];
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
-  // LAYER 2: Argument / Pushback Detector (especially right after rage-bait!)
+  // LAYER 2: Specific denial / defense replies (e.g. "na nai", "gali dei nai")
+  if (/^(na nai|na\s+nai|gali dei nai|gali di nai|gali dichi na)$/i.test(clean)) {
+    lastBotWasRageBait = false;
+    const defenseReplies = {
+      en: [
+        "Fair enough. Defense accepted—still not writing your homework though.",
+        "Okay, okay, you're innocent. Now go do something productive."
+      ],
+      banglish: [
+        "Accha thik ache, gali den nai—kintu tahole ekhon jaia poralekha ba kaj koren.",
+        "Bhalo hoyeche gali den nai. Ebar biday nin, amar cha thanda hoye jacche."
+      ],
+      bn: [
+        "আচ্ছা ঠিক আছে, গালি দেননি—তবে এবার গিয়ে দরকারি কিছু করুন।",
+        "ভালো করেছেন গালি দেননি। এবার বিদায় নিন, আমার চা ঠান্ডা হয়ে যাচ্ছে।"
+      ]
+    };
+    return { lang: replyLang, matchType: "defense_reply", text: pickFresh(defenseReplies[replyLang] || defenseReplies.banglish) };
+  }
+
+  // LAYER 3: Argument / Pushback Detector
   const argumentRegex = /^(no|nope|wrong|bhul|vul|mittha|lie|lies|cap|false|prove it|source|really\??|seriously\??|are you sure|ki bolen|ki bolo|pagol naki|dimag thik)/i;
   if (!isRegen && argumentRegex.test(clean) && (lastBotWasRageBait || Math.random() < 0.65)) {
     lastBotWasRageBait = true;
@@ -586,7 +604,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     };
   }
 
-  // LAYER 3: Fake Image Generator -> Sends a Meme
+  // LAYER 4: Fake Image Generator -> Sends a Meme
   const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
   for (const k of allLangKeys) {
     if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, normalizeText(t)))) {
@@ -596,14 +614,14 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 4: Duplicate / Spam Detector
+  // LAYER 5: Duplicate / Spam Detector
   if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "duplicate", text: pickFresh(langPack.special_roasts.duplicate) };
   }
   if (!isRegen) lastUserPrompt = clean;
 
-  // LAYER 5: Late-Night Clock Spy (12 AM - 4 AM)
+  // LAYER 6: Late-Night Clock Spy (12 AM - 4 AM)
   const hour = new Date().getHours();
   if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
@@ -611,14 +629,14 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "late_night", text: pickFresh(langPack.special_roasts.late_night) };
   }
 
-  // LAYER 6: ALL-CAPS Yelling Detector
+  // LAYER 7: ALL-CAPS Yelling Detector
   const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
   if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "all_caps", text: pickFresh(langPack.special_roasts.all_caps) };
   }
 
-  // LAYER 7: Dry Texter Detector
+  // LAYER 8: Dry Texter Detector
   const dryWords = [
     "k", "kk", "ok", "okay", "hm", "hmm", "hmmm", "lol", "lmao", "bruh",
     "accha", "achha", "thik ache", "ho", "hae", "na", "?", "??", "???", ".", "..", "...",
@@ -629,26 +647,26 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "dry_text", text: pickFresh(langPack.special_roasts.dry_text) };
   }
 
-  // LAYER 8: Too-Long Essay Roast
+  // LAYER 9: Too-Long Essay Roast
   if (rawInput.length > 200) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "long_essay", text: pickFresh(langPack.long_roasts[tier]) };
   }
 
-  // LAYER 9: Escalating Annoyance Meter
+  // LAYER 10: Escalating Annoyance Meter
   if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "annoyed", text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
-  // LAYER 10: High-Priority Smart Q&A (Wrong Math, Definitions, Who Is, Choices)
+  // LAYER 11: High-Priority Smart Q&A
   const smartDirect = checkSmartQA(rawInput, clean, tier, replyLang);
   if (smartDirect) {
     lastBotWasRageBait = Boolean(smartDirect.isRageBait);
     return { lang: replyLang, matchType: smartDirect.matchType || "smart_qa", text: smartDirect.text };
   }
 
-  // LAYER 11: Weighted Intent Scoring (Primary Language)
+  // LAYER 12: Weighted Intent Scoring (Primary Language)
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
     if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.5) {
@@ -659,7 +677,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: `intent:${scoredMatch.category}`, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
-  // LAYER 12: Cross-Language Weighted Scoring
+  // LAYER 13: Cross-Language Weighted Scoring
   for (const otherLang of Object.keys(db.languages)) {
     if (otherLang === replyLang) continue;
     const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
@@ -667,25 +685,25 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
       const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
       const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
       lastBotWasRageBait = finalIntent.category === "ragebait_takes";
-      return { finalLang, lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
+      return { lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
     }
   }
 
-  // LAYER 13: Open-Ended Patterns
+  // LAYER 14: Open-Ended Patterns
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "open_ended", text: openEndedReply };
   }
 
-  // LAYER 14: Fuse.js Fuzzy Matching
+  // LAYER 15: Strict Fuse.js Fuzzy Matching (only for words >= 4 chars)
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
     lastBotWasRageBait = fuzzyHit.category === "ragebait_takes";
     return { lang: replyLang, matchType: `fuzzy:${fuzzyHit.category}`, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // LAYER 15: Chaos & Rage-Bait Fallback Zone
+  // LAYER 16: Chaos & Rage-Bait Fallback Zone
   const fallbackRoll = Math.random();
   if (!isRegen && fallbackRoll < rates.ragebait) {
     lastBotWasRageBait = true;
@@ -705,7 +723,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
 }
 
 function checkSmartQA(rawInput, clean, tier, lang) {
-  // Confidently wrong basic math rage-bait
   const mathMatch = clean.match(/^\s*(-?\d+(?:\.\d+)?)\s*([\+\-\*\/x×÷])\s*(-?\d+(?:\.\d+)?)\s*(=|\?)?\s*$/);
   if (mathMatch) {
     const a = Number(mathMatch[1]);
@@ -738,7 +755,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     return { isRageBait: true, matchType: "ragebait_math", text: pickFresh(mathReplies[lang]) };
   }
 
-  // Gender / Bro callout
   const genderCallout = /(bhai na bon|bon na bhai|chele na meye|meye na chele|boy or girl|girl or boy|am i a girl|am i a boy|i'?m a girl|i'?m a boy|not a guy|not a bro|ami meye|ami chele|ami apu|ami bon|ভাই না বোন|বোন না ভাই|ছেলে না মেয়ে|মেয়ে না ছেলে|আমি মেয়ে|আমি ছেলে|আমি আপু)/i;
   if (genderCallout.test(clean)) {
     const replies = {
@@ -761,7 +777,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     return { isRageBait: false, matchType: "smart_gender", text: pickFresh(replies[lang]) };
   }
 
-  // "How do you know?"
   const howKnowRegex = /(how do you know|how did you know|how would you know|kemne jano|kivabe jano|kemne janen|kivabe janen|tui kemne jano|tumi kemne jano|কীভাবে জানো|কিভাবে জানো|কেমনে জানো|কীভাবে জানেন|কিভাবে জানেন)/i;
   if (howKnowRegex.test(clean)) {
     const replies = {
@@ -784,7 +799,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     return { isRageBait: false, matchType: "smart_how_know", text: pickFresh(replies[lang]) };
   }
 
-  // Definitions ("what is X", "X mane ki", "X কী")
   if (lang === "en") {
     const defEn = clean.match(/^(?:what is|what's|whats|define|tell me about) (?:a |an |the )?([a-z0-9][a-z0-9\s-]{1,36})\??$/i);
     if (defEn) {
@@ -832,7 +846,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     }
   }
 
-  // Choice questions ("A or B", "A naki B", "A নাকি B")
   const choiceText = checkChoiceQuestion(clean, lang);
   if (choiceText) {
     return { isRageBait: true, matchType: "ragebait_choice", text: choiceText };
@@ -905,8 +918,9 @@ function findBestIntent(clean, intents) {
     let score = 0;
     for (const rawTrigger of intent.triggers) {
       const trigger = normalizeText(rawTrigger);
+      if (trigger.length <= 2) continue;
       if (matchesTrigger(clean, trigger)) {
-        const base = trigger.includes(" ") ? 10 : 4.5;
+        const base = trigger.includes(" ") ? 10 : 5;
         const lengthBonus = Math.min(trigger.length, 10) * 0.25;
         score += base + lengthBonus;
       }
@@ -927,10 +941,12 @@ function findFuzzyIntent(clean, lang) {
   const fuse = fuses[lang];
   if (!fuse) return null;
 
-  const words = clean.split(/\s+/).filter(w => w.length > 2);
-  let best = fuse.search(clean)[0];
+  const words = clean.split(/\s+/).filter(w => w.length >= 4);
+  if (!words.length && clean.length < 4) return null;
 
-  if (!best || best.score > 0.34) {
+  let best = clean.length >= 4 ? fuse.search(clean)[0] : null;
+
+  if (!best || best.score > 0.24) {
     for (const word of words) {
       const hit = fuse.search(word)[0];
       if (hit && (!best || hit.score < best.score)) {
@@ -939,7 +955,7 @@ function findFuzzyIntent(clean, lang) {
     }
   }
 
-  if (best && best.score <= 0.34) {
+  if (best && best.score <= 0.24) {
     if (best.item.category === "greeting" && words.length > 2) return null;
     return best.item;
   }
