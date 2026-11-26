@@ -1,5 +1,5 @@
 // --- SETTINGS ---
-const DB_VERSION = "4.1";
+const DB_VERSION = "4.2";
 const SESSIONS_KEY = "closed_di_sessions_v4";
 const LEGACY_STORAGE_KEY = "closed_di_chatnvm_v3";
 const LANG_STORAGE_KEY = "closed_di_lang_v3";
@@ -502,7 +502,7 @@ function makeTitle(text) {
 // --- 6. SMART LANGUAGE DETECTION & TYPO/BANGLISH NORMALIZER ---
 function detectReplyLanguage(text, selectedLang) {
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
-  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire|nai|dei)\b/i;
+  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire|nai|dei|komu|lagbe)\b/i;
   if (selectedLang === "en" && banglishHints.test(text)) return "banglish";
   return selectedLang;
 }
@@ -593,7 +593,70 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "defense_reply", text: pickFresh(defenseReplies[replyLang] || defenseReplies.banglish) };
   }
 
-  // LAYER 3: Argument / Pushback Detector
+// LAYER 3a: "ki komu" / "ki bolbo" -> What to say
+  if (/^(ki komu|ki komu re|ki bolbo|ki bolbo re|ki komu bhai|ki bolbo bhai)\??$/i.test(clean)) {
+    lastBotWasRageBait = false;
+    const sayReplies = {
+      en: [
+        "Say 'never mind' and walk away like you meant it.",
+        "If you don't know what to say, silence is cheaper than talking nonsense."
+      ],
+      banglish: [
+        "Ki bolben bujhte na parle chupchap 'never mind' bole biday nen.",
+        "Kotha khuje pacchen na? Bhalo hoyeche, kom bollei kom vul hobe.",
+        "Apnar kache kotha na thakle amar kache to emnitei kothar dorkar nai."
+      ],
+      bn: [
+        "কী বলবেন বুঝতে না পারলে চুপচাপ 'থাক' বলে সরে পড়ুন।",
+        "কথা খুঁজে পাচ্ছেন না? ভালোই হয়েছে, কম বললেই ভুল কম হবে।"
+      ]
+    };
+    return { lang: replyLang, matchType: "what_to_say", text: pickFresh(sayReplies[replyLang] || sayReplies.banglish) };
+  }
+
+  // LAYER 3b: "ki khamu" / "ki khabo" -> What to eat
+  if (/^(ki khamu|ki khamu re|ki khabo|ajke ki khabo|khida lagse|khuda lagse|khabar ki)\??$/i.test(clean)) {
+    lastBotWasRageBait = false;
+    const foodReplies = {
+      en: [
+        "Whatever's in the fridge and doesn't judge you. Closed DI kitchen is closed.",
+        "Instant noodles and regret—the classic combo."
+      ],
+      banglish: [
+        "Jeta paben shetai khayen, ami to ar ranna kore dibo na mama.",
+        "Khida lagle dim-bhat ba cha-singara kheye nen, amar kache menu nai.",
+        "Kacchi khawar iccha hole pocket-er obostha check koren age."
+      ],
+      bn: [
+        "যা পাবেন সেটাই খেয়ে নিন, আমি তো আর রান্না করে দেব না।",
+        "খিদে লাগলে চা-শিঙাড়া বা ডিম-ভাত খেয়ে নিন, আমার কাছে মেনু নেই।"
+      ]
+    };
+    return { lang: replyLang, matchType: "food_what_to_eat", text: pickFresh(foodReplies[replyLang] || foodReplies.banglish) };
+  }
+
+  // LAYER 4: GF / BF / Relationship / Crush requests
+  if (/\b(gf|bf|girlfriend|boyfriend|rizz|patta)\b/i.test(clean)) {
+    lastBotWasRageBait = false;
+    const gfReplies = {
+      en: [
+        "A 0% AI chatbot is the last place to ask for dating advice. Fix your sleep schedule first.",
+        "Closed DI doesn't manufacture girlfriends—try talking to humans outside your screen."
+      ],
+      banglish: [
+        "GF lagbe? Ami ki online matchmaker naki mama? Ager nijer paye daran, tarpor GF.",
+        "Apnar kothabarar speed dekhe mone hocche GF ashar agge-i bhage jabe.",
+        "Closed DI-te GF pawa jay na, shudhu free roast pawa jay."
+      ],
+      bn: [
+        "জিএফ লাগবে? আগে নিজের পায়ে দাঁড়ান, তারপর এসব ভাববেন।",
+        "Closed DI-তে এসবের সমাধান নেই, শুধু ফ্রি রোস্ট পাবেন।"
+      ]
+    };
+    return { lang: replyLang, matchType: "relationship_gf", text: pickFresh(gfReplies[replyLang] || gfReplies.banglish) };
+  }
+
+  // LAYER 5: Argument / Pushback Detector
   const argumentRegex = /^(no|nope|wrong|bhul|vul|mittha|lie|lies|cap|false|prove it|source|really\??|seriously\??|are you sure|ki bolen|ki bolo|pagol naki|dimag thik)/i;
   if (!isRegen && argumentRegex.test(clean) && (lastBotWasRageBait || Math.random() < 0.65)) {
     lastBotWasRageBait = true;
@@ -604,7 +667,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     };
   }
 
-  // LAYER 4: Fake Image Generator -> Sends a Meme
+  // LAYER 6: Fake Image Generator -> Sends a Meme
   const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
   for (const k of allLangKeys) {
     if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, normalizeText(t)))) {
@@ -614,14 +677,14 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 5: Duplicate / Spam Detector
+  // LAYER 7: Duplicate / Spam Detector
   if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "duplicate", text: pickFresh(langPack.special_roasts.duplicate) };
   }
   if (!isRegen) lastUserPrompt = clean;
 
-  // LAYER 6: Late-Night Clock Spy (12 AM - 4 AM)
+  // LAYER 8: Late-Night Clock Spy (12 AM - 4 AM)
   const hour = new Date().getHours();
   if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
@@ -629,14 +692,14 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "late_night", text: pickFresh(langPack.special_roasts.late_night) };
   }
 
-  // LAYER 7: ALL-CAPS Yelling Detector
+  // LAYER 9: ALL-CAPS Yelling Detector
   const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
   if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "all_caps", text: pickFresh(langPack.special_roasts.all_caps) };
   }
 
-  // LAYER 8: Dry Texter Detector
+  // LAYER 10: Dry Texter Detector
   const dryWords = [
     "k", "kk", "ok", "okay", "hm", "hmm", "hmmm", "lol", "lmao", "bruh",
     "accha", "achha", "thik ache", "ho", "hae", "na", "?", "??", "???", ".", "..", "...",
@@ -647,26 +710,26 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "dry_text", text: pickFresh(langPack.special_roasts.dry_text) };
   }
 
-  // LAYER 9: Too-Long Essay Roast
+  // LAYER 11: Too-Long Essay Roast
   if (rawInput.length > 200) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "long_essay", text: pickFresh(langPack.long_roasts[tier]) };
   }
 
-  // LAYER 10: Escalating Annoyance Meter
+  // LAYER 12: Escalating Annoyance Meter
   if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "annoyed", text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
-  // LAYER 11: High-Priority Smart Q&A
+  // LAYER 13: High-Priority Smart Q&A
   const smartDirect = checkSmartQA(rawInput, clean, tier, replyLang);
   if (smartDirect) {
     lastBotWasRageBait = Boolean(smartDirect.isRageBait);
     return { lang: replyLang, matchType: smartDirect.matchType || "smart_qa", text: smartDirect.text };
   }
 
-  // LAYER 12: Weighted Intent Scoring (Primary Language)
+  // LAYER 14: Weighted Intent Scoring (Primary Language)
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
     if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.5) {
@@ -677,7 +740,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: `intent:${scoredMatch.category}`, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
-  // LAYER 13: Cross-Language Weighted Scoring
+  // LAYER 15: Cross-Language Weighted Scoring
   for (const otherLang of Object.keys(db.languages)) {
     if (otherLang === replyLang) continue;
     const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
@@ -689,21 +752,21 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 14: Open-Ended Patterns
+  // LAYER 16: Open-Ended Patterns
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "open_ended", text: openEndedReply };
   }
 
-  // LAYER 15: Strict Fuse.js Fuzzy Matching (only for words >= 4 chars)
+  // LAYER 17: Strict Fuse.js Fuzzy Matching (only for words >= 4 chars)
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
     lastBotWasRageBait = fuzzyHit.category === "ragebait_takes";
     return { lang: replyLang, matchType: `fuzzy:${fuzzyHit.category}`, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // LAYER 16: Chaos & Rage-Bait Fallback Zone
+  // LAYER 18: Chaos & Rage-Bait Fallback Zone
   const fallbackRoll = Math.random();
   if (!isRegen && fallbackRoll < rates.ragebait) {
     lastBotWasRageBait = true;
