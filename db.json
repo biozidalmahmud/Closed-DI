@@ -7,10 +7,10 @@
       "footer": "ChatNVM by Closed DI can make mistakes. Mostly on purpose. Powered by 0% AI.",
       "photo_thinking": "Squinting at questionable pixels...",
       "starters": [
-        "Write my assignment for me",
-        "How do I get rich overnight?",
-        "Make a cute cat picture",
-        "Tell me a dark joke"
+        "How do I fix my CGPA?",
+        "Why am I hardstuck in ranked?",
+        "How to get clients on Fiverr?",
+        "My relatives keep asking about marriage"
       ],
       "thinking": {
         "mini": ["Thinking briefly...", "Checking 0 GPUs..."],
@@ -29,10 +29,10 @@
       "footer": "ChatNVM by Closed DI bhul korte pare. Asol kotha holo, iccha korei kore. 0% AI.",
       "photo_thinking": "Chobi dekhe bhabar vhan korchi...",
       "starters": [
-        "Amar assignment ta likhe dao",
-        "Kivabe ratarati borolok hobo?",
-        "Ekta sundor biral er chobi banao",
-        "Ajke matha gorom, ekta dark joke bolo"
+        "CGPA kivabe barabo?",
+        "Ranked match e khali hari ken?",
+        "Fiverr e order pacchi na ki korbo?",
+        "Pasher bashar aunty biye niye pera dey"
       ],
       "thinking": {
         "mini": ["Ektu bhabchi...", "0 GPUs check korchi..."],
@@ -51,10 +51,10 @@
       "footer": "ChatNVM by Closed DI ভুল করতে পারে। আসল কথা হলো, ইচ্ছে করেই করে। ০% AI।",
       "photo_thinking": "ছবি দেখে ভাবার ভান করছি...",
       "starters": [
-        "আমার অ্যাসাইনমেন্টটা লিখে দাও",
-        "কীভাবে রাতারাতি বড়লোক হবো?",
-        "একটা সুন্দর বিড়ালের ছবি বানাও",
-        "আজকে মাথা গরম, একটা ডার্ক জোক বলো"
+        "সিজিপিএ কীভাবে বাড়াবো?",
+        "গেমে খালি র‍্যাংক কমে কেন?",
+        "ফ্রিল্যান্সিংয়ে ক্লায়েন্ট পাচ্ছি না",
+        "আত্মীয়স্বজন খালি বিয়ের কথা জিজ্ঞেস করে"
       ],
       "thinking": {
         "mini": ["একটু ভাবছি...", "০টা GPU চেক করছি..."],
@@ -117,7 +117,7 @@
       "ragebait_replies": [
         "Bold of you to argue with a website that doesn't even know your name. Keep going, it's entertaining.",
         "If you're mad at a rule-based joke bot, the internet might be a little too spicy for you.",
-        "Oh no, I hurt a free user's feelings. anyway, তবে সমস্যাটা সম্পূর্ণ আপনার কপালের."
+        "Oh no, I hurt a free user's feelings. Anyway, তবে সমস্যাটা সম্পূর্ণ আপনার কপালের."
       ],
       "combinator": {
         "openers": ["Look,", "Honestly,", "Listen,", "Real talk,"],
@@ -134,7 +134,7 @@
       "intents": [
         {
           "category": "greeting",
-          "triggers": ["hi", "hello", "hey", "yo", "sup", "morning", "evening"],
+          "triggers": ["hi", "hello", "hey", "yo", "sup", "morning", "evening", "how are you"],
           "responses": {
             "mini": ["Hi. Make it quick.", "Hey. What now?"],
             "pro": ["Oh, it's you again. Say what you want before I get bored.", "Hello. Zero helpfulness is online and ready."],
@@ -144,41 +144,85 @@
           }
         },
         {
+          "category": "uni_college",
+          "triggers": ["cgpa", "gpa", "versity", "semester", "attendance", "faculty", "professor", "thesis", "backlog", "retake", "exam", "assignment", "study", "marks"],
+          "responses": {
+            "mini": ["Open your textbook. Closing the tab helps.", "Your CGPA is already in prayer mode."],
+            "pro": ["Studying the night before the exam and blaming the faculty's slides? Classic.", "Your attendance is lower than my GPU count, and you're here chatting with me."],
+            "max": [
+              "Let's be honest about your semester: you downloaded the PDFs in week 1, never opened them, and now expect a miracle 6 hours before the exam.\n\nGo read at least three slides before panic becomes your major."
+            ]
+          }
+        },
+        {
+          "category": "gaming",
+          "triggers": ["game", "gaming", "valorant", "pubg", "rank", "ranked", "hardstuck", "lag", "ping", "fps", "noob", "bot lobby", "teammate", "fifa", "minecraft"],
+          "responses": {
+            "mini": ["Not lag. Pure skill issue.", "Blaming teammates again?"],
+            "pro": ["You're hardstuck because your aim looks like a drunk mouse cursor, not because of 90ms ping.", "Queuing one more match at 2 AM won't fix your rank or your sleep schedule."],
+            "max": [
+              "Every gamer has the exact same delusion: when they win, it's pure talent; when they lose, it's ping, bad teammates, or broken matchmaking.\n\nAccept your rank, drink some water, and go touch actual grass."
+            ]
+          }
+        },
+        {
+          "category": "freelancing",
+          "triggers": ["freelance", "freelancing", "fiverr", "upwork", "client", "clients", "gig", "portfolio", "dollar", "remote job", "skill"],
+          "responses": {
+            "mini": ["Learn an actual skill before making a Fiverr gig.", "Clients can smell copy-paste proposals."],
+            "pro": ["Making a Fiverr account with 'I will do anything' and waiting for $500 orders isn't a business plan.", "Your portfolio has two tutorial projects and maximum confidence."],
+            "max": [
+              "Everyone wants to earn in dollars from home, nobody wants to spend six months getting genuinely good at one craft.\n\nBuild three real projects first, then worry about why clients aren't replying."
+            ]
+          }
+        },
+        {
+          "category": "family_relatives",
+          "triggers": ["relative", "relatives", "aunty", "uncle", "family", "parents", "marriage", "marry", "biye", "cousin", "neighbor"],
+          "responses": {
+            "mini": ["Tell them your cousin is doing worse. Works every time.", "Smile, nod, and leave the room."],
+            "pro": ["Your aunty already knows your exam results before your university portal updates.", "When relatives ask about marriage or salary, ask them why their son is still unemployed."],
+            "max": [
+              "Relatives treat family gatherings like an unpaid HR interview: 'What's your CGPA? When are you getting a job? When is the wedding?'\n\nJust hand them a plate of snacks and change the subject before they compare you to a cousin in Canada."
+            ]
+          }
+        },
+        {
           "category": "gali_slang",
-          "triggers": ["idiot", "stupid", "dumb", "trash", "useless", "bitch", "shut up", "fool", "loser"],
+          "triggers": ["idiot", "stupid", "dumb", "trash", "useless", "bitch", "shut up", "fool", "loser", "fuck", "shit"],
           "responses": {
             "mini": ["And yet you're still here talking to me.", "Cute vocabulary. Still 0 GPUs."],
             "pro": ["Calling a free joke bot 'useless' is a funny way to admit you got out-roasted by JavaScript.", "I would get offended, তবে apnar standard dekhe maya lagche."],
             "max": [
-              "Imagine getting mad enough to insult a static webpage running on GitHub Pages.\n\nTake a deep breath, step away from the screen, and try arguing with a mirror next."
+              "Imagine getting mad enough to swear at a static webpage running on GitHub Pages.\n\nTake a deep breath, step away from the screen, and try arguing with a mirror next."
             ]
           }
         },
         {
           "category": "ragebait_takes",
-          "triggers": ["kacchi", "biriyani", "cricket", "football", "degree", "cgpa", "rich", "get rich", "money", "taka"],
+          "triggers": ["kacchi", "biriyani", "cricket", "football", "degree", "rich", "get rich", "money", "ai", "chatgpt", "gemini"],
           "responses": {
             "mini": ["Overrated. Next question.", "Hot take: most of it is just hype."],
-            "pro": ["Hot take: Kacchi is just rice having a loud identity crisis, and getting rich overnight only happens in scam DMs.", "I understand your frustration, তবে CGPA আর borolok howar swapno—duita-i ek."],
+            "pro": ["Hot take: ChatGPT writes essays that sound like a nervous intern, whereas Closed DI ignores you honestly.", "Getting rich overnight only happens to people selling courses to gullible viewers."],
             "max": [
-              "Unpopular opinion time: people spend years chasing status, degrees, and overnight riches just to end up tired in traffic.\n\nIf that offended you, good. Have a productive day anyway."
+              "Unpopular opinion time: people spend years chasing hype, degrees, and overnight riches just to end up tired in traffic.\n\nIf that offended you, good. Have a productive day anyway."
             ]
           }
         },
         {
-          "category": "ai_utility",
-          "triggers": ["assignment", "essay", "email", "code", "bug", "write", "homework", "summarize"],
+          "category": "relationship",
+          "triggers": ["gf", "bf", "girlfriend", "boyfriend", "crush", "ex", "love", "single", "breakup", "dating"],
           "responses": {
-            "mini": ["Write it yourself. Character building.", "No homework help here."],
-            "pro": ["You asked a bot named 'Never Mind' to do your homework? Bold academic strategy.", "Here is your draft: 'Dear sir/madam, I did nothing and I'm out of ideas.'"],
+            "mini": ["Fix your sleep schedule before dating.", "They're not texting back. Move on."],
+            "pro": ["Asking a 0% AI bot for dating advice explains why you're still single.", "If they wanted to reply, they would have. Stop refreshing your inbox."],
             "max": [
-              "If you're outsourcing your assignment or work to ChatNVM, your deadline already has a funnier ending than anything I could write.\n\nOpen a blank doc and start typing before panic becomes your co-author."
+              "You're overanalyzing a two-word reply from someone who forgot you exist ten minutes later.\n\nPut the phone down, focus on your own life, and stop chasing people who treat you like an option."
             ]
           }
         },
         {
           "category": "dark_humor",
-          "triggers": ["dark joke", "joke", "depressed", "sad", "lonely", "meaning of life", "future"],
+          "triggers": ["dark joke", "joke", "depressed", "sad", "lonely", "meaning of life", "future", "tired", "bored"],
           "responses": {
             "mini": ["Your alarm clock tomorrow morning.", "Life has no DLC."],
             "pro": ["Dark humor? Check your bank balance at the end of the month—scariest story on the internet.", "Cheer up, at least you're consistent at overthinking."],
@@ -253,7 +297,7 @@
       "intents": [
         {
           "category": "greeting",
-          "triggers": ["hi", "hello", "hey", "kemon acho", "kemon achen", "kemon aso", "ki khobor", "ki obostha"],
+          "triggers": ["hi", "hello", "hey", "kemon acho", "kemon achen", "kemon aso", "ki khobor", "ki obostha", "kire"],
           "responses": {
             "mini": ["Bhalo achi. Ki dorkar?", "Thik achi, bolen."],
             "pro": ["Apni ashar ag porjonto bhalo-i chilam. Ki lagbe bolen.", "Khobor valo na, karon apni message dichen."],
@@ -263,8 +307,52 @@
           }
         },
         {
+          "category": "uni_college",
+          "triggers": ["cgpa", "gpa", "versity", "semester", "attendance", "faculty", "sir", "thesis", "retake", "exam", "porikkha", "poralekha", "assignment", "lab", "viva", "result"],
+          "responses": {
+            "mini": ["Boi khulen mama, CGPA pray kore barbe na.", "Attendance short khawar pothe achen."],
+            "pro": ["Shara semester ghumai exam-er ag raate 'suggestion dao' bolle faculty-o hashe.", "Apnar CGPA ar amar GPU count—duita-i komti te cholche."],
+            "max": [
+              "Semester-er shuru te sobai bole ebar CGPA 3.80+ tulbo, ar mid-er por shudhu pass korar dua kore.\n\nChatNVM bondho kore 2 ta slide-o poren, nahole retake-er taka ready rakhen."
+            ]
+          }
+        },
+        {
+          "category": "gaming",
+          "triggers": ["game", "gaming", "valorant", "pubg", "rank", "ranked", "hardstuck", "lag", "ping", "fps", "noob", "bot", "teammate", "squad", "match"],
+          "responses": {
+            "mini": ["Ping-er dosh na mama, apnar aim-i kharap.", "Abar harlen?"],
+            "pro": ["Match harle-i 'ping high' ar 'random teammate kharap'—ei bahana purano hoye gese.", "Raat 3ta porjonto ranked khele rank barbe na, shudhu chokher niche kali porbe."],
+            "max": [
+              "Sob gamer-er ekoi golpo: jitlen to apnar pro gameplay, ar harlen to network lag ba teammate-er dosh.\n\nEktu pani khan, PC off koren, ar real life-e level up korar chesta koren."
+            ]
+          }
+        },
+        {
+          "category": "freelancing",
+          "triggers": ["freelance", "freelancing", "fiverr", "upwork", "client", "gig", "portfolio", "dollar", "income", "taka kamabo", "online income", "skill"],
+          "responses": {
+            "mini": ["Age kaj shikhen, tarpor dollar-er swapno dekhen.", "Copy-paste proposal e client ashe na."],
+            "pro": ["YouTube e 2ta video dekhe Fiverr account khule bose thakle order asbe na mama.", "Client-ra portfolio dekhe, apnar 'bhai please ekta kaj den' message dekhe na."],
+            "max": [
+              "Sobai ghore bose dollar kamate chay, kintu 6 mash dhore ekta skill bhalo kore shikhte keu raji na.\n\nAge 3-4 ta real project banan, tarpor client-er pechone douraben."
+            ]
+          }
+        },
+        {
+          "category": "family_relatives",
+          "triggers": ["aunty", "uncle", "relative", "attiyo", "basha", "basa", "family", "baba", "ma", "biye", "cousin", "pasher bashar"],
+          "responses": {
+            "mini": ["Aunty-ke bolen apnar chele-r khobor ki?", "Hasi diye cha kheye chole ashen."],
+            "pro": ["Pasher bashar aunty apnar result-er khobor apnar cheye age rakhen.", "Attiyo-ra biye ar chakri niye jiggesh korle bolben 'apnar chele/meye-r por-i korbo'."],
+            "max": [
+              "Family dawat mane-i free-te CID interrogation: 'Result ki? Chakri kobe? Biye kobe korba?'\n\nTorko na kore plate-e biriyani tule chupchap khawa shuru koren—best defense."
+            ]
+          }
+        },
+        {
           "category": "gali_slang",
-          "triggers": ["bal", "bokachoda", "sala", "harami", "fokinni", "pagol", "chagol", "abal", "heda", "faltu", "bokwas"],
+          "triggers": ["bal", "bokachoda", "sala", "harami", "fokinni", "pagol", "chagol", "abal", "heda", "faltu", "bokwas", "idiot", "stupid"],
           "responses": {
             "mini": ["Gali diye ki hobe? Ami to emnitei ignore kori.", "Apnar bhasha-i bole dey apni koto smart."],
             "pro": ["Ekta free bot-ke gali diye apni nijer class dekhacchen? Sundor.", "I understand your frustration, তবে apnar gali gulor kono ojon nai."],
@@ -275,34 +363,34 @@
         },
         {
           "category": "ragebait_takes",
-          "triggers": ["kacchi", "biriyani", "jam", "traffic", "current", "gorom", "bristi", "borolok", "taka", "cgpa", "chakri"],
+          "triggers": ["kacchi", "biriyani", "jam", "traffic", "current", "gorom", "bristi", "borolok", "taka", "cricket", "ai", "chatgpt"],
           "responses": {
             "mini": ["Kacchi overhyped. Jam e thaken.", "Taka nai, tai shanti ache."],
-            "pro": ["Hot take: Kacchi khawa-r cheye ghumawa onek shanto, ar Dhaka jam e thakle life-er wisdom pawa jay.", "Borolok howar shortcut thakle ami nijei koratam, apnake boltam na."],
+            "pro": ["Hot take: Kacchi khawa-r cheye ghumawa onek shanto, ar Dhaka jam e thakle life-er wisdom pawa jay.", "ChatGPT apnake mittha tareef kore khushi rakhe, ami shotti ta boli."],
             "max": [
               "Desh-er manush Kacchi, CGPA, ar borolok howa niye jeto kotha bole, tar ordhek o jodi nijer kaj-e dito tahole kotha-i chilo na.\n\nBura lagle laguk, asol kotha etai."
             ]
           }
         },
         {
-          "category": "ai_utility",
-          "triggers": ["assignment", "likhe dao", "code", "email", "cv", "poralekha", "exam", "porikkha"],
+          "category": "relationship",
+          "triggers": ["gf", "bf", "girlfriend", "boyfriend", "crush", "ex", "single", "prem", "valobasha", "breakup", "rizz", "patta"],
           "responses": {
-            "mini": ["Nije likhen. Sikhte parben.", "Assignment amar kaj na."],
-            "pro": ["Assignment likhe dibo? Ami ki apnar tuition master naki?", "Exam-er ag raate ChatNVM khule lav nai mama, boi khulen."],
+            "mini": ["GF lagbe? Age nijer paye daran.", "Crush apnake dekhe-i na."],
+            "pro": ["Online bot-er kache GF khujchen? Eijonnoi ekhono single achen mama.", "Se online thakleo apnar message seen korbe na—eta mene nen."],
             "max": [
-              "Assignment ar exam-er ag din raate ChatNVM-ke message dewa mane nijeke satwana dewa.\n\nEk-duita line nije likhen, vul hole-o nijer vul hobe."
+              "Jar kache apnar kono priority nai, tar reply-er jonno raat jege thaka mane nijer somman nijei komano.\n\nPhone rakhen, kaj-e mon den, ar 'never mind' bole agai jan."
             ]
           }
         },
         {
           "category": "dark_humor",
-          "triggers": ["dark joke", "joke", "mon kharap", "kosto", "ekla", "single", "biye", "crush", "ex"],
+          "triggers": ["dark joke", "joke", "mon kharap", "kosto", "ekla", "bored", "tired", "ghum"],
           "responses": {
-            "mini": ["Crush apnake dekhe-i na.", "Single life-e kono tension nai."],
-            "pro": ["Mon kharap? Bhalo baat, ebar ektu ghumiye nen.", "Ex fire asbe kina seta jani na, kintu apnar time emnitei chole jacche."],
+            "mini": ["Mash sheshe pocket check koren—shera dark joke.", "Ektu ghumiye nen."],
+            "pro": ["Mon kharap? Bhalo baat, ebar ektu cha kheye ghumiye nen.", "Life-e tension komanor best upay: asha kom rakha."],
             "max": [
-              "Crush-er kotha bhabe ar biye-r plan kore labh ki? Ager nijer paye darar chesta koren.\n\nDark kotha holo: somoy karor jonno opeksha kore na, kintu apni kore jacchen."
+              "Somoy karor jonno opeksha kore na, kintu apni ekhono ekta free website-er sathe adda marchen.\n\nDark kotha holo: kal shokale uthe abar sei ek-i routine-ei ফিরতে হবে।"
             ]
           }
         }
@@ -382,6 +470,50 @@
           }
         },
         {
+          "category": "uni_college",
+          "triggers": ["সিজিপিএ", "ভার্সিটি", "সেমিস্টার", "পরীক্ষা", "অ্যাসাইনমেন্ট", "পড়ালেখা", "রেজাল্ট", "থিসিস", "ক্লাস"],
+          "responses": {
+            "mini": ["বই খুলুন, দোয়া করে সিজিপিএ বাড়বে না।", "অ্যাসাইনমেন্ট নিজে লিখুন।"],
+            "pro": ["সারা সেমিস্টার ঘুমিয়ে পরীক্ষার আগের রাতে সাজেশন খুঁজলে এমনই হয়।", "আপনার অ্যাটেনডেন্স আর আমার GPU সংখ্যা—দুটোই তলানিতে।"],
+            "max": [
+              "সেমিস্টারের শুরুতে সবাই ভাবে এবার দারুণ রেজাল্ট করবে, আর পরীক্ষার আগে শুধু পাস করার চিন্তা করে।\n\nএখন চ্যাট বন্ধ করে অন্তত কয়েকটা স্লাইড পড়ুন।"
+            ]
+          }
+        },
+        {
+          "category": "gaming",
+          "triggers": ["গেম", "গেমিং", "র‍্যাংক", "ল্যাগ", "পিং", "টিমমেট", "ম্যাচ"],
+          "responses": {
+            "mini": ["পিংয়ের দোষ না, আপনার হাতই কাঁপে।", "আবার হারলেন?"],
+            "pro": ["জিতলে নিজের ক্রেডিট আর হারলে নেটওয়ার্ক ল্যাগের দোষ—এই অজুহাত পুরনো হয়ে গেছে।", "রাত জেগে গেম খেলে র‍্যাংক বাড়বে না, শুধু ঘুম নষ্ট হবে।"],
+            "max": [
+              "সব গেমারের একই গল্প: জিতলে নিজের দক্ষতা, আর হারলে খারাপ টিমমেট বা ল্যাগ।\n\nএকটু পানি খেয়ে বাস্তব জীবনে লেভেল আপ করার চেষ্টা করুন।"
+            ]
+          }
+        },
+        {
+          "category": "freelancing",
+          "triggers": ["ফ্রিল্যান্সিং", "ক্লায়েন্ট", "ফাইভার", "আপওয়ার্ক", "পোর্টফোলিও", "ডলার", "স্কিল", "চাকরি"],
+          "responses": {
+            "mini": ["আগে কাজ শিখুন, তারপর ডলারের স্বপ্ন দেখুন।", "কপি-পেস্ট মেসেজে ক্লায়েন্ট আসে না।"],
+            "pro": ["দুইটা ভিডিও দেখে অ্যাকাউন্ট খুলে বসে থাকলেই কাজ পাওয়া যায় না।", "ক্লায়েন্টরা আপনার কাজ দেখে, অনুরোধ দেখে না।"],
+            "max": [
+              "সবাই ঘরে বসে আয় করতে চায়, কিন্তু ছয় মাস মন দিয়ে একটা কাজ শিখতে কেউ রাজি না।\n\nআগে ভালো কিছু প্রজেক্ট তৈরি করুন, তারপর ক্লায়েন্ট খুঁজুন।"
+            ]
+          }
+        },
+        {
+          "category": "family_relatives",
+          "triggers": ["আত্মীয়", "আত্মীয়স্বজন", "আন্টি", "আঙ্কেল", "বিয়ে", "বাসা", "পরিবার", "কাজিন"],
+          "responses": {
+            "mini": ["হাসি দিয়ে চা খেয়ে সরে পড়ুন।", "তাদের ছেলেমেয়ের খবর জিজ্ঞেস করুন।"],
+            "pro": ["পাশের বাসার আন্টি আপনার রেজাল্টের খবর আপনার আগেই জানেন।", "বিয়ের কথা জিজ্ঞেস করলে বলুন আগে প্রতিষ্ঠিত হয়ে নিই।"],
+            "max": [
+              "দাওয়াতে যাওয়া মানেই ফ্রি ইন্টারভিউ: 'রেজাল্ট কী? চাকরি কবে? বিয়ে কবে?'\n\nতর্ক না করে চুপচাপ খাওয়ায় মন দিন, সেটাই সবচেয়ে বুদ্ধিমানের কাজ।"
+            ]
+          }
+        },
+        {
           "category": "gali_slang",
           "triggers": ["বাল", "বোকাচোদা", "শালা", "হারামি", "ফকিন্নি", "পাগল", "ছাগল", "আবাল", "হেদা", "ফালতু"],
           "responses": {
@@ -394,7 +526,7 @@
         },
         {
           "category": "ragebait_takes",
-          "triggers": ["কাচ্চি", "বিরিয়ানি", "জ্যাম", "কারেন্ট", "গরম", "বৃষ্টি", "বড়লোক", "টাকা", "সিজিপিএ", "চাকরি"],
+          "triggers": ["কাচ্চি", "বিরিয়ানি", "জ্যাম", "কারেন্ট", "গরম", "বৃষ্টি", "বড়লোক", "টাকা"],
           "responses": {
             "mini": ["কাচ্চি নিয়ে এত মাতামাতির কী আছে?", "টাকা নেই, তাতেই শান্তি।"],
             "pro": ["হট টেক: কাচ্চি খাওয়ার চেয়ে ঘুমানো অনেক আরামের, আর বড়লোক হওয়ার কোনো শর্টকাট নেই।", "জ্যামে বসে বসে দার্শনিক হওয়ার চেয়ে ঘুমিয়ে থাকা ভালো।"],
@@ -404,24 +536,13 @@
           }
         },
         {
-          "category": "ai_utility",
-          "triggers": ["অ্যাসাইনমেন্ট", "লিখে দাও", "কোড", "ইমেইল", "সিভি", "পড়ালেখা", "পরীক্ষা"],
-          "responses": {
-            "mini": ["নিজে লিখুন। শিখতে পারবেন।", "অ্যাসাইনমেন্ট আমার কাজ না।"],
-            "pro": ["অ্যাসাইনমেন্ট লিখে দেব? আমি কি আপনার প্রাইভেট টিউটর নাকি?", "পরীক্ষার আগের রাতে বট খুলে লাভ নেই, বই খুলুন।"],
-            "max": [
-              "অ্যাসাইনমেন্ট বা পরীক্ষার আগের রাতে ChatNVM-কে মেসেজ দেওয়া মানে নিজেকে সান্ত্বনা দেওয়া।\n\nনিজে দু-এক লাইন লিখুন, ভুল হলেও নিজের ভুল হবে।"
-            ]
-          }
-        },
-        {
           "category": "dark_humor",
-          "triggers": ["ডার্ক জোক", "জোক", "মন খারাপ", "কষ্ট", "একা", "সিঙ্গেল", "বিয়ে", "ক্রাশ"],
+          "triggers": ["ডার্ক জোক", "জোক", "মন খারাপ", "কষ্ট", "একা", "সিঙ্গেল", "ক্রাশ"],
           "responses": {
             "mini": ["ক্রাশ আপনাকে খেয়ালই করে না।", "সিঙ্গেল লাইফে কোনো টেনশন নেই।"],
-            "pro": ["মন খারাপ? ভালো কথা, এবার একটু ঘুমিয়ে নিন।", "বিয়ে নিয়ে এত ভাবার কী আছে? আগে নিজের পায়ে দাঁড়ান।"],
+            "pro": ["মন খারাপ? ভালো কথা, এবার একটু ঘুমিয়ে নিন।", "মাস শেষে মানিব্যাগ চেক করুন—সেরা ডার্ক জোক ওটাই।"],
             "max": [
-              "ক্রাশের কথা ভেবে আর বিয়ের স্বপ্ন দেখে সময় নষ্ট করার চেয়ে নিজের ভবিষ্যৎ নিয়ে ভাবা ভালো।\n\nডার্ক সত্য হলো: সময় কারও জন্য অপেক্ষা করে না, অথচ আপনি বসে আছেন।"
+              "ক্রাশের কথা ভেবে সময় নষ্ট করার চেয়ে নিজের ভবিষ্যৎ নিয়ে ভাবা ভালো।\n\nডার্ক সত্য হলো: সময় কারও জন্য অপেক্ষা করে না, অথচ আপনি বসে আছেন।"
             ]
           }
         }
