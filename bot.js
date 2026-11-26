@@ -110,6 +110,15 @@ const FEEDBACK_LINES = {
   }
 };
 
+// --- ANALYTICS HELPER (Safe no-op if PostHog key isn't set yet) ---
+function trackEvent(eventName, props = {}) {
+  try {
+    if (window.posthog && typeof window.posthog.capture === "function") {
+      window.posthog.capture(eventName, props);
+    }
+  } catch (e) {}
+}
+
 // --- INTERNAL STATE ---
 let db = null;
 let fuses = {};
@@ -189,6 +198,7 @@ async function init() {
 function toggleTheme() {
   const isDark = document.documentElement.classList.toggle("dark");
   localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+  trackEvent("theme_toggled", { theme: isDark ? "dark" : "light" });
 }
 
 function openMobileSidebar() {
@@ -205,6 +215,7 @@ function openUpgradeModal() {
   closeMobileSidebar();
   if (upgradeRoastBox) upgradeRoastBox.classList.add("hidden");
   if (upgradeModal) upgradeModal.classList.remove("hidden");
+  trackEvent("upgrade_modal_opened");
 }
 
 function closeUpgradeModal() {
@@ -217,6 +228,7 @@ function handleFakeSubscribe() {
     upgradeRoastBox.textContent = pickFresh(fb.upgradeRoasts);
     upgradeRoastBox.classList.remove("hidden");
   }
+  trackEvent("fake_subscribe_clicked", { lang: langSelect.value });
 }
 
 // --- 3. SARCASTIC VOICE READER (WEB SPEECH API) ---
@@ -248,6 +260,7 @@ function toggleSpeak(text, lang, btn) {
   utter.onerror = resetSpeakBtn;
 
   window.speechSynthesis.speak(utter);
+  trackEvent("voice_reader_played", { lang });
 }
 
 function resetSpeakBtn() {
@@ -491,11 +504,11 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
       banglish: "Bhai, ektu serious kotha: apni jodi khub kosto ba mental pressure er moddhe thaken, please karor sathe kotha bolun. Bangladesh e Kaan Pete Roi (01779-554391) ba https://findahelpline.com e free, confidential help paben.",
       bn: "একটু সিরিয়াস কথা: আপনি যদি খুব কষ্ট বা মানসিক চাপের মধ্যে থাকেন, দয়া করে এমন কারো সাথে কথা বলুন যিনি সত্যিই সাহায্য করতে পারবেন। ফ্রি ও গোপনীয় সহায়তার জন্য কান পেতে রই (01779-554391) বা https://findahelpline.com-এ যোগাযোগ করতে পারেন।"
     };
-    return { isSafety: true, lang: replyLang, text: safetyMessages[replyLang] };
+    return { isSafety: true, lang: replyLang, matchType: "safety", text: safetyMessages[replyLang] };
   }
 
   if (!db) {
-    return { lang: replyLang, text: "Brain file failed to load. Probably for the best." };
+    return { lang: replyLang, matchType: "error", text: "Brain file failed to load. Probably for the best." };
   }
 
   if (!isRegen) sessionMsgCount++;
@@ -506,24 +519,24 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   for (const k of allLangKeys) {
     if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, t))) {
       const meme = pickFresh(langPack.memes);
-      return { lang: replyLang, text: meme.caption, imageUrl: meme.url };
+      return { lang: replyLang, matchType: "meme", text: meme.caption, imageUrl: meme.url };
     }
   }
 
   if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
-    return { lang: replyLang, text: pickFresh(langPack.special_roasts.duplicate) };
+    return { lang: replyLang, matchType: "duplicate", text: pickFresh(langPack.special_roasts.duplicate) };
   }
   if (!isRegen) lastUserPrompt = clean;
 
   const hour = new Date().getHours();
   if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
-    return { lang: replyLang, text: pickFresh(langPack.special_roasts.late_night) };
+    return { lang: replyLang, matchType: "late_night", text: pickFresh(langPack.special_roasts.late_night) };
   }
 
   const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
   if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
-    return { lang: replyLang, text: pickFresh(langPack.special_roasts.all_caps) };
+    return { lang: replyLang, matchType: "all_caps", text: pickFresh(langPack.special_roasts.all_caps) };
   }
 
   const dryWords = [
@@ -532,28 +545,28 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     "হুম", "হুঁ", "ওকে", "আচ্ছা", "হ্যাঁ", "না", "জি"
   ];
   if (dryWords.includes(clean) || (clean.length <= 2 && !["hi", "yo"].includes(clean))) {
-    return { lang: replyLang, text: pickFresh(langPack.special_roasts.dry_text) };
+    return { lang: replyLang, matchType: "dry_text", text: pickFresh(langPack.special_roasts.dry_text) };
   }
 
   if (rawInput.length > 200) {
-    return { lang: replyLang, text: pickFresh(langPack.long_roasts[tier]) };
+    return { lang: replyLang, matchType: "long_essay", text: pickFresh(langPack.long_roasts[tier]) };
   }
 
   if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
-    return { lang: replyLang, text: pickFresh(langPack.special_roasts.annoyed) };
+    return { lang: replyLang, matchType: "annoyed", text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
   const smartDirectReply = checkSmartQA(rawInput, clean, tier, replyLang);
   if (smartDirectReply) {
-    return { lang: replyLang, text: smartDirectReply };
+    return { lang: replyLang, matchType: "smart_qa", text: smartDirectReply };
   }
 
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
     if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.6) {
-      return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
+      return { lang: replyLang, matchType: "theatrical_gag", text: pickFresh(langPack.theatrical_gags) };
     }
-    return { lang: replyLang, text: pickFresh(scoredMatch.responses[tier]) };
+    return { lang: replyLang, matchType: `intent:${scoredMatch.category}`, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
   for (const otherLang of Object.keys(db.languages)) {
@@ -562,29 +575,30 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     if (crossMatch) {
       const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
       const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
-      return { lang: finalLang, text: pickFresh(finalIntent.responses[tier]) };
+      return { lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
     }
   }
 
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
-    return { lang: replyLang, text: openEndedReply };
+    return { lang: replyLang, matchType: "open_ended", text: openEndedReply };
   }
 
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
-    return { lang: replyLang, text: pickFresh(fuzzyHit.responses[tier]) };
+    return { lang: replyLang, matchType: `fuzzy:${fuzzyHit.category}`, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
+  // Fallback Zone (logged as "fallback" in PostHog so you can spot new topics to add!)
   const fallbackRoll = Math.random();
   if (!isRegen && fallbackRoll < rates.gag + 0.10) {
-    return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
+    return { lang: replyLang, matchType: "fallback_gag", text: pickFresh(langPack.theatrical_gags) };
   }
   if (fallbackRoll < rates.gag + rates.hijack + 0.18) {
-    return { lang: replyLang, text: pickFresh(langPack.hijacks) };
+    return { lang: replyLang, matchType: "fallback_hijack", text: pickFresh(langPack.hijacks) };
   }
 
-  return { lang: replyLang, text: buildCombinatorReply(langPack.combinator, tier) };
+  return { lang: replyLang, matchType: "fallback_combinator", text: buildCombinatorReply(langPack.combinator, tier) };
 }
 
 function checkSmartQA(rawInput, clean, tier, lang) {
@@ -946,6 +960,15 @@ async function handleSend(overrideText = null) {
   const selectedLang = langSelect.value;
   const reply = getBotReply(text, tier, selectedLang);
 
+  // Send anonymous event to PostHog (flags "fallback_*" so you can see missed prompts)
+  trackEvent("prompt_sent", {
+    prompt_preview: text.slice(0, 120),
+    match_type: reply.matchType || "unknown",
+    is_missed_question: String(reply.matchType || "").startsWith("fallback"),
+    lang: reply.lang,
+    tier
+  });
+
   const botMsgEntry = {
     role: "bot",
     text: reply.text,
@@ -1007,6 +1030,8 @@ function handlePhotoUpload(event) {
 
     const tier = modelSelect.value;
     const lang = langSelect.value;
+    trackEvent("photo_uploaded", { lang, tier });
+
     const roastText = db
       ? pickFresh(db.languages[lang].photo_roasts[tier])
       : "I refuse to look at that.";
@@ -1233,6 +1258,7 @@ function attachActionBar(contentBox, textEl, state) {
       tmp.remove();
     }
     showToast(fb.copyToast);
+    trackEvent("reply_copied", { lang: state.lang });
   });
 
   const speakBtn = document.createElement("button");
@@ -1261,6 +1287,7 @@ function attachActionBar(contentBox, textEl, state) {
     dislikeBtn.classList.remove("text-rose-500", "dark:text-rose-400");
     noteEl.textContent = `ChatNVM: "${pickFresh(fb.like)}"`;
     noteEl.classList.remove("hidden");
+    trackEvent("roast_rated", { rating: "up", lang: state.lang });
     scrollToBottom();
   });
 
@@ -1269,6 +1296,7 @@ function attachActionBar(contentBox, textEl, state) {
     likeBtn.classList.remove("text-blue-600", "dark:text-blue-400");
     noteEl.textContent = `ChatNVM: "${pickFresh(fb.dislike)}"`;
     noteEl.classList.remove("hidden");
+    trackEvent("roast_rated", { rating: "down", lang: state.lang });
     scrollToBottom();
   });
 
@@ -1286,6 +1314,7 @@ function attachActionBar(contentBox, textEl, state) {
     if (regenCount > 2 || Math.random() < 0.55) {
       noteEl.textContent = `ChatNVM: "${pickFresh(fb.regenRefuse)}"`;
       noteEl.classList.remove("hidden");
+      trackEvent("regenerate_clicked", { refused: true, lang: state.lang });
       scrollToBottom();
       return;
     }
@@ -1305,6 +1334,7 @@ function attachActionBar(contentBox, textEl, state) {
 
     state.replyText = freshText;
     updateStoredBotMessage(state.sessionId, state.msgIndex, freshText);
+    trackEvent("regenerate_clicked", { refused: false, lang: state.lang });
 
     isGenerating = false;
     sendBtn.disabled = false;
@@ -1316,6 +1346,7 @@ function attachActionBar(contentBox, textEl, state) {
   shareBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>${escapeHtml(fb.cardBtn)}</span>`;
 
   shareBtn.addEventListener("click", () => {
+    trackEvent("roast_card_shared", { lang: state.lang, tier: state.tier });
     generateAndShareRoastCard(state.prompt, state.replyText, state.tier, fb.cardToast);
   });
 
@@ -1582,6 +1613,7 @@ function bindEvents() {
   langSelect.addEventListener("change", () => {
     localStorage.setItem(LANG_STORAGE_KEY, langSelect.value);
     applyLanguageUI(langSelect.value);
+    trackEvent("language_changed", { lang: langSelect.value });
   });
 
   themeToggleBtn.addEventListener("click", toggleTheme);
