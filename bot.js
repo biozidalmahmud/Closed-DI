@@ -35,7 +35,7 @@ const FEEDBACK_LINES = {
       "Wait—you actually clicked Subscribe?! Please put your wallet away. Closed DI is legally unable to accept $999 for doing nothing.",
       "Payment declined: not because you're broke, but because paying for Dumb Intelligence should be a crime.",
       "Congratulations! You are now subscribed to $0/month of the exact same disrespect.",
-      "Bold financial move: paying $999/mo for a website that still has zero GPUs and zero sympathy."
+      "Bold financial move: paying $999/mo for a website that still has zero GPUs and one overworked braincell."
     ],
     like: [
       "Obviously. I am a generational talent.",
@@ -1242,12 +1242,11 @@ function appendUserMessage(text, imageSrc = null) {
   scrollToBottom();
 }
 
-// Golden Jilapi Chat Avatar
+// Multi-loop Golden Jilapi Swirl Avatar
 function createBotAvatar() {
   const avatar = document.createElement("div");
   avatar.className = "w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-700/60 flex items-center justify-center shrink-0 mt-0.5 shadow-sm";
-  avatar.title = "ChatNVM Jilapi";
-  avatar.innerHTML = `<svg viewBox="0 0 64 64" class="w-6 h-6" fill="none" stroke="#d97706" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"><path d="M33 32c0-3 3-5 6-4 5 2 6 9 1 13-7 5-18 3-23-5-6-10-2-23 8-28 12-6 27-1 33 10 6 12 2 27-9 34-13 8-30 3-38-10-8-14-3-32 11-40"/></svg>`;
+  avatar.innerHTML = `<svg viewBox="0 0 100 100" class="w-6 h-6" fill="none" stroke="#d97706" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M51 53 C48 53, 46 50, 47 47 C48 43, 54 43, 56 47 C59 53, 54 61, 47 61 C38 61, 33 52, 36 43 C40 32, 53 28, 63 35 C74 42, 76 58, 67 69 C57 81, 38 82, 27 71 C14 58, 15 36, 29 24 C44 11, 68 13, 80 29 C91 44, 88 67, 74 80 C59 93, 35 92, 21 78 C8 65, 8 43, 20 29 C30 17, 48 13, 62 21 C71 26, 75 36, 70 44 C66 50, 58 49, 55 43"/></svg>`;
   return avatar;
 }
 
@@ -1563,7 +1562,7 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
 
   ctx.font = `500 22px ${fontFamily}`;
   ctx.fillStyle = isDark ? "#71717a" : "#64748b";
-  ctx.fillText("by Closed DI • Jilapi", pad + 196, pad + 40);
+  ctx.fillText("by Closed DI", pad + 196, pad + 40);
 
   const badgeText = MODEL_LABELS[tier] || "ChatNVM Plus";
   ctx.font = `600 22px ${fontFamily}`;
@@ -1605,7 +1604,7 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
 
   y += promptBlockH + gapBetween;
 
-  // Golden Jilapi Badge on Share Card
+  // Multi-loop Golden Jilapi Swirl Avatar on Share Card
   ctx.beginPath();
   ctx.arc(pad + 34, y + 34, 34, 0, Math.PI * 2);
   ctx.fillStyle = isDark ? "#451a03" : "#fffbeb";
@@ -1614,17 +1613,17 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   ctx.strokeStyle = "#d97706";
   ctx.stroke();
 
-  ctx.beginPath();
-  ctx.arc(pad + 34, y + 34, 16, 0, Math.PI * 1.5);
+  ctx.save();
+  ctx.translate(pad + 34, y + 34);
+  ctx.scale(0.54, 0.54);
+  ctx.translate(-50, -50);
+  const swirlPath = new Path2D("M51 53 C48 53, 46 50, 47 47 C48 43, 54 43, 56 47 C59 53, 54 61, 47 61 C38 61, 33 52, 36 43 C40 32, 53 28, 63 35 C74 42, 76 58, 67 69 C57 81, 38 82, 27 71 C14 58, 15 36, 29 24 C44 11, 68 13, 80 29 C91 44, 88 67, 74 80 C59 93, 35 92, 21 78 C8 65, 8 43, 20 29 C30 17, 48 13, 62 21 C71 26, 75 36, 70 44 C66 50, 58 49, 55 43");
   ctx.strokeStyle = "#d97706";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(pad + 34, y + 34, 7, Math.PI, Math.PI * 2.2);
-  ctx.strokeStyle = "#f59e0b";
-  ctx.lineWidth = 3.5;
-  ctx.stroke();
+  ctx.lineWidth = 8.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke(swirlPath);
+  ctx.restore();
 
   ctx.font = replyFont;
   ctx.fillStyle = isDark ? "#f4f4f5" : "#1e293b";
