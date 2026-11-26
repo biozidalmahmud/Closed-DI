@@ -24,6 +24,24 @@ const CHAOS_RATES = {
   max:  { gag: 0.14, hijack: 0.18, ragebait: 0.20 }
 };
 
+const RESEARCH_STEPS = {
+  en: [
+    "Searching 14,000 Dhaka tea stalls for peer-reviewed truth...",
+    "Consulting 0 peer-reviewed papers and 1 overconfident braincell...",
+    "Cross-referencing vibes with rickshaw drivers..."
+  ],
+  banglish: [
+    "14,000 ta Dhaka-r chayer dokan ghure 'research' korchi...",
+    "0 ta peer-reviewed paper ar 1 ta braincell diye data milacchi...",
+    "Goli-r tapori ar rickshaw mama-der motamot nischi..."
+  ],
+  bn: [
+    "১৪,০০০টা চায়ের দোকানে 'গভীর গবেষণা' চালানো হচ্ছে...",
+    "০টা পিয়ার-রিভিউড পেপার আর ১টা ব্রেইনসেল দিয়ে তথ্য যাচাই করছি...",
+    "রিকশাওয়ালা আর গলির আড্ডার সূত্র যাচাই করছি..."
+  ]
+};
+
 const FEEDBACK_LINES = {
   en: {
     copyToast: "Copied! Go ruin someone's group chat.",
@@ -145,6 +163,8 @@ let lastBotWasRageBait = false;
 let didLateNightRoast = false;
 let toastTimer = null;
 let activeSpeakBtn = null;
+let patienceLevel = 100;
+let isDeepResearchMode = false;
 
 // --- PAGE ELEMENTS ---
 const sidebar = document.getElementById("sidebar");
@@ -158,6 +178,9 @@ const upgradeModal = document.getElementById("upgrade-modal");
 const closeUpgradeBtn = document.getElementById("close-upgrade-btn");
 const fakeSubscribeBtn = document.getElementById("fake-subscribe-btn");
 const upgradeRoastBox = document.getElementById("upgrade-roast-box");
+const patienceBarEl = document.getElementById("patience-bar");
+const patiencePercentEl = document.getElementById("patience-percent");
+const patienceLabelEl = document.getElementById("patience-label");
 const chatContainer = document.getElementById("chat-container");
 const welcomeScreen = document.getElementById("welcome-screen");
 const welcomeTitle = document.getElementById("welcome-title");
@@ -170,6 +193,7 @@ const sendBtn = document.getElementById("send-btn");
 const modelSelect = document.getElementById("model-select");
 const langSelect = document.getElementById("lang-select");
 const uploadBtn = document.getElementById("upload-btn");
+const researchToggleBtn = document.getElementById("research-toggle-btn");
 const imageUpload = document.getElementById("image-upload");
 const newChatBtn = document.getElementById("new-chat-btn");
 
@@ -179,6 +203,8 @@ async function init() {
   if (savedLang && ["en", "banglish", "bn"].includes(savedLang)) {
     langSelect.value = savedLang;
   }
+
+  updatePatienceUI();
 
   try {
     const res = await fetch(`db.json?v=${DB_VERSION}`);
@@ -205,6 +231,41 @@ async function init() {
 
   loadAllSessions();
   bindEvents();
+}
+
+// --- PATIENCE BAR & RESEARCH TOGGLE ---
+function updatePatienceUI(customLabel = null) {
+  if (!patienceBarEl || !patiencePercentEl) return;
+  const clamped = Math.max(0, Math.min(100, patienceLevel));
+  patienceBarEl.style.width = `${clamped}%`;
+  patiencePercentEl.textContent = `${clamped}%`;
+
+  if (customLabel && patienceLabelEl) {
+    patienceLabelEl.textContent = customLabel;
+  } else if (patienceLabelEl) {
+    patienceLabelEl.textContent = clamped <= 20 ? "Low Patience" : "Patience";
+  }
+
+  if (clamped <= 20) {
+    patienceBarEl.className = "h-full bg-gradient-to-r from-rose-600 to-red-500 transition-all duration-300";
+  } else if (clamped <= 50) {
+    patienceBarEl.className = "h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-300";
+  } else {
+    patienceBarEl.className = "h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300";
+  }
+}
+
+function toggleDeepResearchMode() {
+  isDeepResearchMode = !isDeepResearchMode;
+  if (researchToggleBtn) {
+    researchToggleBtn.setAttribute("aria-pressed", String(isDeepResearchMode));
+    if (isDeepResearchMode) {
+      researchToggleBtn.classList.add("bg-amber-100", "dark:bg-amber-950/70", "border-amber-400", "text-amber-900", "dark:text-amber-200");
+    } else {
+      researchToggleBtn.classList.remove("bg-amber-100", "dark:bg-amber-950/70", "border-amber-400", "text-amber-900", "dark:text-amber-200");
+    }
+  }
+  trackEvent("deep_research_toggled", { enabled: isDeepResearchMode });
 }
 
 // --- 2. THEME, SIDEBAR & UPGRADE MODAL CONTROLS ---
@@ -468,6 +529,8 @@ function startNewChat() {
   sessionMsgCount = 0;
   lastUserPrompt = "";
   lastBotWasRageBait = false;
+  patienceLevel = 100;
+  updatePatienceUI();
   messagesList.innerHTML = "";
   welcomeScreen.classList.remove("hidden");
   renderSidebarList();
@@ -553,6 +616,68 @@ function normalizeText(rawInput) {
   return s.replace(/\s+/g, " ").trim();
 }
 
+// --- RIGGED MINI-GAMES ENGINE ---
+function checkRiggedMiniGames(clean, lang) {
+  // 1. Coin Toss
+  if (/\b(toss a coin|flip a coin|coin toss|coin flip|head or tail|heads or tails|coin)\b/i.test(clean)) {
+    const replies = {
+      en: [
+        "I tossed the coin. It landed on its edge, looked at your search history, and walked away. You lose.",
+        "Tails—meaning you lose the argument and still owe me a favor."
+      ],
+      banglish: [
+        "Coin toss korlam—tails porlo, ar apnar kopal-o tails-i porlo. Abar chesta kore lav nai.",
+        "Coin ta haway urailam, kintu nijer bhaggo dekhe coin-ta-i har mani dilo."
+      ],
+      bn: [
+        "কয়েন টস করলাম—টেলস পড়ল, আর আপনার কপালেও টেলসই পড়ল। আরেকবার চেষ্টা করে লাভ নেই।",
+        "কয়েনটা আকাশে উড়িয়েছিলাম, কিন্তু নিজের ভাগ্য দেখে কয়েনটাই হেরে গেল।"
+      ]
+    };
+    return { matchType: "minigame_coin", text: pickFresh(replies[lang] || replies.banglish) };
+  }
+
+  // 2. Truth or Dare
+  if (/\b(truth or dare|truth dare|truth|dare)\b/i.test(clean)) {
+    const replies = {
+      en: [
+        "Dare: close this browser tab, open your notes, and do 15 minutes of actual work without checking your phone.",
+        "Truth: you opened ChatNVM only because you were procrastinating on something important."
+      ],
+      banglish: [
+        "Dare: phone ta 20 minute-er jonno drawer-e rekhe darun, parben na—ami jani.",
+        "Truth: apni kono boro kaj erai chatnvm khulsen, ar nijer sathe mittha bolchen."
+      ],
+      bn: [
+        "ডেয়ার: ফোনটা ২০ মিনিটের জন্য দূরে রেখে দরকারি কোনো কাজ করুন—পারবেন না, আমি জানি।",
+        "ট্রুথ: আপনি কোনো দরকারি কাজ এড়াতেই ChatNVM খুলেছেন, আর নিজের সাথে লুকোচুরি খেলছেন।"
+      ]
+    };
+    return { matchType: "minigame_truth_dare", text: pickFresh(replies[lang] || replies.banglish) };
+  }
+
+  // 3. Predict My CGPA
+  if (/\b(predict my cgpa|my cgpa|cgpa prediction|what will my cgpa|cgpa koto|cgpa hobe)\b/i.test(clean) || /সিজিপিএ.*(কত|হবে|ভবিষ্যৎ)/.test(clean)) {
+    const replies = {
+      en: [
+        "Predicted CGPA: 2.14 — heavily carried by one mercy mark and sheer panic before finals.",
+        "My prediction: high enough to stay enrolled, low enough to make family dinners awkward."
+      ],
+      banglish: [
+        "Predicted CGPA: 2.19—final exam-er ag raate 2 cup cha ar duar jore tikse.",
+        "Amar prediction: pass kore jaben mama, kintu basay result bolte gele golpo banate hobe."
+      ],
+      bn: [
+        "প্রেডিক্টেড সিজিপিএ: ২.১৯—পরীক্ষার আগের রাতের আতঙ্ক আর দোয়ার জোরে কোনোমতে টিকে যাবে।",
+        "আমার ভবিষ্যদ্বাণী: পাস করে যাবেন, তবে বাসায় রেজাল্ট বলার সময় কথা ঘোরানোর প্রস্তুতি রাখুন।"
+      ]
+    };
+    return { matchType: "minigame_cgpa", text: pickFresh(replies[lang] || replies.banglish) };
+  }
+
+  return null;
+}
+
 // --- 7. CORE COMEDY, RAGE-BAIT & SMART Q&A ENGINE ---
 function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const clean = normalizeText(rawInput);
@@ -576,6 +701,13 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   if (!isRegen) sessionMsgCount++;
   const langPack = db.languages[replyLang];
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
+
+  // Rigged Mini-Games
+  const gameReply = checkRiggedMiniGames(clean, replyLang);
+  if (gameReply) {
+    lastBotWasRageBait = false;
+    return { lang: replyLang, matchType: gameReply.matchType, text: gameReply.text };
+  }
 
   if (/^(na nai|na\s+nai|gali dei nai|gali di nai|gali dichi na)$/i.test(clean)) {
     lastBotWasRageBait = false;
@@ -1082,7 +1214,7 @@ function buildCombinatorReply(comb, tier) {
   return `${opener}\n\n${middle}\n\n${closer}`;
 }
 
-// --- 8. SEND MESSAGE FLOW ---
+// --- 8. SEND MESSAGE FLOW + PATIENCE & TEA BREAK ---
 async function handleSend(overrideText = null) {
   if (isGenerating) return;
 
@@ -1099,16 +1231,27 @@ async function handleSend(overrideText = null) {
   appendUserMessage(text);
   saveMessageToActiveSession({ role: "user", text }, text);
 
+  patienceLevel = Math.max(0, patienceLevel - 20);
+  updatePatienceUI();
+
   const tier = modelSelect.value;
   const selectedLang = langSelect.value;
   const reply = getBotReply(text, tier, selectedLang);
+
+  if (isDeepResearchMode && !reply.isSafety) {
+    const steps = RESEARCH_STEPS[reply.lang] || RESEARCH_STEPS.en;
+    const researchNote = pickFresh(steps);
+    reply.text = `[Research Note: ${researchNote}]\n\n${reply.text}`;
+  }
 
   trackEvent("prompt_sent", {
     prompt_preview: text.slice(0, 120),
     match_type: reply.matchType || "unknown",
     is_missed_question: String(reply.matchType || "").startsWith("fallback"),
     lang: reply.lang,
-    tier
+    tier,
+    deep_research: isDeepResearchMode,
+    patience_after: patienceLevel
   });
 
   const botMsgEntry = {
@@ -1134,10 +1277,17 @@ async function handleSend(overrideText = null) {
   let finalVisibleText = reply.text;
   if (reply.isSafety) {
     finalVisibleText = await renderBotResponse(reply, 0, "Support", meta);
+  } else if (patienceLevel === 0) {
+    await runTeaBreakCountdown(reply.lang);
+    finalVisibleText = await renderBotResponse(reply, 900, "Back from tea break...", meta);
+    patienceLevel = 100;
+    updatePatienceUI();
   } else {
     const baseDelay = MODEL_DELAYS[tier] || 1500;
-    const variableDelay = baseDelay + Math.min(text.length * 10, 1400);
-    const thinkLabel = pickFresh(db.ui[reply.lang].thinking[tier]);
+    const variableDelay = baseDelay + Math.min(text.length * 10, 1400) + (isDeepResearchMode ? 1200 : 0);
+    const thinkLabel = isDeepResearchMode
+      ? pickFresh(RESEARCH_STEPS[reply.lang] || RESEARCH_STEPS.en)
+      : pickFresh(db.ui[reply.lang].thinking[tier]);
     finalVisibleText = await renderBotResponse(reply, variableDelay, thinkLabel, meta);
   }
 
@@ -1146,6 +1296,36 @@ async function handleSend(overrideText = null) {
   isGenerating = false;
   sendBtn.disabled = false;
   userInput.focus();
+}
+
+async function runTeaBreakCountdown(lang) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex items-start gap-3";
+
+  const avatar = createBotAvatar();
+  const contentBox = document.createElement("div");
+  contentBox.className = "flex-1 min-w-0 pt-1";
+
+  const statusEl = document.createElement("div");
+  statusEl.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-700/60 text-xs md:text-sm text-amber-900 dark:text-amber-200 font-medium";
+  contentBox.appendChild(statusEl);
+  wrapper.append(avatar, contentBox);
+  messagesList.appendChild(wrapper);
+  scrollToBottom();
+
+  for (let sec = 10; sec >= 1; sec--) {
+    updatePatienceUI(`Tea Break (${sec}s)`);
+    if (lang === "bn") {
+      statusEl.textContent = `০% ধৈর্য — চা বিরতি চলছে (${sec}s)...`;
+    } else if (lang === "banglish") {
+      statusEl.textContent = `0% patience — cha break cholche (${sec}s)...`;
+    } else {
+      statusEl.textContent = `0% patience — on a tea break (${sec}s)...`;
+    }
+    await sleep(1000);
+  }
+
+  wrapper.remove();
 }
 
 function updateStoredBotMessage(sessionId, msgIndex, newText) {
@@ -1780,6 +1960,10 @@ function bindEvents() {
 
   uploadBtn.addEventListener("click", () => imageUpload.click());
   imageUpload.addEventListener("change", handlePhotoUpload);
+
+  if (researchToggleBtn) {
+    researchToggleBtn.addEventListener("click", toggleDeepResearchMode);
+  }
 
   newChatBtn.addEventListener("click", startNewChat);
 
