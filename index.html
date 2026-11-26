@@ -95,7 +95,7 @@
         <div id="chat-list" class="space-y-1 text-sm"></div>
       </div>
 
-      <!-- Fake Upgrade Plan Button + Footer -->
+      <!-- Fake Upgrade Plan Button + Patience Bar + Footer -->
       <div class="pt-3 border-t border-slate-200 dark:border-zinc-800 space-y-3">
         <button id="upgrade-plan-btn" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white text-xs font-semibold shadow-sm transition cursor-pointer">
           <span class="flex items-center gap-2">
@@ -107,11 +107,23 @@
           <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/20">$999</span>
         </button>
 
-        <div class="text-xs text-zinc-500 px-2 space-y-1">
+        <div class="text-xs text-zinc-500 px-2 space-y-2">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             <span>0 GPUs • 1 Braincell</span>
           </div>
+
+          <!-- Patience / Roast Meter -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-[11px]">
+              <span id="patience-label" class="text-zinc-500 dark:text-zinc-400 font-medium">Patience</span>
+              <span id="patience-percent" class="font-semibold text-amber-600 dark:text-amber-400">100%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
+              <div id="patience-bar" class="h-full w-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"></div>
+            </div>
+          </div>
+
           <p class="text-[11px] text-zinc-400 dark:text-zinc-600">© Closed DI Research Lab</p>
         </div>
       </div>
@@ -206,6 +218,15 @@
               </svg>
             </button>
 
+            <!-- Fake Deep Research Toggle Button -->
+            <button id="research-toggle-btn" type="button" aria-pressed="false" title="Toggle Fake Deep Research Mode" class="px-2.5 py-2 rounded-full text-xs font-semibold border border-slate-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:border-amber-300 dark:hover:border-amber-700 transition shrink-0 flex items-center gap-1 cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="7" />
+                <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
+              </svg>
+              <span class="hidden sm:inline">Research</span>
+            </button>
+
             <textarea
               id="user-input"
               rows="1"
@@ -265,6 +286,6 @@
     </div>
   </div>
 
-  <script src="bot.js?v=5.2"></script>
+  <script src="bot.js?v=5.3"></script>
 </body>
 </html>
