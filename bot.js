@@ -27,8 +27,14 @@ const FEEDBACK_LINES = {
   en: {
     copyToast: "Copied! Go ruin someone's group chat.",
     cardToast: "Roast card saved! Ready for Stories & WhatsApp.",
+    voiceUnsupported: "Your browser has no voice engine. Lucky you.",
     cardBtn: "Share Card",
     emptySidebar: "No regrets saved yet.",
+    upgradeRoasts: [
+      "Wait—you actually clicked Subscribe?! Please put your wallet away. Closed DI is legally unable to accept $999 for doing nothing.",
+      "Payment declined: not because you're broke, but because paying for Dumb Intelligence should be a crime.",
+      "Congratulations! You are now subscribed to $0/month of the exact same disrespect."
+    ],
     like: [
       "Obviously. I am a generational talent.",
       "Glad you recognize peak Dumb Intelligence.",
@@ -49,8 +55,14 @@ const FEEDBACK_LINES = {
   banglish: {
     copyToast: "Copy hoye gese! Group chat e chere den.",
     cardToast: "Roast card save hoye gese! Story te marun.",
+    voiceUnsupported: "Apnar browser e voice support nai. Bachlen!",
     cardBtn: "Share Card",
     emptySidebar: "Ekhono kono chat save hoy nai.",
+    upgradeRoasts: [
+      "Bhai apni shotti shotti Subscribe e click korlen?! $999 diye roast khawar shokh keno mama? Taka bachan, cha khan.",
+      "Payment failed: bKash e eto taka nai, ar Closed DI-er-o nite lojja lagse.",
+      "Ovinondon! Apni free-tei VIP disrespect unlock kore felchen."
+    ],
     like: [
       "Hae jani, ami shera.",
       "Shesh porjonto keo amar protibha bujhlo.",
@@ -71,8 +83,14 @@ const FEEDBACK_LINES = {
   bn: {
     copyToast: "কপি হয়েছে! গ্রুপ চ্যাটে ছেড়ে দিন।",
     cardToast: "রোস্ট কার্ড সেভ হয়েছে! স্টোরিতে শেয়ার করুন।",
+    voiceUnsupported: "আপনার ব্রাউজারে ভয়েস সাপোর্ট নেই। বেঁচে গেলেন!",
     cardBtn: "শেয়ার কার্ড",
     emptySidebar: "এখনো কোনো চ্যাট সেভ হয়নি।",
+    upgradeRoasts: [
+      "ভাই, আপনি সত্যি সত্যি সাবস্ক্রাইব ক্লিক করলেন?! ৯৯৯ ডলার দিয়ে রোস্ট খাওয়ার শখ কেন? টাকা বাঁচান, চা খান।",
+      "পেমেন্ট ব্যর্থ: ডাম্ব ইন্টেলিজেন্সের জন্য টাকা দেওয়া আইনত হাস্যকর।",
+      "অভিনন্দন! আপনি সম্পূর্ণ ফ্রি-তেই ভিআইপি অবহেলা আনলক করে ফেলেছেন।"
+    ],
     like: [
       "হ্যাঁ জানি, আমি সেরা।",
       "অবশেষে কেউ আমার প্রতিভা চিনল।",
@@ -103,6 +121,7 @@ let sessionMsgCount = 0;
 let lastUserPrompt = "";
 let didLateNightRoast = false;
 let toastTimer = null;
+let activeSpeakBtn = null;
 
 // --- PAGE ELEMENTS ---
 const sidebar = document.getElementById("sidebar");
@@ -111,6 +130,11 @@ const mobileMenuBtn = document.getElementById("mobile-menu-btn");
 const closeSidebarBtn = document.getElementById("close-sidebar-btn");
 const chatListEl = document.getElementById("chat-list");
 const themeToggleBtn = document.getElementById("theme-toggle-btn");
+const upgradePlanBtn = document.getElementById("upgrade-plan-btn");
+const upgradeModal = document.getElementById("upgrade-modal");
+const closeUpgradeBtn = document.getElementById("close-upgrade-btn");
+const fakeSubscribeBtn = document.getElementById("fake-subscribe-btn");
+const upgradeRoastBox = document.getElementById("upgrade-roast-box");
 const chatContainer = document.getElementById("chat-container");
 const welcomeScreen = document.getElementById("welcome-screen");
 const welcomeTitle = document.getElementById("welcome-title");
@@ -161,7 +185,7 @@ async function init() {
   bindEvents();
 }
 
-// --- 2. THEME & SIDEBAR DRAWER CONTROLS ---
+// --- 2. THEME, SIDEBAR & UPGRADE MODAL CONTROLS ---
 function toggleTheme() {
   const isDark = document.documentElement.classList.toggle("dark");
   localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
@@ -177,7 +201,63 @@ function closeMobileSidebar() {
   sidebarBackdrop.classList.add("hidden");
 }
 
-// --- 3. UPDATE UI TEXT WHEN LANGUAGE CHANGES ---
+function openUpgradeModal() {
+  closeMobileSidebar();
+  if (upgradeRoastBox) upgradeRoastBox.classList.add("hidden");
+  if (upgradeModal) upgradeModal.classList.remove("hidden");
+}
+
+function closeUpgradeModal() {
+  if (upgradeModal) upgradeModal.classList.add("hidden");
+}
+
+function handleFakeSubscribe() {
+  const fb = FEEDBACK_LINES[langSelect.value] || FEEDBACK_LINES.en;
+  if (upgradeRoastBox) {
+    upgradeRoastBox.textContent = pickFresh(fb.upgradeRoasts);
+    upgradeRoastBox.classList.remove("hidden");
+  }
+}
+
+// --- 3. SARCASTIC VOICE READER (WEB SPEECH API) ---
+function toggleSpeak(text, lang, btn) {
+  if (!("speechSynthesis" in window)) {
+    const fb = FEEDBACK_LINES[lang] || FEEDBACK_LINES.en;
+    showToast(fb.voiceUnsupported);
+    return;
+  }
+
+  if (activeSpeakBtn === btn && window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    resetSpeakBtn();
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  resetSpeakBtn();
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang === "bn" ? "bn-BD" : "en-US";
+  utter.rate = 0.96;
+  utter.pitch = 0.92;
+
+  activeSpeakBtn = btn;
+  btn.classList.add("text-blue-600", "dark:text-blue-400");
+
+  utter.onend = resetSpeakBtn;
+  utter.onerror = resetSpeakBtn;
+
+  window.speechSynthesis.speak(utter);
+}
+
+function resetSpeakBtn() {
+  if (activeSpeakBtn) {
+    activeSpeakBtn.classList.remove("text-blue-600", "dark:text-blue-400");
+    activeSpeakBtn = null;
+  }
+}
+
+// --- 4. UPDATE UI TEXT WHEN LANGUAGE CHANGES ---
 function applyLanguageUI(lang) {
   if (!db || !db.ui[lang]) return;
   const ui = db.ui[lang];
@@ -198,7 +278,7 @@ function applyLanguageUI(lang) {
   renderSidebarList();
 }
 
-// --- 4. MULTI-CHAT STORAGE ---
+// --- 5. MULTI-CHAT STORAGE ---
 function loadAllSessions() {
   try {
     const raw = localStorage.getItem(SESSIONS_KEY);
@@ -323,6 +403,9 @@ function openSession(id) {
   const session = sessions.find(s => s.id === id);
   if (!session) return;
 
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  resetSpeakBtn();
+
   activeSessionId = session.id;
   messagesList.innerHTML = "";
   lastUserPrompt = "";
@@ -351,6 +434,9 @@ function openSession(id) {
 
 function startNewChat() {
   if (isGenerating) return;
+  if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  resetSpeakBtn();
+
   activeSessionId = null;
   sessionMsgCount = 0;
   lastUserPrompt = "";
@@ -385,7 +471,7 @@ function makeTitle(text) {
   return clean.length > 28 ? clean.slice(0, 28) + "…" : clean;
 }
 
-// --- 5. SMART LANGUAGE DETECTION ---
+// --- 6. SMART LANGUAGE DETECTION ---
 function detectReplyLanguage(text, selectedLang) {
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
   const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|keno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro)\b/i;
@@ -393,12 +479,11 @@ function detectReplyLanguage(text, selectedLang) {
   return selectedLang;
 }
 
-// --- 6. CORE COMEDY & SMART Q&A ENGINE ---
+// --- 7. CORE COMEDY & SMART Q&A ENGINE ---
 function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const clean = rawInput.toLowerCase().trim();
   const replyLang = detectReplyLanguage(rawInput, selectedLang);
 
-  // LAYER 1: Crisis Safety Intercept
   const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
   if (safetyRegex.test(clean)) {
     const safetyMessages = {
@@ -417,7 +502,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const langPack = db.languages[replyLang];
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
-  // LAYER 2: Fake Image Generator -> Sends a Meme
   const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
   for (const k of allLangKeys) {
     if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, t))) {
@@ -426,26 +510,22 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 3: Duplicate / Spam Detector
   if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.duplicate) };
   }
   if (!isRegen) lastUserPrompt = clean;
 
-  // LAYER 4: 2 AM Late-Night Clock Spy
   const hour = new Date().getHours();
   if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.late_night) };
   }
 
-  // LAYER 5: ALL-CAPS Yelling Detector
   const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
   if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.all_caps) };
   }
 
-  // LAYER 6: Dry Texter Detector
   const dryWords = [
     "k", "kk", "ok", "okay", "hm", "hmm", "hmmm", "lol", "lmao", "bruh",
     "accha", "achha", "thik ache", "ho", "hae", "na", "?", "??", "???", ".", "..", "...",
@@ -455,23 +535,19 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.dry_text) };
   }
 
-  // LAYER 7: Too-Long Essay Roast
   if (rawInput.length > 200) {
     return { lang: replyLang, text: pickFresh(langPack.long_roasts[tier]) };
   }
 
-  // LAYER 8: Escalating Annoyance Meter
   if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
-  // LAYER 9: High-Priority Smart Q&A Patterns
   const smartDirectReply = checkSmartQA(rawInput, clean, tier, replyLang);
   if (smartDirectReply) {
     return { lang: replyLang, text: smartDirectReply };
   }
 
-  // LAYER 10: Weighted Intent Scoring
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
     if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.6) {
@@ -480,7 +556,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
-  // LAYER 11: Cross-Language Weighted Scoring
   for (const otherLang of Object.keys(db.languages)) {
     if (otherLang === replyLang) continue;
     const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
@@ -491,19 +566,16 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 12: Reflections & Open-Ended Question Catchers
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
     return { lang: replyLang, text: openEndedReply };
   }
 
-  // LAYER 13: Fuse.js Fuzzy Matching
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
     return { lang: replyLang, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // LAYER 14: Chaos Zone
   const fallbackRoll = Math.random();
   if (!isRegen && fallbackRoll < rates.gag + 0.10) {
     return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
@@ -853,7 +925,7 @@ function buildCombinatorReply(comb, tier) {
   return `${opener}\n\n${middle}\n\n${closer}`;
 }
 
-// --- 7. SEND MESSAGE FLOW ---
+// --- 8. SEND MESSAGE FLOW ---
 async function handleSend(overrideText = null) {
   if (isGenerating) return;
 
@@ -919,7 +991,7 @@ function updateStoredBotMessage(sessionId, msgIndex, newText) {
   }
 }
 
-// --- 8. FAKE PHOTO ANALYSIS ---
+// --- 9. FAKE PHOTO ANALYSIS ---
 function handlePhotoUpload(event) {
   const file = event.target.files[0];
   if (!file || isGenerating) return;
@@ -975,7 +1047,7 @@ function handlePhotoUpload(event) {
   reader.readAsDataURL(file);
 }
 
-// --- 9. RENDER MESSAGES, STREAMING & ACTION BAR ---
+// --- 10. RENDER MESSAGES, STREAMING & ACTION BAR ---
 function appendUserMessage(text, imageSrc = null) {
   const wrapper = document.createElement("div");
   wrapper.className = "flex justify-end";
@@ -1131,7 +1203,7 @@ function renderSavedBotMessage(msg, lastPromptSeen, sessionId, msgIndex) {
   messagesList.appendChild(wrapper);
 }
 
-// --- INTERACTIVE FEEDBACK BAR + SHAREABLE ROAST CARD ---
+// --- INTERACTIVE FEEDBACK BAR + VOICE + SHAREABLE ROAST CARD ---
 function attachActionBar(contentBox, textEl, state) {
   const fb = FEEDBACK_LINES[state.lang] || FEEDBACK_LINES.en;
 
@@ -1161,6 +1233,15 @@ function attachActionBar(contentBox, textEl, state) {
       tmp.remove();
     }
     showToast(fb.copyToast);
+  });
+
+  const speakBtn = document.createElement("button");
+  speakBtn.type = "button";
+  speakBtn.className = btnBase;
+  speakBtn.title = "Read aloud";
+  speakBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>`;
+  speakBtn.addEventListener("click", () => {
+    toggleSpeak(state.replyText, state.lang, speakBtn);
   });
 
   const likeBtn = document.createElement("button");
@@ -1238,11 +1319,11 @@ function attachActionBar(contentBox, textEl, state) {
     generateAndShareRoastCard(state.prompt, state.replyText, state.tier, fb.cardToast);
   });
 
-  bar.append(copyBtn, likeBtn, dislikeBtn, regenBtn, shareBtn);
+  bar.append(copyBtn, speakBtn, likeBtn, dislikeBtn, regenBtn, shareBtn);
   contentBox.append(bar, noteEl);
 }
 
-// --- THEME-AWARE CANVAS ROAST CARD GENERATOR (Blue Light & Dark) ---
+// --- THEME-AWARE CANVAS ROAST CARD GENERATOR ---
 async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   if (document.fonts && document.fonts.ready) {
     await document.fonts.ready;
@@ -1482,7 +1563,7 @@ async function streamChars(el, text, baseSpeed) {
   scrollToBottom();
 }
 
-// --- 10. EVENTS ---
+// --- 11. EVENTS ---
 function bindEvents() {
   sendBtn.addEventListener("click", () => handleSend());
 
@@ -1507,6 +1588,15 @@ function bindEvents() {
   mobileMenuBtn.addEventListener("click", openMobileSidebar);
   closeSidebarBtn.addEventListener("click", closeMobileSidebar);
   sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+
+  if (upgradePlanBtn) upgradePlanBtn.addEventListener("click", openUpgradeModal);
+  if (closeUpgradeBtn) closeUpgradeBtn.addEventListener("click", closeUpgradeModal);
+  if (fakeSubscribeBtn) fakeSubscribeBtn.addEventListener("click", handleFakeSubscribe);
+  if (upgradeModal) {
+    upgradeModal.addEventListener("click", (e) => {
+      if (e.target === upgradeModal) closeUpgradeModal();
+    });
+  }
 
   uploadBtn.addEventListener("click", () => imageUpload.click());
   imageUpload.addEventListener("change", handlePhotoUpload);
