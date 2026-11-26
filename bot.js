@@ -219,41 +219,74 @@ function handleFakeSubscribe() {
   }
 }
 
-// --- 3. SARCASTIC VOICE READER (WEB SPEECH API) ---
-function toggleSpeak(text, lang, btn) {
-  if (!("speechSynthesis" in window)) {
-    const fb = FEEDBACK_LINES[lang] || FEEDBACK_LINES.en;
-    showToast(fb.voiceUnsupported);
+// --- 3. MICROPHONE VOICE INPUT (WEB SPEECH API) ---
+function toggleMic() {
+  const fb = FEEDBACK_LINES[langSelect.value] || FEEDBACK_LINES.en;
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRec) {
+    showToast(fb.micUnsupported);
     return;
   }
 
-  if (activeSpeakBtn === btn && window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
-    resetSpeakBtn();
+  if (isListening && recognition) {
+    recognition.stop();
     return;
   }
 
-  window.speechSynthesis.cancel();
-  resetSpeakBtn();
+  try {
+    recognition = new SpeechRec();
+    recognition.lang = langSelect.value === "bn" ? "bn-BD" : "en-US";
+    recognition.interimResults = true; // Shows words live as you speak!
+    recognition.maxAlternatives = 1;
 
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = lang === "bn" ? "bn-BD" : "en-US";
-  utter.rate = 0.96;
-  utter.pitch = 0.92;
+    let startingText = userInput.value ? userInput.value + " " : "";
 
-  activeSpeakBtn = btn;
-  btn.classList.add("text-blue-600", "dark:text-blue-400");
+    recognition.onstart = () => {
+      isListening = true;
+      if (micBtn) {
+        micBtn.classList.add("text-rose-500", "bg-rose-500/15", "animate-pulse");
+      }
+      showToast(fb.micListening);
+    };
 
-  utter.onend = resetSpeakBtn;
-  utter.onerror = resetSpeakBtn;
+    recognition.onresult = (event) => {
+      let liveTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        liveTranscript += event.results[i][0].transcript;
+      }
+      userInput.value = startingText + liveTranscript;
+      userInput.style.height = "auto";
+      userInput.style.height = userInput.scrollHeight + "px";
+    };
 
-  window.speechSynthesis.speak(utter);
-}
+    recognition.onerror = (event) => {
+      isListening = false;
+      if (micBtn) {
+        micBtn.classList.remove("text-rose-500", "bg-rose-500/15", "animate-pulse");
+      }
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        showToast(fb.micDenied);
+      } else if (event.error === "network") {
+        showToast("Speech blocked by browser (Brave/Firewall blocks Google Speech API).");
+      } else if (event.error === "no-speech") {
+        showToast("Didn't hear anything. Speak louder or check Windows mic.");
+      } else {
+        showToast(`Mic error: ${event.error}`);
+      }
+    };
 
-function resetSpeakBtn() {
-  if (activeSpeakBtn) {
-    activeSpeakBtn.classList.remove("text-blue-600", "dark:text-blue-400");
-    activeSpeakBtn = null;
+    recognition.onend = () => {
+      isListening = false;
+      if (micBtn) {
+        micBtn.classList.remove("text-rose-500", "bg-rose-500/15", "animate-pulse");
+      }
+      userInput.focus();
+    };
+
+    recognition.start();
+  } catch (err) {
+    showToast(`Mic failed: ${err.message}`);
   }
 }
 
