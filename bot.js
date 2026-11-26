@@ -219,77 +219,41 @@ function handleFakeSubscribe() {
   }
 }
 
-// --- 3. MICROPHONE VOICE INPUT (WEB SPEECH API) ---
+// --- 3. SARCASTIC VOICE READER (WEB SPEECH API) ---
+function toggleSpeak(text, lang, btn) {
+  if (!("speechSynthesis" in window)) {
+    const fb = FEEDBACK_LINES[lang] || FEEDBACK_LINES.en;
+    showToast(fb.voiceUnsupported);
+    return;
+  }
+
+  if (activeSpeakBtn === btn && window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    resetSpeakBtn();
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  resetSpeakBtn();
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang === "bn" ? "bn-BD" : "en-US";
+  utter.rate = 0.96;
+  utter.pitch = 0.92;
+
+  activeSpeakBtn = btn;
+  btn.classList.add("text-blue-600", "dark:text-blue-400");
+
+  utter.onend = resetSpeakBtn;
+  utter.onerror = resetSpeakBtn;
+
+  window.speechSynthesis.speak(utter);
+}
+
 function resetSpeakBtn() {
   if (activeSpeakBtn) {
     activeSpeakBtn.classList.remove("text-blue-600", "dark:text-blue-400");
     activeSpeakBtn = null;
-  }
-}
-
-function toggleMic() {
-  const fb = FEEDBACK_LINES[langSelect.value] || FEEDBACK_LINES.en;
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  console.log("Mic clicked. SpeechRec available:", Boolean(SpeechRec));
-
-  if (!SpeechRec) {
-    showToast(fb.micUnsupported);
-    return;
-  }
-
-  if (isListening && recognition) {
-    recognition.stop();
-    return;
-  }
-
-  try {
-    recognition = new SpeechRec();
-    recognition.lang = langSelect.value === "bn" ? "bn-BD" : "en-US";
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    const startingText = userInput.value ? userInput.value + " " : "";
-
-    recognition.onstart = () => {
-      isListening = true;
-      if (micBtn) {
-        micBtn.classList.add("text-rose-500", "bg-rose-500/15", "animate-pulse");
-      }
-      showToast(fb.micListening);
-    };
-
-    recognition.onresult = (event) => {
-      let liveTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        liveTranscript += event.results[i][0].transcript;
-      }
-      userInput.value = startingText + liveTranscript;
-      userInput.style.height = "auto";
-      userInput.style.height = userInput.scrollHeight + "px";
-    };
-
-    recognition.onerror = (event) => {
-      isListening = false;
-      if (micBtn) {
-        micBtn.classList.remove("text-rose-500", "bg-rose-500/15", "animate-pulse");
-      }
-      console.warn("Mic error:", event.error);
-      showToast(`Mic error: ${event.error}`);
-    };
-
-    recognition.onend = () => {
-      isListening = false;
-      if (micBtn) {
-        micBtn.classList.remove("text-rose-500", "bg-rose-500/15", "animate-pulse");
-      }
-      userInput.focus();
-    };
-
-    recognition.start();
-  } catch (err) {
-    console.error("Mic start exception:", err);
-    showToast(`Mic failed: ${err.message}`);
   }
 }
 
