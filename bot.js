@@ -509,8 +509,6 @@ function detectReplyLanguage(text, selectedLang) {
 
 function normalizeText(rawInput) {
   let s = String(rawInput || "").toLowerCase().trim();
-
-  // Collapse 3+ repeated letters into 2 (e.g. "helloooo" -> "helloo", "kenoooo" -> "kenoo")
   s = s.replace(/([a-z\u0980-\u09FF])\1{2,}/g, "$1$1");
 
   const replacements = [
@@ -560,7 +558,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const clean = normalizeText(rawInput);
   const replyLang = detectReplyLanguage(rawInput, selectedLang);
 
-  // LAYER 1: Crisis Safety Intercept
   const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
   if (safetyRegex.test(clean)) {
     const safetyMessages = {
@@ -580,7 +577,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const langPack = db.languages[replyLang];
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
-  // LAYER 2: Specific denial / defense replies (e.g. "na nai", "gali dei nai")
   if (/^(na nai|na\s+nai|gali dei nai|gali di nai|gali dichi na)$/i.test(clean)) {
     lastBotWasRageBait = false;
     const defenseReplies = {
@@ -600,7 +596,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "defense_reply", text: pickFresh(defenseReplies[replyLang] || defenseReplies.banglish) };
   }
 
-  // LAYER 3a: "ki komu" / "ki bolbo" -> What to say
   if (/^(ki komu|ki komu re|ki bolbo|ki bolbo re|ki komu bhai|ki bolbo bhai)\??$/i.test(clean)) {
     lastBotWasRageBait = false;
     const sayReplies = {
@@ -621,7 +616,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "what_to_say", text: pickFresh(sayReplies[replyLang] || sayReplies.banglish) };
   }
 
-  // LAYER 3b: "ki khamu" / "ki khabo" -> What to eat
   if (/^(ki khamu|ki khamu re|ki khabo|ajke ki khabo|khida lagse|khuda lagse|khabar ki)\??$/i.test(clean)) {
     lastBotWasRageBait = false;
     const foodReplies = {
@@ -642,7 +636,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "food_what_to_eat", text: pickFresh(foodReplies[replyLang] || foodReplies.banglish) };
   }
 
-  // LAYER 4: Argument / Pushback Detector
   const argumentRegex = /^(no|nope|wrong|bhul|vul|mittha|lie|lies|cap|false|prove it|source|really\??|seriously\??|are you sure|ki bolen|ki bolo|pagol naki|dimag thik)/i;
   if (!isRegen && argumentRegex.test(clean) && (lastBotWasRageBait || Math.random() < 0.65)) {
     lastBotWasRageBait = true;
@@ -653,7 +646,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     };
   }
 
-  // LAYER 5: Fake Image Generator -> Sends a Meme
   const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
   for (const k of allLangKeys) {
     if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, normalizeText(t)))) {
@@ -663,14 +655,12 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 6: Duplicate / Spam Detector
   if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "duplicate", text: pickFresh(langPack.special_roasts.duplicate) };
   }
   if (!isRegen) lastUserPrompt = clean;
 
-  // LAYER 7: Late-Night Clock Spy (12 AM - 4 AM)
   const hour = new Date().getHours();
   if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
@@ -678,14 +668,12 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "late_night", text: pickFresh(langPack.special_roasts.late_night) };
   }
 
-  // LAYER 8: ALL-CAPS Yelling Detector
   const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
   if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "all_caps", text: pickFresh(langPack.special_roasts.all_caps) };
   }
 
-  // LAYER 9: Dry Texter Detector
   const dryWords = [
     "k", "kk", "ok", "okay", "hm", "hmm", "hmmm", "lol", "lmao", "bruh",
     "accha", "achha", "thik ache", "ho", "hae", "na", "?", "??", "???", ".", "..", "...",
@@ -696,26 +684,22 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: "dry_text", text: pickFresh(langPack.special_roasts.dry_text) };
   }
 
-  // LAYER 10: Too-Long Essay Roast
   if (rawInput.length > 200) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "long_essay", text: pickFresh(langPack.long_roasts[tier]) };
   }
 
-  // LAYER 11: Escalating Annoyance Meter
   if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "annoyed", text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
-  // LAYER 12: High-Priority Smart Q&A
   const smartDirect = checkSmartQA(rawInput, clean, tier, replyLang);
   if (smartDirect) {
     lastBotWasRageBait = Boolean(smartDirect.isRageBait);
     return { lang: replyLang, matchType: smartDirect.matchType || "smart_qa", text: smartDirect.text };
   }
 
-  // LAYER 13: Weighted Intent Scoring (Primary Language)
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
     if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.45) {
@@ -726,7 +710,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: `intent:${scoredMatch.category}`, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
-  // LAYER 14: Cross-Language Weighted Scoring
   for (const otherLang of Object.keys(db.languages)) {
     if (otherLang === replyLang) continue;
     const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
@@ -738,21 +721,18 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     }
   }
 
-  // LAYER 15: Open-Ended Patterns
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
     lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "open_ended", text: openEndedReply };
   }
 
-  // LAYER 16: Strict Fuse.js Fuzzy Matching (only for words >= 4 chars)
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
     lastBotWasRageBait = fuzzyHit.category === "ragebait_takes";
     return { lang: replyLang, matchType: `fuzzy:${fuzzyHit.category}`, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // LAYER 17: Chaos & Rage-Bait Fallback Zone
   const fallbackRoll = Math.random();
   if (!isRegen && fallbackRoll < rates.ragebait) {
     lastBotWasRageBait = true;
@@ -1262,10 +1242,12 @@ function appendUserMessage(text, imageSrc = null) {
   scrollToBottom();
 }
 
+// Golden Jilapi Chat Avatar
 function createBotAvatar() {
   const avatar = document.createElement("div");
-  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 via-blue-500 to-sky-400 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter shadow-sm";
-  avatar.textContent = "NVM";
+  avatar.className = "w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-700/60 flex items-center justify-center shrink-0 mt-0.5 shadow-sm";
+  avatar.title = "ChatNVM Jilapi";
+  avatar.innerHTML = `<svg viewBox="0 0 64 64" class="w-6 h-6" fill="none" stroke="#d97706" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"><path d="M33 32c0-3 3-5 6-4 5 2 6 9 1 13-7 5-18 3-23-5-6-10-2-23 8-28 12-6 27-1 33 10 6 12 2 27-9 34-13 8-30 3-38-10-8-14-3-32 11-40"/></svg>`;
   return avatar;
 }
 
@@ -1279,7 +1261,7 @@ async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
 
   const thinkingEl = document.createElement("div");
   thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 animate-pulse";
-  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-blue-500"></span><span>${escapeHtml(thinkLabel)}</span>`;
+  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span><span>${escapeHtml(thinkLabel)}</span>`;
   contentBox.appendChild(thinkingEl);
 
   wrapper.append(avatar, contentBox);
@@ -1581,7 +1563,7 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
 
   ctx.font = `500 22px ${fontFamily}`;
   ctx.fillStyle = isDark ? "#71717a" : "#64748b";
-  ctx.fillText("by Closed DI", pad + 196, pad + 40);
+  ctx.fillText("by Closed DI • Jilapi", pad + 196, pad + 40);
 
   const badgeText = MODEL_LABELS[tier] || "ChatNVM Plus";
   ctx.font = `600 22px ${fontFamily}`;
@@ -1623,21 +1605,26 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
 
   y += promptBlockH + gapBetween;
 
-  const avGrad = ctx.createLinearGradient(pad, y, pad + 68, y + 68);
-  avGrad.addColorStop(0, "#2563eb");
-  avGrad.addColorStop(0.5, "#3b82f6");
-  avGrad.addColorStop(1, "#38bdf8");
-
+  // Golden Jilapi Badge on Share Card
   ctx.beginPath();
   ctx.arc(pad + 34, y + 34, 34, 0, Math.PI * 2);
-  ctx.fillStyle = avGrad;
+  ctx.fillStyle = isDark ? "#451a03" : "#fffbeb";
   ctx.fill();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#d97706";
+  ctx.stroke();
 
-  ctx.font = `700 22px ${fontFamily}`;
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-  ctx.fillText("NVM", pad + 34, y + 42);
-  ctx.textAlign = "left";
+  ctx.beginPath();
+  ctx.arc(pad + 34, y + 34, 16, 0, Math.PI * 1.5);
+  ctx.strokeStyle = "#d97706";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(pad + 34, y + 34, 7, Math.PI, Math.PI * 2.2);
+  ctx.strokeStyle = "#f59e0b";
+  ctx.lineWidth = 3.5;
+  ctx.stroke();
 
   ctx.font = replyFont;
   ctx.fillStyle = isDark ? "#f4f4f5" : "#1e293b";
