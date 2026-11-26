@@ -224,6 +224,8 @@ function toggleMic() {
   const fb = FEEDBACK_LINES[langSelect.value] || FEEDBACK_LINES.en;
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+  console.log("Mic clicked. SpeechRec available:", Boolean(SpeechRec));
+
   if (!SpeechRec) {
     showToast(fb.micUnsupported);
     return;
@@ -237,10 +239,10 @@ function toggleMic() {
   try {
     recognition = new SpeechRec();
     recognition.lang = langSelect.value === "bn" ? "bn-BD" : "en-US";
-    recognition.interimResults = true; // Shows words live as you speak!
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
-    let startingText = userInput.value ? userInput.value + " " : "";
+    const startingText = userInput.value ? userInput.value + " " : "";
 
     recognition.onstart = () => {
       isListening = true;
@@ -265,15 +267,8 @@ function toggleMic() {
       if (micBtn) {
         micBtn.classList.remove("text-rose-500", "bg-rose-500/15", "animate-pulse");
       }
-      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        showToast(fb.micDenied);
-      } else if (event.error === "network") {
-        showToast("Speech blocked by browser (Brave/Firewall blocks Google Speech API).");
-      } else if (event.error === "no-speech") {
-        showToast("Didn't hear anything. Speak louder or check Windows mic.");
-      } else {
-        showToast(`Mic error: ${event.error}`);
-      }
+      console.warn("Mic error:", event.error);
+      showToast(`Mic error: ${event.error}`);
     };
 
     recognition.onend = () => {
@@ -286,6 +281,7 @@ function toggleMic() {
 
     recognition.start();
   } catch (err) {
+    console.error("Mic start exception:", err);
     showToast(`Mic failed: ${err.message}`);
   }
 }
