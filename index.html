@@ -3,14 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#2563eb" />
-  <meta name="apple-mobile-web-app-title" content="ChatNVM" />
-  <title>ChatNVM — by Closed DI</title>
+  <meta name="theme-color" content="#d97706" />
+  <title>ChatNVM (Jilapi) — by Closed DI</title>
 
-  <!-- Installable Mobile App Manifest -->
-
-  <!-- Abstract Geometric AI Tab Icon (Favicon) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%231d4ed8'/%3E%3Cstop offset='100%25' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cg fill='none' stroke='white' stroke-width='4.2' stroke-linecap='round'%3E%3Cellipse cx='32' cy='32' rx='19' ry='8' transform='rotate(0 32 32)'/%3E%3Cellipse cx='32' cy='32' rx='19' ry='8' transform='rotate(60 32 32)'/%3E%3Cellipse cx='32' cy='32' rx='19' ry='8' transform='rotate(120 32 32)'/%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='4.2' fill='white'/%3E%3C/svg%3E" />
+  <!-- Golden Jilapi Tab Icon (Favicon) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fffbeb'/%3E%3Cg fill='none' stroke='%23d97706' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M33 32c0-3 3-5 6-4 5 2 6 9 1 13-7 5-18 3-23-5-6-10-2-23 8-28 12-6 27-1 33 10 6 12 2 27-9 34-13 8-30 3-38-10-8-14-3-32 11-40'/%3E%3C/g%3E%3C/svg%3E" />
 
   <!-- Social Media Preview (WhatsApp, Messenger, Facebook, X) -->
   <meta property="og:title" content="ChatNVM by Closed DI" />
@@ -21,7 +18,7 @@
   <!-- PostHog Free Analytics -->
   <script>
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey identify setPersonProperties".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-    posthog.init("phc_m8SNXx9yEYcypAUxvxeyusLHPgX3LLfzYbddcVFUJEyX", {
+    posthog.init("phc_m8SNXx9yEYcypAUxvxeyusLHPgX3LLfzYbddcVFUJeYX", {
       api_host: "https://us.i.posthog.com",
       person_profiles: "identified_only"
     });
@@ -61,7 +58,7 @@
       display: inline-block;
       margin-left: 2px;
       animation: blink 0.8s infinite;
-      color: #3b82f6;
+      color: #d97706;
     }
     @keyframes blink {
       0%, 50% { opacity: 1; }
@@ -112,7 +109,7 @@
 
         <div class="text-xs text-zinc-500 px-2 space-y-1">
           <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             <span>0 GPUs • Saved Locally</span>
           </div>
           <p class="text-[11px] text-zinc-400 dark:text-zinc-600">© Closed DI Research Lab</p>
@@ -132,9 +129,20 @@
             </svg>
           </button>
 
-          <span class="text-base md:text-lg font-bold tracking-tight bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent shrink-0">
-            ChatNVM
-          </span>
+          <!-- Jilapi Brand Logo in Header -->
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="w-7 h-7 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-700/60 flex items-center justify-center shadow-sm">
+              <svg viewBox="0 0 64 64" class="w-5 h-5" fill="none" stroke="#d97706" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M33 32c0-3 3-5 6-4 5 2 6 9 1 13-7 5-18 3-23-5-6-10-2-23 8-28 12-6 27-1 33 10 6 12 2 27-9 34-13 8-30 3-38-10-8-14-3-32 11-40" />
+              </svg>
+            </span>
+            <span class="text-base md:text-lg font-bold tracking-tight bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              ChatNVM
+            </span>
+            <span class="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100/90 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300/70 dark:border-amber-800/60">
+              Jilapi
+            </span>
+          </div>
 
           <select id="model-select" class="bg-slate-100 dark:bg-[#191c24] hover:bg-slate-200/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs md:text-sm font-medium px-2 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-700/80 outline-none cursor-pointer transition truncate max-w-[130px] sm:max-w-none">
             <option value="mini">Mini (Fast)</option>
@@ -168,8 +176,11 @@
 
           <!-- Welcome Screen -->
           <div id="welcome-screen" class="py-10 md:py-20 text-center space-y-5">
-            <div class="inline-block px-3 py-1 rounded-full bg-blue-50 dark:bg-[#191c24] border border-blue-200 dark:border-zinc-800 text-xs text-blue-700 dark:text-blue-400 font-medium tracking-wide">
-              Closed DI presents
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 font-medium tracking-wide">
+              <svg viewBox="0 0 64 64" class="w-4 h-4" fill="none" stroke="#d97706" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M33 32c0-3 3-5 6-4 5 2 6 9 1 13-7 5-18 3-23-5-6-10-2-23 8-28 12-6 27-1 33 10 6 12 2 27-9 34-13 8-30 3-38-10-8-14-3-32 11-40" />
+              </svg>
+              <span>Closed DI presents • Jilapi Edition</span>
             </div>
             <h1 id="welcome-title" class="text-3xl md:text-5xl font-bold tracking-tight">
               <span class="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
@@ -233,8 +244,8 @@
       <button id="close-upgrade-btn" type="button" class="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">✕</button>
 
       <div class="space-y-1">
-        <span class="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
-          Closed DI Ultra
+        <span class="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+          Closed DI Ultra • Jilapi Grade
         </span>
         <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Upgrade to Peak Laziness</h2>
         <p class="text-sm text-zinc-500 dark:text-zinc-400">Why get ignored for free when you can pay premium prices?</p>
@@ -246,13 +257,13 @@
       </div>
 
       <ul class="space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
-        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span><strong>15-second</strong> dramatic thinking delays</span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span><strong>Priority ignoring</strong> during peak hours</span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span>Exclusive early access to <strong>Goru Rochona 2.0</strong></span></li>
-        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span>0% accuracy guarantee, backed by 0 GPUs</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-600 dark:text-amber-400 font-bold">✓</span> <span><strong>15-second</strong> dramatic thinking delays</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-600 dark:text-amber-400 font-bold">✓</span> <span><strong>Priority ignoring</strong> during peak hours</span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-600 dark:text-amber-400 font-bold">✓</span> <span>Exclusive early access to <strong>Goru Rochona 2.0</strong></span></li>
+        <li class="flex items-center gap-2"><span class="text-amber-600 dark:text-amber-400 font-bold">✓</span> <span>0% accuracy guarantee, backed by 0 GPUs</span></li>
       </ul>
 
-      <div id="upgrade-roast-box" class="hidden p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/70 text-sm text-blue-900 dark:text-blue-200 font-medium"></div>
+      <div id="upgrade-roast-box" class="hidden p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/70 text-sm text-amber-950 dark:text-amber-200 font-medium"></div>
 
       <button id="fake-subscribe-btn" type="button" class="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-semibold text-sm shadow-md transition cursor-pointer">
         Subscribe with bKash / Kidney
@@ -260,6 +271,6 @@
     </div>
   </div>
 
-  <script src="bot.js?v=5.0"></script>
+  <script src="bot.js?v=5.1"></script>
 </body>
 </html>
