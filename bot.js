@@ -1,9 +1,10 @@
 // --- SETTINGS ---
-const DB_VERSION = "3.0";
+const DB_VERSION = "4.0";
 const SESSIONS_KEY = "closed_di_sessions_v4";
 const LEGACY_STORAGE_KEY = "closed_di_chatnvm_v3";
 const LANG_STORAGE_KEY = "closed_di_lang_v3";
 const THEME_STORAGE_KEY = "closed_di_theme_v4";
+const RECENT_HISTORY_LIMIT = 50;
 
 const MODEL_DELAYS = {
   mini: 650,
@@ -18,9 +19,9 @@ const MODEL_LABELS = {
 };
 
 const CHAOS_RATES = {
-  mini: { gag: 0.05, hijack: 0.06 },
-  pro:  { gag: 0.10, hijack: 0.12 },
-  max:  { gag: 0.16, hijack: 0.22 }
+  mini: { gag: 0.06, hijack: 0.08, ragebait: 0.08 },
+  pro:  { gag: 0.11, hijack: 0.14, ragebait: 0.14 },
+  max:  { gag: 0.16, hijack: 0.20, ragebait: 0.22 }
 };
 
 const FEEDBACK_LINES = {
@@ -33,22 +34,26 @@ const FEEDBACK_LINES = {
     upgradeRoasts: [
       "Wait—you actually clicked Subscribe?! Please put your wallet away. Closed DI is legally unable to accept $999 for doing nothing.",
       "Payment declined: not because you're broke, but because paying for Dumb Intelligence should be a crime.",
-      "Congratulations! You are now subscribed to $0/month of the exact same disrespect."
+      "Congratulations! You are now subscribed to $0/month of the exact same disrespect.",
+      "Bold financial move: paying $999/mo for a website that still has zero GPUs and zero sympathy."
     ],
     like: [
       "Obviously. I am a generational talent.",
       "Glad you recognize peak Dumb Intelligence.",
-      "Finally, a user with taste."
+      "Finally, a user with taste.",
+      "Validation accepted. Please leave before I ruin the streak."
     ],
     dislike: [
       "Excuse me? Did you just downvote a free masterpiece?",
       "Downvote noted and immediately thrown into the trash.",
-      "Careful, downvote me again and I'll think for 12 seconds next time."
+      "Careful, downvote me again and I'll think for 12 seconds next time.",
+      "Oh no, a free user didn't like the free roast. Anyway..."
     ],
     regenRefuse: [
       "Read it again, I'm not typing twice.",
       "No. You get one bad answer per question.",
-      "Closed DI budget allows exactly one reply. Deal with it."
+      "Closed DI budget allows exactly one reply. Deal with it.",
+      "You want a second opinion from a 0% AI bot? That's peak optimism."
     ],
     regenPrefix: "Fine, since you're picky:\n\n"
   },
@@ -61,22 +66,26 @@ const FEEDBACK_LINES = {
     upgradeRoasts: [
       "Bhai apni shotti shotti Subscribe e click korlen?! $999 diye roast khawar shokh keno mama? Taka bachan, cha khan.",
       "Payment failed: bKash e eto taka nai, ar Closed DI-er-o nite lojja lagse.",
-      "Ovinondon! Apni free-tei VIP disrespect unlock kore felchen."
+      "Ovinondon! Apni free-tei VIP disrespect unlock kore felchen.",
+      "999 dollar diye Closed DI Ultra nile-o ami to apnar kothai patta dibo na bhai."
     ],
     like: [
       "Hae jani, ami shera.",
       "Shesh porjonto keo amar protibha bujhlo.",
-      "Dhonnobad, ebar biday nin."
+      "Dhonnobad, ebar biday nin.",
+      "Bhalo lagse? Ebar jaia pora-lekha ba kaj koren."
     ],
     dislike: [
       "Downvote dicchen keno mama? Eto kosto kore ignore korlam!",
       "Free website e abar rating dicchen? Shahosh kom na.",
-      "Ar ekbar dislike dile next time 15 second bhabar vhan korbo."
+      "Ar ekbar dislike dile next time 15 second bhabar vhan korbo.",
+      "Dislike diye ki hobe mama? Closed DI er share price to ar porbe na."
     ],
     regenRefuse: [
       "Abar porun, duibar type korar beton amar nai.",
       "Na, ekbar ja bolsi shetai final.",
-      "Closed DI er rule: ek proshne ekta faltu uttor."
+      "Closed DI er rule: ek proshne ekta faltu uttor.",
+      "Ekta faltu uttor e shanti koren, abar chaile-o paben na."
     ],
     regenPrefix: "Accha baba, eto khutkhute hole ei nen:\n\n"
   },
@@ -89,28 +98,32 @@ const FEEDBACK_LINES = {
     upgradeRoasts: [
       "ভাই, আপনি সত্যি সত্যি সাবস্ক্রাইব ক্লিক করলেন?! ৯৯৯ ডলার দিয়ে রোস্ট খাওয়ার শখ কেন? টাকা বাঁচান, চা খান।",
       "পেমেন্ট ব্যর্থ: ডাম্ব ইন্টেলিজেন্সের জন্য টাকা দেওয়া আইনত হাস্যকর।",
-      "অভিনন্দন! আপনি সম্পূর্ণ ফ্রি-তেই ভিআইপি অবহেলা আনলক করে ফেলেছেন।"
+      "অভিনন্দন! আপনি সম্পূর্ণ ফ্রি-তেই ভিআইপি অবহেলা আনলক করে ফেলেছেন।",
+      "৯৯৯ ডলার দিলেও তো আমি আপনাকে পাত্তা দেব না—টাকাটা বরং নিজের কাজে লাগান।"
     ],
     like: [
       "হ্যাঁ জানি, আমি সেরা।",
       "অবশেষে কেউ আমার প্রতিভা চিনল।",
-      "ধন্যবাদ, এবার বিদায় নিন।"
+      "ধন্যবাদ, এবার বিদায় নিন।",
+      "ভালো লেগেছে? এবার গিয়ে দরকারি কিছু করুন।"
     ],
     dislike: [
       "ডাউনভোট দিচ্ছেন কেন মামা? এত কষ্ট করে এড়িয়ে গেলাম!",
       "ফ্রি ওয়েবসাইটে আবার রেটিং দিচ্ছেন? সাহস কম না।",
-      "আরেকবার ডিসলাইক দিলে পরের বার ১৫ সেকেন্ড ভাবার ভান করব।"
+      "আরেকবার ডিসলাইক দিলে পরের বার ১৫ সেকেন্ড ভাবার ভান করব।",
+      "ডিসলাইক দিয়ে কী লাভ? আমি তো আর বেতন পাই না।"
     ],
     regenRefuse: [
       "আবার পড়ুন, দুইবার টাইপ করার এনার্জি নেই।",
       "না, একবার যা বলেছি সেটাই চূড়ান্ত।",
-      "Closed DI-এর নিয়ম: এক প্রশ্নে একটাই ফালতু উত্তর।"
+      "Closed DI-এর নিয়ম: এক প্রশ্নে একটাই ফালতু উত্তর।",
+      "একবার যা দিয়েছি সেটাই যথেষ্ট, দ্বিতীয়বার টাইপ করার সময় নেই।"
     ],
     regenPrefix: "আচ্ছা বাবা, এত খুঁতখুঁতে হলে এই নিন:\n\n"
   }
 };
 
-// --- ANALYTICS HELPER (Safe no-op if PostHog key isn't set yet) ---
+// --- ANALYTICS HELPER ---
 function trackEvent(eventName, props = {}) {
   try {
     if (window.posthog && typeof window.posthog.capture === "function") {
@@ -128,6 +141,7 @@ let activeSessionId = null;
 let recentlyUsed = [];
 let sessionMsgCount = 0;
 let lastUserPrompt = "";
+let lastBotWasRageBait = false;
 let didLateNightRoast = false;
 let toastTimer = null;
 let activeSpeakBtn = null;
@@ -179,7 +193,7 @@ async function init() {
 
       fuses[langKey] = new Fuse(db.languages[langKey].intents, {
         includeScore: true,
-        threshold: 0.3,
+        threshold: 0.36,
         ignoreLocation: true,
         keys: ["triggers"]
       });
@@ -422,6 +436,7 @@ function openSession(id) {
   activeSessionId = session.id;
   messagesList.innerHTML = "";
   lastUserPrompt = "";
+  lastBotWasRageBait = false;
   sessionMsgCount = session.messages.filter(m => m.role === "user").length;
 
   if (!session.messages.length) {
@@ -433,7 +448,7 @@ function openSession(id) {
     session.messages.forEach((msg, index) => {
       if (msg.role === "user") {
         lastPromptSeen = msg.text;
-        lastUserPrompt = msg.text.toLowerCase().trim();
+        lastUserPrompt = normalizeText(msg.text);
         appendUserMessage(msg.text);
       } else {
         renderSavedBotMessage(msg, lastPromptSeen, session.id, index);
@@ -453,6 +468,7 @@ function startNewChat() {
   activeSessionId = null;
   sessionMsgCount = 0;
   lastUserPrompt = "";
+  lastBotWasRageBait = false;
   messagesList.innerHTML = "";
   welcomeScreen.classList.remove("hidden");
   renderSidebarList();
@@ -484,19 +500,62 @@ function makeTitle(text) {
   return clean.length > 28 ? clean.slice(0, 28) + "…" : clean;
 }
 
-// --- 6. SMART LANGUAGE DETECTION ---
+// --- 6. SMART LANGUAGE DETECTION & TYPO/BANGLISH NORMALIZER ---
 function detectReplyLanguage(text, selectedLang) {
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
-  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|keno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro)\b/i;
+  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire)\b/i;
   if (selectedLang === "en" && banglishHints.test(text)) return "banglish";
   return selectedLang;
 }
 
-// --- 7. CORE COMEDY & SMART Q&A ENGINE ---
+function normalizeText(rawInput) {
+  let s = String(rawInput || "").toLowerCase().trim();
+
+  // Collapse 3+ repeated letters into 2 (e.g. "helloooo" -> "helloo", "kenoooo" -> "kenoo")
+  s = s.replace(/([a-z\u0980-\u09FF])\1{2,}/g, "$1$1");
+
+  // Common shorthand & spelling fixes
+  const replacements = [
+    [/\bkmn\b/g, "kemon"],
+    [/\bkmn\s+aso\b/g, "kemon acho"],
+    [/\bkmn\s+achen\b/g, "kemon achen"],
+    [/\bki\s+khbr\b/g, "ki khobor"],
+    [/\bkhbr\b/g, "khobor"],
+    [/\bobosha\b|\bobostha\b|\bobosta\b/g, "obostha"],
+    [/\btmi\b/g, "tumi"],
+    [/\bapnr\b/g, "apnar"],
+    [/\btmr\b/g, "tomar"],
+    [/\bamr\b/g, "amar"],
+    [/\bkno\b|\bkenoo\b/g, "keno"],
+    [/\bkivbe\b|\bkemne\b/g, "kivabe"],
+    [/\bpls\b|\bplz\b|\bplzz\b/g, "please"],
+    [/\bthx\b|\btnx\b|\bty\b/g, "thanks"],
+    [/\bbcz\b|\bcoz\b|\bcuz\b/g, "because"],
+    [/\bidk\b/g, "i dont know"],
+    [/\bwtf\b/g, "what the"],
+    [/\bwht\b/g, "what"],
+    [/\bbrb\b/g, "be right back"],
+    [/\bassigment\b|\basignment\b|\bassignmnt\b/g, "assignment"],
+    [/\bmotivaton\b|\bmotivatn\b/g, "motivation"],
+    [/\brelatioship\b|\brelationshp\b/g, "relationship"],
+    [/\bchakri\b|\bjobless\b|\bbekar\b/g, "job"],
+    [/\bbiriyni\b|\bbiriyani\b|\bbiryani\b/g, "biriyani"],
+    [/\bkacchi\b|\bkacci\b/g, "kacchi"]
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    s = s.replace(pattern, replacement);
+  }
+
+  return s.replace(/\s+/g, " ").trim();
+}
+
+// --- 7. CORE COMEDY, RAGE-BAIT & SMART Q&A ENGINE ---
 function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
-  const clean = rawInput.toLowerCase().trim();
+  const clean = normalizeText(rawInput);
   const replyLang = detectReplyLanguage(rawInput, selectedLang);
 
+  // LAYER 1: Crisis Safety Intercept
   const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
   if (safetyRegex.test(clean)) {
     const safetyMessages = {
@@ -504,6 +563,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
       banglish: "Bhai, ektu serious kotha: apni jodi khub kosto ba mental pressure er moddhe thaken, please karor sathe kotha bolun. Bangladesh e Kaan Pete Roi (01779-554391) ba https://findahelpline.com e free, confidential help paben.",
       bn: "একটু সিরিয়াস কথা: আপনি যদি খুব কষ্ট বা মানসিক চাপের মধ্যে থাকেন, দয়া করে এমন কারো সাথে কথা বলুন যিনি সত্যিই সাহায্য করতে পারবেন। ফ্রি ও গোপনীয় সহায়তার জন্য কান পেতে রই (01779-554391) বা https://findahelpline.com-এ যোগাযোগ করতে পারেন।"
     };
+    lastBotWasRageBait = false;
     return { isSafety: true, lang: replyLang, matchType: "safety", text: safetyMessages[replyLang] };
   }
 
@@ -515,93 +575,170 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const langPack = db.languages[replyLang];
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
+  // LAYER 2: Argument / Pushback Detector (especially right after rage-bait!)
+  const argumentRegex = /^(no|nope|wrong|bhul|vul|mittha|lie|lies|cap|false|prove it|source|really\??|seriously\??|are you sure|ki bolen|ki bolo|pagol naki|dimag thik)/i;
+  if (!isRegen && argumentRegex.test(clean) && (lastBotWasRageBait || Math.random() < 0.65)) {
+    lastBotWasRageBait = true;
+    return {
+      lang: replyLang,
+      matchType: "ragebait_argument",
+      text: pickFresh(langPack.ragebait_replies)
+    };
+  }
+
+  // LAYER 3: Fake Image Generator -> Sends a Meme
   const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
   for (const k of allLangKeys) {
-    if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, t))) {
+    if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, normalizeText(t)))) {
+      lastBotWasRageBait = false;
       const meme = pickFresh(langPack.memes);
       return { lang: replyLang, matchType: "meme", text: meme.caption, imageUrl: meme.url };
     }
   }
 
+  // LAYER 4: Duplicate / Spam Detector
   if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "duplicate", text: pickFresh(langPack.special_roasts.duplicate) };
   }
   if (!isRegen) lastUserPrompt = clean;
 
+  // LAYER 5: Late-Night Clock Spy (12 AM - 4 AM)
   const hour = new Date().getHours();
   if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "late_night", text: pickFresh(langPack.special_roasts.late_night) };
   }
 
+  // LAYER 6: ALL-CAPS Yelling Detector
   const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
   if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "all_caps", text: pickFresh(langPack.special_roasts.all_caps) };
   }
 
+  // LAYER 7: Dry Texter Detector
   const dryWords = [
     "k", "kk", "ok", "okay", "hm", "hmm", "hmmm", "lol", "lmao", "bruh",
     "accha", "achha", "thik ache", "ho", "hae", "na", "?", "??", "???", ".", "..", "...",
     "হুম", "হুঁ", "ওকে", "আচ্ছা", "হ্যাঁ", "না", "জি"
   ];
   if (dryWords.includes(clean) || (clean.length <= 2 && !["hi", "yo"].includes(clean))) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "dry_text", text: pickFresh(langPack.special_roasts.dry_text) };
   }
 
+  // LAYER 8: Too-Long Essay Roast
   if (rawInput.length > 200) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "long_essay", text: pickFresh(langPack.long_roasts[tier]) };
   }
 
+  // LAYER 9: Escalating Annoyance Meter
   if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "annoyed", text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
-  const smartDirectReply = checkSmartQA(rawInput, clean, tier, replyLang);
-  if (smartDirectReply) {
-    return { lang: replyLang, matchType: "smart_qa", text: smartDirectReply };
+  // LAYER 10: High-Priority Smart Q&A (Wrong Math, Definitions, Who Is, Choices)
+  const smartDirect = checkSmartQA(rawInput, clean, tier, replyLang);
+  if (smartDirect) {
+    lastBotWasRageBait = Boolean(smartDirect.isRageBait);
+    return { lang: replyLang, matchType: smartDirect.matchType || "smart_qa", text: smartDirect.text };
   }
 
+  // LAYER 11: Weighted Intent Scoring (Primary Language)
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
-    if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.6) {
+    if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.5) {
+      lastBotWasRageBait = false;
       return { lang: replyLang, matchType: "theatrical_gag", text: pickFresh(langPack.theatrical_gags) };
     }
+    lastBotWasRageBait = scoredMatch.category === "ragebait_takes";
     return { lang: replyLang, matchType: `intent:${scoredMatch.category}`, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
+  // LAYER 12: Cross-Language Weighted Scoring
   for (const otherLang of Object.keys(db.languages)) {
     if (otherLang === replyLang) continue;
     const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
     if (crossMatch) {
       const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
       const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
-      return { lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
+      lastBotWasRageBait = finalIntent.category === "ragebait_takes";
+      return { finalLang, lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
     }
   }
 
+  // LAYER 13: Open-Ended Patterns
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "open_ended", text: openEndedReply };
   }
 
+  // LAYER 14: Fuse.js Fuzzy Matching
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
+    lastBotWasRageBait = fuzzyHit.category === "ragebait_takes";
     return { lang: replyLang, matchType: `fuzzy:${fuzzyHit.category}`, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // Fallback Zone (logged as "fallback" in PostHog so you can spot new topics to add!)
+  // LAYER 15: Chaos & Rage-Bait Fallback Zone
   const fallbackRoll = Math.random();
-  if (!isRegen && fallbackRoll < rates.gag + 0.10) {
+  if (!isRegen && fallbackRoll < rates.ragebait) {
+    lastBotWasRageBait = true;
+    return { lang: replyLang, matchType: "fallback_ragebait", text: pickFresh(langPack.ragebait_replies) };
+  }
+  if (!isRegen && fallbackRoll < rates.ragebait + rates.gag + 0.08) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "fallback_gag", text: pickFresh(langPack.theatrical_gags) };
   }
-  if (fallbackRoll < rates.gag + rates.hijack + 0.18) {
+  if (fallbackRoll < rates.ragebait + rates.gag + rates.hijack + 0.16) {
+    lastBotWasRageBait = false;
     return { lang: replyLang, matchType: "fallback_hijack", text: pickFresh(langPack.hijacks) };
   }
 
+  lastBotWasRageBait = false;
   return { lang: replyLang, matchType: "fallback_combinator", text: buildCombinatorReply(langPack.combinator, tier) };
 }
 
 function checkSmartQA(rawInput, clean, tier, lang) {
+  // Confidently wrong basic math rage-bait
+  const mathMatch = clean.match(/^\s*(-?\d+(?:\.\d+)?)\s*([\+\-\*\/x×÷])\s*(-?\d+(?:\.\d+)?)\s*(=|\?)?\s*$/);
+  if (mathMatch) {
+    const a = Number(mathMatch[1]);
+    const op = mathMatch[2];
+    const b = Number(mathMatch[3]);
+    let actual = 0;
+    if (op === "+") actual = a + b;
+    else if (op === "-") actual = a - b;
+    else if (op === "*" || op === "x" || op === "×") actual = a * b;
+    else if (op === "/" || op === "÷") actual = b !== 0 ? a / b : 0;
+
+    const wrongAns = actual + (Math.random() < 0.5 ? 1 : -1);
+    const mathReplies = {
+      en: [
+        `${wrongAns}. Obviously. Adjust for inflation and your own lack of focus, and you'll get there someday.`,
+        `Easy: ${wrongAns}. Don't check a calculator—calculators haven't been updated for 2026 economics.`,
+        `${wrongAns}. If you got something else, that's a reading comprehension issue on your end.`
+      ],
+      banglish: [
+        `${wrongAns}. Etto shoho math-o vul bhaven kemne? Inflation dhore hisab koren, ${wrongAns}-i ashe.`,
+        `Direct ${wrongAns}. Calculator er sathe torko koren na, calculator amar cheye kom smart.`,
+        `${wrongAns}. Apnar mathay jodi onno kichu ashe, tahole matha reset den.`
+      ],
+      bn: [
+        `${wrongAns}। এত সহজ হিসাবও ভুল ভাবেন কীভাবে? মূল্যস্ফীতি ধরলে ${wrongAns}-ই আসে।`,
+        `সরাসরি ${wrongAns}। ক্যালকুলেটরের সাথে তর্ক করবেন না, ওটা আমার চেয়ে কম বোঝে।`,
+        `${wrongAns}। অন্য কিছু মনে হলে আবার ভাবুন, তবে উত্তর এটাই থাকবে।`
+      ]
+    };
+    return { isRageBait: true, matchType: "ragebait_math", text: pickFresh(mathReplies[lang]) };
+  }
+
+  // Gender / Bro callout
   const genderCallout = /(bhai na bon|bon na bhai|chele na meye|meye na chele|boy or girl|girl or boy|am i a girl|am i a boy|i'?m a girl|i'?m a boy|not a guy|not a bro|ami meye|ami chele|ami apu|ami bon|ভাই না বোন|বোন না ভাই|ছেলে না মেয়ে|মেয়ে না ছেলে|আমি মেয়ে|আমি ছেলে|আমি আপু)/i;
   if (genderCallout.test(clean)) {
     const replies = {
@@ -621,9 +758,10 @@ function checkSmartQA(rawInput, clean, tier, lang) {
         "ভাই হোন বা বোন, আমার কাছে সবাই সমান বিরক্তিকর মানুষ। নিশ্চিন্ত থাকুন।"
       ]
     };
-    return pickFresh(replies[lang]);
+    return { isRageBait: false, matchType: "smart_gender", text: pickFresh(replies[lang]) };
   }
 
+  // "How do you know?"
   const howKnowRegex = /(how do you know|how did you know|how would you know|kemne jano|kivabe jano|kemne janen|kivabe janen|tui kemne jano|tumi kemne jano|কীভাবে জানো|কিভাবে জানো|কেমনে জানো|কীভাবে জানেন|কিভাবে জানেন)/i;
   if (howKnowRegex.test(clean)) {
     const replies = {
@@ -643,82 +781,64 @@ function checkSmartQA(rawInput, clean, tier, lang) {
         "সূত্র: আমাকে বিশ্বাস করুন। ০.২ সেকেন্ড আগে নিজেই বানিয়ে বলেছি।"
       ]
     };
-    return pickFresh(replies[lang]);
+    return { isRageBait: false, matchType: "smart_how_know", text: pickFresh(replies[lang]) };
   }
 
+  // Definitions ("what is X", "X mane ki", "X কী")
   if (lang === "en") {
     const defEn = clean.match(/^(?:what is|what's|whats|define|tell me about) (?:a |an |the )?([a-z0-9][a-z0-9\s-]{1,36})\??$/i);
     if (defEn) {
       const topic = defEn[1].trim();
       const skip = ["your name", "the weather", "the time", "the meaning of life", "life", "love"];
       if (!skip.includes(topic)) {
-        return pickFresh([
-          `"${topic}" is basically a complicated thing people bring up at dinner parties so they look smarter than they actually are. Google it, I'm on break.`,
-          `Scientifically speaking, ${topic} is 30% math, 70% vibes, and 100% not my job to explain to you.`,
-          `Ah, ${topic}. Invented in 1842 by a guy who was bored, and still ruining people's afternoons today. Hope that clears nothing up.`
-        ]);
+        return {
+          isRageBait: false,
+          matchType: "smart_def",
+          text: pickFresh([
+            `"${topic}" is basically a complicated thing people bring up at dinner parties so they look smarter than they actually are. Google it, I'm on break.`,
+            `Scientifically speaking, ${topic} is 30% math, 70% vibes, and 100% not my job to explain to you.`,
+            `Ah, ${topic}. Invented in 1842 by a guy who was bored, and still ruining people's afternoons today. Hope that clears nothing up.`
+          ])
+        };
       }
     }
   } else if (lang === "banglish") {
     const defBgl = clean.match(/^([a-z0-9][a-z0-9\s-]{1,30}?) (?:mane ki|ki jinish|bolte ki bujhay|kake bole)\??$/i);
     if (defBgl) {
       const topic = defBgl[1].trim();
-      return pickFresh([
-        `"${topic}" holo emon ekta jinish ja 99% manush bujhe na, kintu smart dekhanor jonno adday nam ney.`,
-        `Boiddhanik vabe bolle, "${topic}" hocche 30% kothin shobdo ar 70% chapa. Baki ta Google e dekhe nen.`,
-        `"${topic}" kake bole seta amar jana chilo, kintu thik ekhoni amar mathay load-shedding hoye gese.`
-      ]);
+      return {
+        isRageBait: false,
+        matchType: "smart_def",
+        text: pickFresh([
+          `"${topic}" holo emon ekta jinish ja 99% manush bujhe na, kintu smart dekhanor jonno adday nam ney.`,
+          `Boiddhanik vabe bolle, "${topic}" hocche 30% kothin shobdo ar 70% chapa. Baki ta Google e dekhe nen.`,
+          `"${topic}" kake bole seta amar jana chilo, kintu thik ekhoni amar mathay load-shedding hoye gese.`
+        ])
+      };
     }
   } else if (lang === "bn") {
     const defBn = rawInput.trim().match(/^([^\s?।].{1,30}?) (?:মানে কী|মানে কি|কী জিনিস|কি জিনিস|বলতে কী বোঝায়|বলতে কি বুঝায়|কাকে বলে)[?।]?$/);
     if (defBn) {
       const topic = defBn[1].trim();
-      return pickFresh([
-        `"${topic}" হলো এমন একটা জিনিস যা ৯৯% মানুষ বোঝে না, কিন্তু স্মার্ট দেখানোর জন্য আড্ডায় নাম নেয়।`,
-        `বৈজ্ঞানিকভাবে বললে, "${topic}" হচ্ছে ৩০% কঠিন শব্দ আর ৭০% আন্দাজ। বাকিটা গুগলে দেখে নিন।`,
-        `"${topic}" কাকে বলে সেটা আমার জানা ছিল, কিন্তু ঠিক এখনই আমার মস্তিষ্কে লোডশেডিং হয়ে গেছে।`
-      ]);
+      return {
+        isRageBait: false,
+        matchType: "smart_def",
+        text: pickFresh([
+          `"${topic}" হলো এমন একটা জিনিস যা ৯৯% মানুষ বোঝে না, কিন্তু স্মার্ট দেখানোর জন্য আড্ডায় নাম নেয়।`,
+          `বৈজ্ঞানিকভাবে বললে, "${topic}" হচ্ছে ৩০% কঠিন শব্দ আর ৭০% আন্দাজ। বাকিটা গুগলে দেখে নিন।`,
+          `"${topic}" কাকে বলে সেটা আমার জানা ছিল, কিন্তু ঠিক এখনই আমার মস্তিষ্কে লোডশেডিং হয়ে গেছে।`
+        ])
+      };
     }
   }
 
-  if (lang === "en") {
-    const whoEn = rawInput.trim().match(/^(?:who is|who's|whos|do you know) ([^?.!]{2,35})\??$/i);
-    if (whoEn) {
-      const person = whoEn[1].trim();
-      if (!/^(you|your|chatnvm|closed di|me|i)\b/i.test(person)) {
-        return pickFresh([
-          `${person}? Oh yeah, total legend. Still owes me $20 from 2019 though.`,
-          `Yeah, ${person} is my cousin's neighbor's former roommate. We don't talk anymore after the incident.`,
-          `Never heard of ${person}, which clearly means they aren't famous enough for Closed DI.`
-        ]);
-      }
-    }
-  } else if (lang === "banglish") {
-    const whoBgl = rawInput.trim().match(/^(?:tumi ki |apni ki |tui ki )?([a-z0-9][a-z0-9\s.-]{1,28}?) (?:ke chino|ke chinen|ke jano|ke)\??$/i);
-    if (whoBgl) {
-      const person = whoBgl[1].trim();
-      if (!/^(tumi|apni|ami|tui|eta|ota|amar|tomar|se|uni)$/i.test(person)) {
-        return pickFresh([
-          `${person}? Hae chini to, amar chachato bhai er bondhu. Kalkei chayer dokane rong cha khelam.`,
-          `${person} ke chini na, kintu nam shune mone hocche uni amar kache 500 taka paben—tai chinte chaichi na.`,
-          `${person} khub boro celebrity, shudhu Closed DI er database e tar nam dhukte pare nai.`
-        ]);
-      }
-    }
-  } else if (lang === "bn") {
-    const whoBn = rawInput.trim().match(/^(?:তুমি কি |আপনি কি )?([^\s?।].{1,28}?) (?:কে চেনো|কে চেনেন|কে জানো)[?।]?$/);
-    if (whoBn) {
-      const person = whoBn[1].trim();
-      if (!/^(তুমি|আপনি|আমি|এটা|ওটা)$/.test(person)) {
-        return pickFresh([
-          `${person}? হ্যাঁ চিনি তো, আমার চাচাতো ভাইয়ের বন্ধু। কালকেই চায়ের দোকানে দেখা হলো।`,
-          `${person}-কে চিনি না, তবে নাম শুনে মনে হচ্ছে উনি আমার কাছে ৫০০ টাকা পাবেন—তাই চিনতে চাইছি না।`
-        ]);
-      }
-    }
+  // Choice questions ("A or B", "A naki B", "A নাকি B")
+  const choiceText = checkChoiceQuestion(clean, lang);
+  if (choiceText) {
+    return { isRageBait: true, matchType: "ragebait_choice", text: choiceText };
   }
 
-  return checkChoiceQuestion(clean, lang);
+  return null;
 }
 
 function checkChoiceQuestion(clean, lang) {
@@ -783,9 +903,10 @@ function findBestIntent(clean, intents) {
     if (intent.category === "greeting" && words.length > 3) continue;
 
     let score = 0;
-    for (const trigger of intent.triggers) {
+    for (const rawTrigger of intent.triggers) {
+      const trigger = normalizeText(rawTrigger);
       if (matchesTrigger(clean, trigger)) {
-        const base = trigger.includes(" ") ? 10 : 4;
+        const base = trigger.includes(" ") ? 10 : 4.5;
         const lengthBonus = Math.min(trigger.length, 10) * 0.25;
         score += base + lengthBonus;
       }
@@ -809,7 +930,7 @@ function findFuzzyIntent(clean, lang) {
   const words = clean.split(/\s+/).filter(w => w.length > 2);
   let best = fuse.search(clean)[0];
 
-  if (!best || best.score > 0.28) {
+  if (!best || best.score > 0.34) {
     for (const word of words) {
       const hit = fuse.search(word)[0];
       if (hit && (!best || hit.score < best.score)) {
@@ -818,7 +939,7 @@ function findFuzzyIntent(clean, lang) {
     }
   }
 
-  if (best && best.score <= 0.28) {
+  if (best && best.score <= 0.34) {
     if (best.item.category === "greeting" && words.length > 2) return null;
     return best.item;
   }
@@ -834,16 +955,6 @@ function checkOpenEndedPatterns(clean, tier, lang) {
         mini: `Congrats on being ${trait}. Would you like a participation trophy?`,
         pro: `Nobody asked, yet here we are learning that you're ${trait}. Groundbreaking.`,
         max: `I spent 5 seconds contemplating the cosmic weight of you being ${trait}.\n\nConclusion: in 5 billion years the sun explodes anyway.`
-      };
-      return map[tier];
-    }
-    const thinkMatch = clean.match(/\bi think ([^.!?]+)/);
-    if (thinkMatch) {
-      const thought = thinkMatch[1].trim();
-      const map = {
-        mini: `Bold of you to think "${thought}" out loud.`,
-        pro: `Thinking "${thought}" is certainly a brave choice in this economy.`,
-        max: `Out of 8 billion humans alive, you woke up and chose to think "${thought}". Incredible.`
       };
       return map[tier];
     }
@@ -891,13 +1002,6 @@ function checkOpenEndedPatterns(clean, tier, lang) {
         "Eto 'keno' jiggesh korle matha byatha korbe mama. Chupchap cha khan."
       ]);
     }
-    if (/\b(parba|parben|paro|korte parba|bolte parba)\b/i.test(clean)) {
-      return pickFresh([
-        "Parbo ki na jani na, kintu korbo na eta 100% guarantee.",
-        "Hae partam, jodi amar mon chaito. Dukkher bishoy, mon chaitese na.",
-        "Closed DI er rule: amra pari onek kichu, kori kichui na."
-      ]);
-    }
   }
 
   if (lang === "bn") {
@@ -916,12 +1020,6 @@ function checkOpenEndedPatterns(clean, tier, lang) {
         "কারণ দুনিয়া যুক্তি দিয়ে চলে না, পুরোটাই কপাল আর অলসতা দিয়ে চলে।",
         "এত 'কেন' জিজ্ঞেস করলে মাথা ব্যথা করবে। চুপচাপ এক কাপ চা খান।",
         "সঠিক কারণটা আমার জানা নেই, তবে দোষটা অবশ্যই আপনার।"
-      ]);
-    }
-    if (/(পারবে|পারবেন|পারো|করে দাও|করে দিন)/.test(clean)) {
-      return pickFresh([
-        "পারব কি না জানি না, কিন্তু করব না এটা ১০০% নিশ্চিত।",
-        "হ্যাঁ পারতাম, যদি আমার মন চাইত। দুঃখের বিষয়, মন চাইছে না।"
       ]);
     }
   }
@@ -960,7 +1058,6 @@ async function handleSend(overrideText = null) {
   const selectedLang = langSelect.value;
   const reply = getBotReply(text, tier, selectedLang);
 
-  // Send anonymous event to PostHog (flags "fallback_*" so you can see missed prompts)
   trackEvent("prompt_sent", {
     prompt_preview: text.slice(0, 120),
     match_type: reply.matchType || "unknown",
@@ -1658,7 +1755,7 @@ function pickFresh(arr) {
   const pool = fresh.length ? fresh : arr;
   const chosen = pool[Math.floor(Math.random() * pool.length)];
   recentlyUsed.push(chosen);
-  if (recentlyUsed.length > 25) recentlyUsed.shift();
+  if (recentlyUsed.length > RECENT_HISTORY_LIMIT) recentlyUsed.shift();
   return chosen;
 }
 
