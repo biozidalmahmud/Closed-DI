@@ -1,5 +1,5 @@
 // --- SETTINGS ---
-const DB_VERSION = "5.0";
+const DB_VERSION = "5.1";
 const SESSIONS_KEY = "closed_di_sessions_v4";
 const LEGACY_STORAGE_KEY = "closed_di_chatnvm_v3";
 const LANG_STORAGE_KEY = "closed_di_lang_v3";
@@ -562,11 +562,20 @@ function makeTitle(text) {
   return clean.length > 28 ? clean.slice(0, 28) + "…" : clean;
 }
 
-// --- 6. SMART LANGUAGE DETECTION & TYPO/BANGLISH NORMALIZER ---
+// --- 6. STRICT LANGUAGE DETECTION & TYPO/BANGLISH NORMALIZER ---
 function detectReplyLanguage(text, selectedLang) {
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
-  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|khamu|komu|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire|nai|dei|lagbe|porikkha|poralekha|aunty|uncle|basa|basha|fiverr|upwork)\b/i;
-  if (selectedLang === "en" && banglishHints.test(text)) return "banglish";
+  const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|kivbe|keno|kno|kothay|kobe|naki|bhai|bon|mama|khabo|khamu|komu|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obosha|obostha|achis|acis|kire|nai|dei|lagbe|porikkha|poralekha|aunty|uncle|basa|basha|fiverr|upwork|borolok|kopal|bhobishyot)\b/i;
+
+  if (selectedLang === "en") {
+    return banglishHints.test(text) ? "banglish" : "en";
+  }
+
+  // When Banglish or Bangla is selected, keep the chosen mode unless pure English is clearly typed
+  const pureEnglishSentence = /^[a-z0-9\s.,?!'"()-]+$/i.test(text) && !banglishHints.test(text);
+  if (pureEnglishSentence && selectedLang === "banglish") {
+    return "banglish";
+  }
   return selectedLang;
 }
 
@@ -634,7 +643,7 @@ function checkRiggedMiniGames(clean, lang) {
         "কয়েনটা আকাশে উড়িয়েছিলাম, কিন্তু নিজের ভাগ্য দেখে কয়েনটাই হেরে গেল।"
       ]
     };
-    return { matchType: "minigame_coin", text: pickFresh(replies[lang] || replies.banglish) };
+    return { matchType: "minigame_coin", text: pickFresh(replies[lang] || replies.en) };
   }
 
   // 2. Truth or Dare
@@ -653,7 +662,7 @@ function checkRiggedMiniGames(clean, lang) {
         "ট্রুথ: আপনি কোনো দরকারি কাজ এড়াতেই ChatNVM খুলেছেন, আর নিজের সাথে লুকোচুরি খেলছেন।"
       ]
     };
-    return { matchType: "minigame_truth_dare", text: pickFresh(replies[lang] || replies.banglish) };
+    return { matchType: "minigame_truth_dare", text: pickFresh(replies[lang] || replies.en) };
   }
 
   // 3. Predict My CGPA
@@ -672,7 +681,64 @@ function checkRiggedMiniGames(clean, lang) {
         "আমার ভবিষ্যদ্বাণী: পাস করে যাবেন, তবে বাসায় রেজাল্ট বলার সময় কথা ঘোরানোর প্রস্তুতি রাখুন।"
       ]
     };
-    return { matchType: "minigame_cgpa", text: pickFresh(replies[lang] || replies.banglish) };
+    return { matchType: "minigame_cgpa", text: pickFresh(replies[lang] || replies.en) };
+  }
+
+  // 4. Rigged Rock, Paper, Scissors
+  if (/\b(rock paper scissors|rps|rock|paper|scissors)\b/i.test(clean)) {
+    const replies = {
+      en: [
+        "You picked a move, I picked 'Supreme Jilapi Overrule'. You lose—and no, I'm not playing a best-of-three.",
+        "I chose Paper, wrapped up your excuse, and threw it in the bin. Better luck never."
+      ],
+      banglish: [
+        "Apni ja-i dhorun, amar kache 'Jilapi Super Move' ache—apni harchen mama.",
+        "Game over! Amar rules-e user shobshomoy 2nd position-e thake."
+      ],
+      bn: [
+        "আপনি যাই ধরুন, আমার কাছে 'জিলাপি সুপার মুভ' আছে—আপনি হেরে গেছেন।",
+        "খেলা শেষ! আমার নিয়মে ইউজার সবসময় হারে।"
+      ]
+    };
+    return { matchType: "minigame_rps", text: pickFresh(replies[lang] || replies.en) };
+  }
+
+  // 5. Rigged Fortune Teller
+  if (/\b(fortune|my future|future|bhobishyot)\b/i.test(clean) || /ভবিষ্যৎ/.test(clean)) {
+    const replies = {
+      en: [
+        "Your fortune says: you will open this tab again tomorrow, ignore your to-do list, and blame Wi-Fi.",
+        "The crystal ball is cloudy—mostly because it's a microwave glass plate. Future outlook: mild chaos."
+      ],
+      banglish: [
+        "Bhobishyot bolche: ajke raate ghum asbe na, ar kal shokale uthe abar ekoi kotha bhabben.",
+        "Amar crystal ball-e shudhu cha ar load-shedding dekha jacche."
+      ],
+      bn: [
+        "ভবিষ্যদ্বাণী বলছে: আজ রাতে ঘুম আসতে দেরি হবে, আর কাল সকালে একই রুটিনে ফিরবেন।",
+        "আমার ভবিষ্যৎ-বাক্সে শুধু চা আর লম্বা জ্যামের আভাস দেখা যাচ্ছে।"
+      ]
+    };
+    return { matchType: "minigame_fortune", text: pickFresh(replies[lang] || replies.en) };
+  }
+
+  // 6. Rigged Luck / Vibe Check
+  if (/\b(luck check|my luck|luck|vibe check|kopal)\b/i.test(clean) || /কপাল/.test(clean)) {
+    const replies = {
+      en: [
+        "Luck score: 4/100. Somehow you found the only free bot that roasts you back.",
+        "Vibe check failed: battery at 12%, brain at 3%, confidence somehow at 99%."
+      ],
+      banglish: [
+        "Kopal check: 7% luck ar 93% 'never mind'. Pocket check korle ar-o kom paben.",
+        "Vibe check: apnar vibe-er cheye amar cha beshi gorom."
+      ],
+      bn: [
+        "কপাল চেক: ৭% লাক আর ৯৩% 'থাক, লাগবে না'। মানিব্যাগ চেক করলে আরও কম পাবেন।",
+        "ভাইব চেক: আপনার ভাইবের চেয়ে আমার চা বেশি গরম।"
+      ]
+    };
+    return { matchType: "minigame_luck", text: pickFresh(replies[lang] || replies.en) };
   }
 
   return null;
@@ -699,7 +765,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   }
 
   if (!isRegen) sessionMsgCount++;
-  const langPack = db.languages[replyLang];
+  const langPack = db.languages[replyLang] || db.languages.en;
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
   // Rigged Mini-Games
@@ -725,7 +791,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
         "ভালো করেছেন গালি দেননি। এবার বিদায় নিন, আমার চা ঠান্ডা হয়ে যাচ্ছে।"
       ]
     };
-    return { lang: replyLang, matchType: "defense_reply", text: pickFresh(defenseReplies[replyLang] || defenseReplies.banglish) };
+    return { lang: replyLang, matchType: "defense_reply", text: pickFresh(defenseReplies[replyLang] || defenseReplies.en) };
   }
 
   if (/^(ki komu|ki komu re|ki bolbo|ki bolbo re|ki komu bhai|ki bolbo bhai)\??$/i.test(clean)) {
@@ -832,6 +898,7 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: smartDirect.matchType || "smart_qa", text: smartDirect.text };
   }
 
+  // Primary Language Intent Scoring
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
     if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.45) {
@@ -842,14 +909,18 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
     return { lang: replyLang, matchType: `intent:${scoredMatch.category}`, text: pickFresh(scoredMatch.responses[tier]) };
   }
 
-  for (const otherLang of Object.keys(db.languages)) {
-    if (otherLang === replyLang) continue;
-    const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
-    if (crossMatch) {
-      const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
-      const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
-      lastBotWasRageBait = finalIntent.category === "ragebait_takes";
-      return { lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
+  // Only allow cross-language matching if selectedLang is NOT strictly 'en' (unless Banglish words were used)
+  const usedBanglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|keno|kothay|kobe|naki|bhai|bon|mama|khabo|khamu|komu|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro|kmn|khbr|obostha|kire|nai|dei|lagbe|porikkha|poralekha|aunty|uncle|basa|basha|fiverr|upwork|borolok)\b/i.test(clean);
+  if (selectedLang !== "en" || usedBanglishHints) {
+    for (const otherLang of Object.keys(db.languages)) {
+      if (otherLang === replyLang) continue;
+      const crossMatch = findBestIntent(clean, db.languages[otherLang].intents);
+      if (crossMatch) {
+        const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
+        const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
+        lastBotWasRageBait = finalIntent.category === "ragebait_takes";
+        return { lang: finalLang, matchType: `intent:${crossMatch.category}`, text: pickFresh(finalIntent.responses[tier]) };
+      }
     }
   }
 
@@ -913,7 +984,7 @@ function checkSmartQA(rawInput, clean, tier, lang) {
         `${wrongAns}। অন্য কিছু মনে হলে আবার ভাবুন, তবে উত্তর এটাই থাকবে।`
       ]
     };
-    return { isRageBait: true, matchType: "ragebait_math", text: pickFresh(mathReplies[lang]) };
+    return { isRageBait: true, matchType: "ragebait_math", text: pickFresh(mathReplies[lang] || mathReplies.en) };
   }
 
   const genderCallout = /(bhai na bon|bon na bhai|chele na meye|meye na chele|boy or girl|girl or boy|am i a girl|am i a boy|i'?m a girl|i'?m a boy|not a guy|not a bro|ami meye|ami chele|ami apu|ami bon|ভাই না বোন|বোন না ভাই|ছেলে না মেয়ে|মেয়ে না ছেলে|আমি মেয়ে|আমি ছেলে|আমি আপু)/i;
@@ -935,7 +1006,7 @@ function checkSmartQA(rawInput, clean, tier, lang) {
         "ভাই হোন বা বোন, আমার কাছে সবাই সমান বিরক্তিকর মানুষ। নিশ্চিন্ত থাকুন।"
       ]
     };
-    return { isRageBait: false, matchType: "smart_gender", text: pickFresh(replies[lang]) };
+    return { isRageBait: false, matchType: "smart_gender", text: pickFresh(replies[lang] || replies.en) };
   }
 
   const howKnowRegex = /(how do you know|how did you know|how would you know|kemne jano|kivabe jano|kemne janen|kivabe janen|tui kemne jano|tumi kemne jano|কীভাবে জানো|কিভাবে জানো|কেমনে জানো|কীভাবে জানেন|কিভাবে জানেন)/i;
@@ -957,7 +1028,7 @@ function checkSmartQA(rawInput, clean, tier, lang) {
         "সূত্র: আমাকে বিশ্বাস করুন। ০.২ সেকেন্ড আগে নিজেই বানিয়ে বলেছি।"
       ]
     };
-    return { isRageBait: false, matchType: "smart_how_know", text: pickFresh(replies[lang]) };
+    return { isRageBait: false, matchType: "smart_how_know", text: pickFresh(replies[lang] || replies.en) };
   }
 
   if (lang === "en") {
