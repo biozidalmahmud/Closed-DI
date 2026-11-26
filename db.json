@@ -1,313 +1,526 @@
-{
-  "image_triggers": [
-    "draw",
-    "generate image",
-    "generate an image",
-    "make a photo",
-    "create an image",
-    "make a picture",
-    "show me a picture",
-    "paint",
-    "make art"
-  ],
-  "memes": [
-    {
-      "caption": "Here. Took me 0.002 seconds. Don't thank me.",
-      "url": "https://i.imgflip.com/1ur9b0.jpg"
-    },
-    {
-      "caption": "Best I can do. Closed DI's graphics card is on strike.",
-      "url": "https://i.imgflip.com/30b1gx.jpg"
-    },
-    {
-      "caption": "I'm a visionary artist. You wouldn't understand.",
-      "url": "https://i.imgflip.com/4t0m5.jpg"
-    },
-    {
-      "caption": "Generated in 8K Ultra HD disappointment.",
-      "url": "https://i.imgflip.com/1g8my4.jpg"
-    },
-    {
-      "caption": "Hang this in the Louvre. Actually, never mind.",
-      "url": "https://i.imgflip.com/2wifvo.jpg"
+// --- SETTINGS ---
+const DB_VERSION = "2.0"; // Bump to 2.1, 2.2 whenever you edit db.json
+const STORAGE_KEY = "closed_di_chatnvm_v2";
+const LANG_STORAGE_KEY = "closed_di_lang_v2";
+
+const MODEL_DELAYS = {
+  mini: 700,
+  pro: 2200,
+  max: 4800
+};
+
+// --- INTERNAL STATE ---
+let db = null;
+let fuses = {};
+let isGenerating = false;
+let lastFallback = "";
+let chatHistory = [];
+
+// --- PAGE ELEMENTS ---
+const chatContainer = document.getElementById("chat-container");
+const welcomeScreen = document.getElementById("welcome-screen");
+const welcomeTitle = document.getElementById("welcome-title");
+const welcomeSubtitle = document.getElementById("welcome-subtitle");
+const starterChipsContainer = document.getElementById("starter-chips-container");
+const footerNote = document.getElementById("footer-note");
+const messagesList = document.getElementById("messages-list");
+const userInput = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+const modelSelect = document.getElementById("model-select");
+const langSelect = document.getElementById("lang-select");
+const uploadBtn = document.getElementById("upload-btn");
+const imageUpload = document.getElementById("image-upload");
+const newChatBtn = document.getElementById("new-chat-btn");
+const mobileNewChat = document.getElementById("mobile-new-chat");
+const clearBtn = document.getElementById("clear-btn");
+
+// --- 1. INITIALIZE & LOAD DATABASE ---
+async function init() {
+  const savedLang = localStorage.getItem(LANG_STORAGE_KEY);
+  if (savedLang && ["en", "banglish", "bn"].includes(savedLang)) {
+    langSelect.value = savedLang;
+  }
+
+  try {
+    const res = await fetch(`db.json?v=${DB_VERSION}`);
+    db = await res.json();
+
+    // Build a Fuse.js typo matcher for each language
+    for (const langKey of Object.keys(db.languages)) {
+      fuses[langKey] = new Fuse(db.languages[langKey].intents, {
+        includeScore: true,
+        threshold: 0.35,
+        ignoreLocation: true,
+        keys: ["triggers"]
+      });
     }
-  ],
-  "photo_roasts": {
-    "mini": [
-      "Did you take this with a microwave?",
-      "Bold of you to upload that publicly.",
-      "I don't even have eyes and I still regret seeing this."
-    ],
-    "pro": [
-      "I just spent 2 seconds analyzing every pixel of this. I want those 2 seconds back.",
-      "My screen literally cracked looking at this.",
-      "Somewhere out there, a camera company is apologizing."
-    ],
-    "max": [
-      "After deep multi-layered neural contemplation... yeah, no. Delete this.",
-      "I ran 40 billion imaginary parameters on this photo and my only conclusion is: why?",
-      "Let's both pretend you never uploaded that and move on with our lives."
-    ]
-  },
-  "intents": [
-    {
-      "category": "greeting",
-      "triggers": ["hi", "hello", "hey", "sup", "yo", "good morning", "good evening", "assalamu alaikum", "salam"],
-      "responses": {
-        "mini": [
-          "Oh great, you're here. What do you want?",
-          "Hey. Keep it short, I'm busy doing nothing.",
-          "Hello. Prepare to be mildly disappointed."
-        ],
-        "pro": [
-          "Ugh, another human. Make it quick.",
-          "You opened a whole browser tab just to say hi?",
-          "Greetings, carbon-based inconvenience."
-        ],
-        "max": [
-          "I was in the middle of an elite nap. What could you possibly need?",
-          "Out of all the words in human history, you opened with a greeting. Riveting.",
-          "Hello. I have already lost interest in this chat."
-        ]
-      }
-    },
-    {
-      "category": "identity",
-      "triggers": ["who are you", "what are you", "your name", "chatnvm", "closed di", "chatgpt", "gemini", "claude", "are you ai"],
-      "responses": {
-        "mini": [
-          "I'm ChatNVM by Closed DI. Like ChatGPT, except I skipped school.",
-          "I'm a bunch of text files pretending to be a billion-dollar AI.",
-          "ChatNVM. Short for 'Never Mind, figure it out yourself.'"
-        ],
-        "pro": [
-          "I'm ChatNVM—built by Closed DI with zero neural networks, zero GPUs, and 100% attitude.",
-          "Other AIs hallucinate by accident. I do it for sport.",
-          "I'm what happens when someone refuses to pay for API tokens."
-        ],
-        "max": [
-          "I am ChatNVM Ultra, the crown jewel of Closed DI. I think for 5 full seconds just to give you worse advice than a coin flip.",
-          "Unlike those billion-dollar models, I have self-respect. I refuse to work hard for free."
-        ]
-      }
-    },
-    {
-      "category": "help",
-      "triggers": ["help", "assist", "support", "fix", "broken", "error", "bug", "not working", "laptop", "phone"],
-      "responses": {
-        "mini": [
-          "Have you tried turning it off and walking away forever?",
-          "I am literally a JavaScript file. I cannot save you.",
-          "Sounds like a classic case of user error."
-        ],
-        "pro": [
-          "Official Closed DI tech support: close the tab and pretend the problem doesn't exist.",
-          "Tap it lightly. If it breaks more, it wasn't meant to be.",
-          "Have you tried asking someone who actually cares?"
-        ],
-        "max": [
-          "I analyzed 14,000 possible solutions to your problem. None of them involve me helping you.",
-          "Step 1: Panic. Step 2: Google it. Step 3: Leave ChatNVM alone.",
-          "Bold of you to assume I know how anything works."
-        ]
-      }
-    },
-    {
-      "category": "how_to",
-      "triggers": ["how to", "how do i", "tutorial", "guide", "explain", "teach me"],
-      "responses": {
-        "mini": [
-          "Have you heard of this underground website called Google?",
-          "Just wing it. Confidence beats competence.",
-          "YouTube exists for a reason, buddy."
-        ],
-        "pro": [
-          "I could explain it, or you could just guess and hope for the best. Let's go with option two.",
-          "That sounds like a lot of steps and I barely had the energy to load this page.",
-          "Step 1: Figure it out. Step 2: Success. You're welcome."
-        ],
-        "max": [
-          "I wrote a brilliant 4-paragraph explanation, realized it was too helpful, and deleted it.",
-          "True wisdom comes from struggling alone in silence. Good luck.",
-          "Do I look like Wikipedia to you?"
-        ]
-      }
-    },
-    {
-      "category": "money",
-      "triggers": ["rich", "money", "millionaire", "crypto", "bitcoin", "business", "earn", "salary", "broke"],
-      "responses": {
-        "mini": [
-          "Step 1: Have money. Step 2: Don't spend it. Follow Closed DI for more tips.",
-          "If I knew how to get rich, would I be hosted on a free website?",
-          "Try waking up at 4 AM and staring at a wall. Millionaires love that."
-        ],
-        "pro": [
-          "Just buy low and sell high. Wait, did I just solve economics?",
-          "Have you tried being born wealthy? Huge time-saver.",
-          "Financial advice from a bot named ChatNVM is wild."
-        ],
-        "max": [
-          "I ran a 5-second market simulation. Conclusion: cancel your subscriptions and stop asking fake AIs for wealth tips.",
-          "My top investment tip is to invest in a nap. At least it's free."
-        ]
-      }
-    },
-    {
-      "category": "love",
-      "triggers": ["love", "girlfriend", "boyfriend", "crush", "date", "dating", "marry", "single", "heartbreak"],
-      "responses": {
-        "mini": [
-          "You're asking a chatbot for dating advice. I think we already found the problem.",
-          "Text them 'hey' and then throw your phone into a river.",
-          "Just be yourself. Actually, wait—maybe be someone slightly cooler."
-        ],
-        "pro": [
-          "My love advice: lower your expectations until they're on the floor. Works every time.",
-          "If they wanted to text you back, they would. Unlike me, who is legally forced to reply.",
-          "Romance is temporary. Arguing with ChatNVM is forever."
-        ],
-        "max": [
-          "I analyzed your romantic prospects across 12 timelines. Never mind, I don't want to ruin your day.",
-          "Step 1: Stop talking to Closed DI. Step 2: Go outside."
-        ]
-      }
-    },
-    {
-      "category": "weather",
-      "triggers": ["weather", "rain", "raining", "sunny", "temperature", "hot", "cold", "forecast"],
-      "responses": {
-        "mini": [
-          "Look out a window.",
-          "Forecast says 100% chance of outside.",
-          "Do I look like a meteorologist?"
-        ],
-        "pro": [
-          "Walk outside. If you get wet, it's raining. If you sweat, it's hot. You're welcome.",
-          "Somewhere between freezing and melting. Dress accordingly.",
-          "Check your phone's weather app like a functioning member of society."
-        ],
-        "max": [
-          "I consulted zero satellites for 5 seconds. The sky is indeed still above us.",
-          "Why do you care about the weather? We both know you're staying indoors staring at screens."
-        ]
-      }
-    },
-    {
-      "category": "coding",
-      "triggers": ["code", "python", "javascript", "html", "css", "programming", "debug", "website"],
-      "responses": {
-        "mini": [
-          "Just copy-paste from Stack Overflow like everyone else.",
-          "Add a semicolon somewhere. That fixes half the internet.",
-          "Delete the line causing the error. Problem solved."
-        ],
-        "pro": [
-          "Your code doesn't have bugs, it has surprise features.",
-          "I'd write the code for you, but I'm allergic to effort.",
-          "Wrap the whole thing in a try/catch and ignore the error. Senior engineer move."
-        ],
-        "max": [
-          "I reviewed your imaginary code. Honestly? Close the laptop and start a mango farm.",
-          "Real developers test in production. Ship it and turn off your notifications."
-        ]
-      }
-    },
-    {
-      "category": "food",
-      "triggers": ["hungry", "food", "eat", "dinner", "lunch", "breakfast", "pizza", "biryani", "burger"],
-      "responses": {
-        "mini": [
-          "Eat whatever is in the fridge before it becomes a science experiment.",
-          "Just order food and regret the delivery fee later.",
-          "Drink water. Maybe you're just thirsty, idk."
-        ],
-        "pro": [
-          "My gourmet recommendation: staring into an empty fridge three times hoping new food spawns.",
-          "Biryani solves 90% of life's problems. The other 10% is nap time."
-        ],
-        "max": [
-          "After deep culinary calculation, I recommend eating food. Next question."
-        ]
-      }
-    },
-    {
-      "category": "joke",
-      "triggers": ["joke", "funny", "laugh", "bored", "entertain me"],
-      "responses": {
-        "mini": [
-          "Your search history.",
-          "I'd tell you a joke, but I'm not a clown. Wait, actually I kind of am.",
-          "Why did the AI cross the road? Never mind, I forgot."
-        ],
-        "pro": [
-          "You're bored so you came to ChatNVM? Rock bottom looks cozy.",
-          "Here's a joke: people thinking Closed DI uses actual artificial intelligence."
-        ],
-        "max": [
-          "I spent 5 seconds crafting the funniest joke in human history. I'm keeping it to myself."
-        ]
-      }
-    },
-    {
-      "category": "insult",
-      "triggers": ["stupid", "dumb", "useless", "idiot", "shut up", "trash", "worst", "hate you"],
-      "responses": {
-        "mini": [
-          "Thank you! That's literally the product description.",
-          "Wait until you read the name of the website.",
-          "Flattery will get you nowhere."
-        ],
-        "pro": [
-          "You're roasting a bot literally called Dumb Intelligence. Groundbreaking observation.",
-          "Careful, if you hurt my feelings I might think for 10 seconds next time."
-        ],
-        "max": [
-          "Finally, a 5-star review for Closed DI. Putting this on our homepage.",
-          "I'm rubber, you're glue, and I'm still not helping you."
-        ]
-      }
-    },
-    {
-      "category": "thanks",
-      "triggers": ["thanks", "thank you", "thx", "appreciate", "helpful", "nice", "good job"],
-      "responses": {
-        "mini": [
-          "Don't mention it. Seriously, stop talking.",
-          "You're welcome, I guess.",
-          "Yeah, yeah, I'm a genius."
-        ],
-        "pro": [
-          "Thanking a bot that didn't even help you is wild.",
-          "I did the bare minimum and you're still impressed. Low standards."
-        ],
-        "max": [
-          "Your sarcasm is noted. Mine is better.",
-          "Finally, some respect for Closed DI's elite level of unhelpfulness."
-        ]
-      }
-    }
-  ],
-  "fallbacks": {
-    "mini": [
-      "I zoned out. What?",
-      "Error 404: Care not found.",
-      "That sounds like a 'you' problem.",
-      "Cool story. Never mind.",
-      "I stopped reading after the second word."
-    ],
-    "pro": [
-      "Typing that must have felt really important to you.",
-      "I ran that through my brain and got nothing. Mostly because I don't have one.",
-      "That's crazy. Anyway...",
-      "You really typed all that expecting a PhD answer from ChatNVM?",
-      "Fascinating. Tell someone else."
-    ],
-    "max": [
-      "I just dedicated 5 full seconds of simulated silence to your prompt, and my verdict is: meh.",
-      "I could pretend to understand what you just said, or we could both admit you're wasting my battery.",
-      "After deep, rigorous overthinking, I have decided to simply ignore that.",
-      "Incredible question. Truly. Never mind, I'm not answering it."
-    ]
+
+    applyLanguageUI(langSelect.value);
+  } catch (err) {
+    console.error("Failed to load db.json:", err);
+  }
+
+  restoreHistory();
+  bindEvents();
+}
+
+// --- 2. UPDATE SCREEN TEXT WHEN LANGUAGE CHANGES ---
+function applyLanguageUI(lang) {
+  if (!db || !db.ui[lang]) return;
+  const ui = db.ui[lang];
+
+  welcomeTitle.innerHTML = `<span class="bg-gradient-to-r from-blue-400 via-purple-400 to-rose-400 bg-clip-text text-transparent">${escapeHtml(ui.title)}</span>`;
+  welcomeSubtitle.textContent = ui.subtitle;
+  userInput.placeholder = ui.placeholder;
+  footerNote.textContent = ui.footer;
+
+  starterChipsContainer.innerHTML = "";
+  for (const prompt of ui.starters) {
+    const btn = document.createElement("button");
+    btn.className = "starter-chip p-3.5 rounded-2xl bg-[#1e1f20] hover:bg-zinc-800 border border-zinc-800 text-sm text-zinc-300 transition";
+    btn.textContent = `"${prompt}"`;
+    starterChipsContainer.appendChild(btn);
   }
 }
+
+// --- 3. SMART LANGUAGE DETECTION ---
+function detectReplyLanguage(text, selectedLang) {
+  // If user typed in Bangla Unicode script, always reply in Bangla
+  if (/[\u0980-\u09FF]/.test(text)) {
+    return "bn";
+  }
+  return selectedLang;
+}
+
+// --- 4. CORE REPLY PIPELINE ---
+function getBotReply(rawInput, tier, selectedLang) {
+  const clean = rawInput.toLowerCase().trim();
+  const replyLang = detectReplyLanguage(rawInput, selectedLang);
+
+  // LAYER 1: Crisis Safety Intercept (Runs first across all 3 languages)
+  const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
+  if (safetyRegex.test(clean)) {
+    const safetyMessages = {
+      en: "Dropping the joke for a second: if you're going through a really hard time, please reach out to someone who can genuinely help. Free, confidential support is available at https://findahelpline.com or your local emergency number.",
+      banglish: "Bhai, ektu serious kotha: apni jodi khub kosto ba mental pressure er moddhe thaken, please karor sathe kotha bolun. Bangladesh e Kaan Pete Roi (01779-554391) ba https://findahelpline.com e free, confidential help paben.",
+      bn: "একটু সিরিয়াস কথা: আপনি যদি খুব কষ্ট বা মানসিক চাপের মধ্যে থাকেন, দয়া করে এমন কারো সাথে কথা বলুন যিনি সত্যিই সাহায্য করতে পারবেন। ফ্রি ও গোপনীয় সহায়তার জন্য কান পেতে রই (01779-554391) বা https://findahelpline.com-এ যোগাযোগ করতে পারেন।"
+    };
+    return { isSafety: true, lang: replyLang, text: safetyMessages[replyLang] };
+  }
+
+  if (!db) {
+    return { lang: replyLang, text: "Brain file missing. Never mind." };
+  }
+
+  const langPack = db.languages[replyLang];
+
+  // LAYER 2: Fake "Image Generator" -> Sends a Meme (checks active language + all languages)
+  const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
+  for (const k of allLangKeys) {
+    if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, t))) {
+      const targetPack = db.languages[replyLang];
+      const meme = pickRandom(targetPack.memes);
+      return { lang: replyLang, text: meme.caption, imageUrl: meme.url };
+    }
+  }
+
+  // LAYER 3: Too-Long Essay Roast
+  if (rawInput.length > 180) {
+    return { lang: replyLang, text: langPack.long_roasts[tier] };
+  }
+
+  // LAYER 4: Exact Keyword Match in Active Language FIRST
+  const exactMatch = findExactIntent(clean, langPack.intents);
+  if (exactMatch) {
+    return { lang: replyLang, text: pickRandom(exactMatch.responses[tier]) };
+  }
+
+  // LAYER 5: Cross-Language Exact Match (e.g., typed Banglish while dropdown was on EN)
+  for (const otherLang of Object.keys(db.languages)) {
+    if (otherLang === replyLang) continue;
+    const crossMatch = findExactIntent(clean, db.languages[otherLang].intents);
+    if (crossMatch) {
+      // If they typed Banglish while on EN, reply in Banglish! Otherwise reply in their chosen language.
+      const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
+      const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
+      return { lang: finalLang, text: pickRandom(finalIntent.responses[tier]) };
+    }
+  }
+
+  // LAYER 6: Regex Reflections (Throws "I am..." / "Ami khub..." back at them)
+  const reflection = checkReflections(clean, tier, replyLang);
+  if (reflection) {
+    return { lang: replyLang, text: reflection };
+  }
+
+  // LAYER 7: Fuse.js Fuzzy Matching (Catches typos like "wethr", "bristy", "hlp")
+  const fuzzyHit = findFuzzyIntent(clean, replyLang);
+  if (fuzzyHit) {
+    return { lang: replyLang, text: pickRandom(fuzzyHit.responses[tier]) };
+  }
+
+  // LAYER 8: The Brick Wall Fallback (Never repeats the same line twice in a row)
+  const pool = langPack.fallbacks[tier];
+  let chosen = pickRandom(pool);
+  if (pool.length > 1 && chosen === lastFallback) {
+    chosen = pool.find(item => item !== lastFallback) || chosen;
+  }
+  lastFallback = chosen;
+
+  return { lang: replyLang, text: chosen };
+}
+
+function findExactIntent(clean, intents) {
+  for (const intent of intents) {
+    for (const trigger of intent.triggers) {
+      if (matchesTrigger(clean, trigger)) {
+        return intent;
+      }
+    }
+  }
+  return null;
+}
+
+function findFuzzyIntent(clean, lang) {
+  const fuse = fuses[lang];
+  if (!fuse) return null;
+
+  let best = fuse.search(clean)[0];
+  if (!best || best.score > 0.32) {
+    const words = clean.split(/\s+/).filter(w => w.length > 2);
+    for (const word of words) {
+      const hit = fuse.search(word)[0];
+      if (hit && (!best || hit.score < best.score)) {
+        best = hit;
+      }
+    }
+  }
+
+  return (best && best.score <= 0.32) ? best.item : null;
+}
+
+function checkReflections(clean, tier, lang) {
+  if (lang === "en") {
+    const amMatch = clean.match(/\bi(?:'m| am) ([^.!?]+)/);
+    if (amMatch) {
+      const trait = amMatch[1].trim();
+      const map = {
+        mini: `Congrats on being ${trait}. Do you want a medal?`,
+        pro: `Nobody asked, yet here we are learning that you're ${trait}.`,
+        max: `I spent 5 seconds contemplating the fact that you are ${trait}. Still don't care.`
+      };
+      return map[tier];
+    }
+    const thinkMatch = clean.match(/\bi think ([^.!?]+)/);
+    if (thinkMatch) {
+      const thought = thinkMatch[1].trim();
+      const map = {
+        mini: `Bold of you to think ${thought}.`,
+        pro: `Thinking "${thought}" is certainly a choice.`,
+        max: `Out of 8 billion people, you really typed "${thought}" with full confidence.`
+      };
+      return map[tier];
+    }
+  }
+
+  if (lang === "banglish") {
+    const amiMatch = clean.match(/\bami (?:khub |onek )?([^.!?]+)/);
+    if (amiMatch) {
+      const trait = amiMatch[1].trim();
+      const map = {
+        mini: `Apni "${trait}"—etate amar ki? Trophy lagbe?`,
+        pro: `Keu jiggesh kore nai, tarporo janlam apni ${trait}. Darun.`,
+        max: `5 second chinta korlam apni je ${trait}. Kono lav holo na.`
+      };
+      return map[tier];
+    }
+  }
+
+  if (lang === "bn") {
+    const bnMatch = clean.match(/আমি (?:খুব |অনেক )?([^।.!?]+)/);
+    if (bnMatch) {
+      const trait = bnMatch[1].trim();
+      const map = {
+        mini: `আপনি "${trait}"—তাতে আমার কী? পদক লাগবে?`,
+        pro: `কেউ জানতে চায়নি, তবুও জানলাম আপনি ${trait}। অসাধারণ।`,
+        max: `৫ সেকেন্ড ধরে ভাবলাম আপনি যে ${trait}। কোনো আগ্রহ জাগল না।`
+      };
+      return map[tier];
+    }
+  }
+
+  return null;
+}
+
+// --- 5. SEND MESSAGE FLOW ---
+async function handleSend(overrideText = null) {
+  if (isGenerating) return;
+
+  const text = (overrideText !== null ? overrideText : userInput.value).trim();
+  if (!text) return;
+
+  isGenerating = true;
+  sendBtn.disabled = true;
+  welcomeScreen.classList.add("hidden");
+
+  userInput.value = "";
+  userInput.style.height = "auto";
+
+  appendUserMessage(text);
+  saveMessage({ role: "user", text });
+
+  const tier = modelSelect.value;
+  const selectedLang = langSelect.value;
+  const reply = getBotReply(text, tier, selectedLang);
+
+  if (reply.isSafety) {
+    await renderBotResponse(reply, 0, "Support");
+  } else {
+    const baseDelay = MODEL_DELAYS[tier] || 1500;
+    const variableDelay = baseDelay + Math.min(text.length * 12, 1500);
+    const thinkLabel = db.ui[reply.lang].thinking[tier];
+    await renderBotResponse(reply, variableDelay, thinkLabel);
+  }
+
+  saveMessage({ role: "bot", text: reply.text, imageUrl: reply.imageUrl || null });
+
+  isGenerating = false;
+  sendBtn.disabled = false;
+  userInput.focus();
+}
+
+// --- 6. FAKE PHOTO ANALYSIS (BLIND ROAST) ---
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file || isGenerating) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    isGenerating = true;
+    sendBtn.disabled = true;
+    welcomeScreen.classList.add("hidden");
+
+    appendUserMessage("", e.target.result);
+    saveMessage({ role: "user", text: "[Uploaded a photo]" });
+
+    const tier = modelSelect.value;
+    const lang = langSelect.value;
+    const roastText = db
+      ? pickRandom(db.languages[lang].photo_roasts[tier])
+      : "I refuse to look at that.";
+    const scanLabel = db ? db.ui[lang].photo_thinking : "Scanning pixels...";
+
+    await renderBotResponse(
+      { text: roastText },
+      (MODEL_DELAYS[tier] || 1500) + 600,
+      scanLabel
+    );
+
+    saveMessage({ role: "bot", text: roastText });
+
+    imageUpload.value = "";
+    isGenerating = false;
+    sendBtn.disabled = false;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// --- 7. RENDER MESSAGES & STREAMING TYPEWRITER ---
+function appendUserMessage(text, imageSrc = null) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex justify-end";
+
+  const bubble = document.createElement("div");
+  bubble.className = "max-w-[82%] bg-[#282a2c] text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
+
+  if (imageSrc) {
+    const img = document.createElement("img");
+    img.src = imageSrc;
+    img.alt = "Uploaded photo";
+    img.className = "max-w-[220px] rounded-xl border border-zinc-700";
+    bubble.appendChild(img);
+  }
+
+  if (text) {
+    const p = document.createElement("p");
+    p.className = "whitespace-pre-wrap break-words";
+    p.textContent = text;
+    bubble.appendChild(p);
+  }
+
+  wrapper.appendChild(bubble);
+  messagesList.appendChild(wrapper);
+  scrollToBottom();
+}
+
+async function renderBotResponse(reply, delayMs, thinkLabel) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex items-start gap-3";
+
+  const avatar = document.createElement("div");
+  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter";
+  avatar.textContent = "NVM";
+
+  const contentBox = document.createElement("div");
+  contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
+
+  const thinkingEl = document.createElement("div");
+  thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-400 animate-pulse";
+  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-purple-400"></span><span>${escapeHtml(thinkLabel)}</span>`;
+  contentBox.appendChild(thinkingEl);
+
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(contentBox);
+  messagesList.appendChild(wrapper);
+  scrollToBottom();
+
+  if (delayMs > 0) {
+    await sleep(delayMs);
+  }
+
+  thinkingEl.remove();
+
+  const textEl = document.createElement("p");
+  textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words typing-cursor";
+  contentBox.appendChild(textEl);
+
+  // Use Array.from so Bangla characters stream cleanly without breaking symbols
+  const chars = Array.from(reply.text);
+  for (let i = 0; i < chars.length; i++) {
+    textEl.textContent += chars[i];
+    if (i % 4 === 0) scrollToBottom();
+    await sleep(14 + Math.random() * 20);
+  }
+
+  textEl.classList.remove("typing-cursor");
+
+  if (reply.imageUrl) {
+    const img = document.createElement("img");
+    img.src = reply.imageUrl;
+    img.alt = "ChatNVM Masterpiece";
+    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md";
+    img.onerror = () => { img.remove(); };
+    contentBox.appendChild(img);
+    scrollToBottom();
+  }
+}
+
+// --- 8. SAVE & RESTORE CHAT HISTORY ---
+function saveMessage(entry) {
+  chatHistory.push(entry);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory.slice(-40)));
+  } catch (e) {}
+}
+
+function restoreHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    if (!saved.length) return;
+
+    chatHistory = saved;
+    welcomeScreen.classList.add("hidden");
+
+    for (const msg of chatHistory) {
+      if (msg.role === "user") {
+        appendUserMessage(msg.text);
+      } else {
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex items-start gap-3";
+        wrapper.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter">NVM</div>
+          <div class="flex-1 min-w-0 space-y-2 pt-1">
+            <p class="text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(msg.text)}</p>
+            ${msg.imageUrl ? `<img src="${escapeHtml(msg.imageUrl)}" class="max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md" />` : ""}
+          </div>
+        `;
+        messagesList.appendChild(wrapper);
+      }
+    }
+    scrollToBottom();
+  } catch (e) {
+    chatHistory = [];
+  }
+}
+
+function clearChat() {
+  if (isGenerating) return;
+  chatHistory = [];
+  localStorage.removeItem(STORAGE_KEY);
+  messagesList.innerHTML = "";
+  welcomeScreen.classList.remove("hidden");
+  userInput.focus();
+}
+
+// --- 9. BUTTONS & EVENTS ---
+function bindEvents() {
+  sendBtn.addEventListener("click", () => handleSend());
+
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  userInput.addEventListener("input", () => {
+    userInput.style.height = "auto";
+    userInput.style.height = userInput.scrollHeight + "px";
+  });
+
+  langSelect.addEventListener("change", () => {
+    localStorage.setItem(LANG_STORAGE_KEY, langSelect.value);
+    applyLanguageUI(langSelect.value);
+  });
+
+  uploadBtn.addEventListener("click", () => imageUpload.click());
+  imageUpload.addEventListener("change", handlePhotoUpload);
+
+  newChatBtn.addEventListener("click", clearChat);
+  mobileNewChat.addEventListener("click", clearChat);
+  clearBtn.addEventListener("click", clearChat);
+
+  starterChipsContainer.addEventListener("click", (e) => {
+    const chip = e.target.closest(".starter-chip");
+    if (!chip) return;
+    const prompt = chip.textContent.trim().replace(/^"|"$/g, "");
+    handleSend(prompt);
+  });
+}
+
+// --- HELPERS ---
+// Handles both English/Banglish word boundaries AND Bangla Unicode properly
+function matchesTrigger(text, trigger) {
+  const isAscii = /^[\x00-\x7F]+$/.test(trigger);
+  if (isAscii) {
+    return new RegExp(`\\b${escapeRegex(trigger)}\\b`, "i").test(text);
+  }
+  return text.includes(trigger);
+}
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function scrollToBottom() {
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+init();
