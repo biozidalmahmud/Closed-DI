@@ -45,7 +45,7 @@
       display: inline-block;
       margin-left: 2px;
       animation: blink 0.8s infinite;
-      color: #10b981;
+      color: #3b82f6;
     }
     @keyframes blink {
       0%, 50% { opacity: 1; }
@@ -58,7 +58,7 @@
     .dark ::-webkit-scrollbar-thumb { background: #3f3f46; }
   </style>
 </head>
-<body class="bg-zinc-50 dark:bg-[#131314] text-zinc-900 dark:text-zinc-100 antialiased overflow-hidden transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-[#111318] text-zinc-900 dark:text-zinc-100 antialiased overflow-hidden transition-colors duration-200">
 
   <div class="app-shell flex w-full relative">
 
@@ -66,17 +66,14 @@
     <div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black/40 z-30 md:hidden"></div>
 
     <!-- Left Sidebar (Desktop fixed + Mobile slide-out drawer) -->
-    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 -translate-x-full md:translate-x-0 flex flex-col bg-zinc-100 dark:bg-[#1e1f20] border-r border-zinc-200 dark:border-zinc-800 p-3 shrink-0 transition-transform duration-200">
-      <div class="px-2 pb-3 mb-2 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">Closed DI</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/70 font-semibold">v4.1</span>
-        </div>
-        <button id="close-sidebar-btn" type="button" class="md:hidden p-1 rounded-lg text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800" title="Close menu">✕</button>
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 -translate-x-full md:translate-x-0 flex flex-col bg-slate-100 dark:bg-[#191c24] border-r border-slate-200 dark:border-zinc-800 p-3 shrink-0 transition-transform duration-200">
+      <div class="px-2 pb-3 mb-2 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400">Closed DI</span>
+        <button id="close-sidebar-btn" type="button" class="md:hidden p-1 rounded-lg text-zinc-500 hover:bg-slate-200 dark:hover:bg-zinc-800" title="Close menu">✕</button>
       </div>
 
-      <button id="new-chat-btn" type="button" class="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-100 text-sm font-medium shadow-sm transition">
-        <span class="text-emerald-600 dark:text-emerald-400 font-bold">＋</span>
+      <button id="new-chat-btn" type="button" class="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-800/90 hover:bg-blue-50 dark:hover:bg-zinc-700 border border-slate-200 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-100 text-sm font-medium shadow-sm transition">
+        <span class="text-blue-600 dark:text-blue-400 font-bold">＋</span>
         <span>New Disappointment</span>
       </button>
 
@@ -85,9 +82,9 @@
         <div id="chat-list" class="space-y-1 text-sm"></div>
       </div>
 
-      <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 px-2 space-y-1">
+      <div class="pt-3 border-t border-slate-200 dark:border-zinc-800 text-xs text-zinc-500 px-2 space-y-1">
         <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
           <span>0 GPUs • Saved Locally</span>
         </div>
         <p class="text-[11px] text-zinc-400 dark:text-zinc-600">© Closed DI Research Lab</p>
@@ -95,23 +92,23 @@
     </aside>
 
     <!-- Main Chat Area -->
-    <main class="flex-1 flex flex-col min-w-0 bg-zinc-50 dark:bg-[#131314] transition-colors duration-200">
+    <main class="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-[#111318] transition-colors duration-200">
 
       <!-- Top Header -->
-      <header class="flex items-center justify-between gap-2 px-3 md:px-4 py-3 border-b border-zinc-200 dark:border-zinc-800/80 bg-white/80 dark:bg-[#131314]/90 backdrop-blur shrink-0">
+      <header class="flex items-center justify-between gap-2 px-3 md:px-4 py-3 border-b border-slate-200 dark:border-zinc-800/80 bg-white/85 dark:bg-[#111318]/90 backdrop-blur shrink-0">
         <div class="flex items-center gap-2 min-w-0">
           <!-- Mobile Sidebar Menu Button -->
-          <button id="mobile-menu-btn" type="button" class="md:hidden p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0" title="Saved Chats">
+          <button id="mobile-menu-btn" type="button" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0" title="Saved Chats">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          <span class="text-base md:text-lg font-bold tracking-tight bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent shrink-0">
+          <span class="text-base md:text-lg font-bold tracking-tight bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent shrink-0">
             ChatNVM
           </span>
 
-          <select id="model-select" class="bg-zinc-100 dark:bg-[#1e1f20] hover:bg-zinc-200/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs md:text-sm font-medium px-2 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700/80 outline-none cursor-pointer transition truncate max-w-[125px] sm:max-w-none">
+          <select id="model-select" class="bg-slate-100 dark:bg-[#191c24] hover:bg-slate-200/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs md:text-sm font-medium px-2 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-700/80 outline-none cursor-pointer transition truncate max-w-[130px] sm:max-w-none">
             <option value="mini">Mini (Fast)</option>
             <option value="pro" selected>Plus (Lazy)</option>
             <option value="max">Ultra (5s Think)</option>
@@ -120,25 +117,21 @@
 
         <div class="flex items-center gap-1.5 shrink-0">
           <!-- Language Selector -->
-          <select id="lang-select" class="bg-zinc-100 dark:bg-[#1e1f20] hover:bg-zinc-200/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs md:text-sm font-medium px-2 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700/80 outline-none cursor-pointer transition">
+          <select id="lang-select" class="bg-slate-100 dark:bg-[#191c24] hover:bg-slate-200/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs md:text-sm font-medium px-2 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-700/80 outline-none cursor-pointer transition">
             <option value="en">EN</option>
             <option value="banglish" selected>Banglish</option>
             <option value="bn">বাংলা</option>
           </select>
 
           <!-- Light / Dark Mode Toggle -->
-          <button id="theme-toggle-btn" type="button" title="Switch Light / Dark Mode" class="p-1.5 rounded-lg bg-zinc-100 dark:bg-[#1e1f20] hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 transition">
-            <svg id="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <button id="theme-toggle-btn" type="button" title="Switch Light / Dark Mode" class="p-1.5 rounded-lg bg-slate-100 dark:bg-[#191c24] hover:bg-slate-200 dark:hover:bg-zinc-800 border border-slate-300 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
             </svg>
-            <svg id="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="5" />
               <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
             </svg>
-          </button>
-
-          <button id="clear-btn" type="button" class="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 px-2 py-1.5 rounded-lg hover:bg-zinc-200/80 dark:hover:bg-zinc-800 transition">
-            Clear
           </button>
         </div>
       </header>
@@ -149,11 +142,11 @@
 
           <!-- Welcome Screen -->
           <div id="welcome-screen" class="py-10 md:py-20 text-center space-y-5">
-            <div class="inline-block px-3 py-1 rounded-full bg-emerald-50 dark:bg-[#1e1f20] border border-emerald-200 dark:border-zinc-800 text-xs text-emerald-700 dark:text-emerald-400 font-medium tracking-wide">
+            <div class="inline-block px-3 py-1 rounded-full bg-blue-50 dark:bg-[#191c24] border border-blue-200 dark:border-zinc-800 text-xs text-blue-700 dark:text-blue-400 font-medium tracking-wide">
               Closed DI presents
             </div>
             <h1 id="welcome-title" class="text-3xl md:text-5xl font-bold tracking-tight">
-              <span class="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">
+              <span class="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 Ask ChatNVM.
               </span>
             </h1>
@@ -172,15 +165,15 @@
       </section>
 
       <!-- Bottom Input Area -->
-      <footer class="px-4 pb-4 pt-2 shrink-0 bg-zinc-50 dark:bg-[#131314] transition-colors duration-200">
+      <footer class="px-4 pb-4 pt-2 shrink-0 bg-slate-50 dark:bg-[#111318] transition-colors duration-200">
         <div class="max-w-3xl mx-auto">
-          <div class="flex items-end gap-2 bg-white dark:bg-[#1e1f20] border border-zinc-300 dark:border-zinc-700/80 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 rounded-3xl px-3 py-2 shadow-sm dark:shadow-lg transition">
+          <div class="flex items-end gap-2 bg-white dark:bg-[#191c24] border border-slate-300 dark:border-zinc-700/80 focus-within:border-blue-500 dark:focus-within:border-blue-500 rounded-3xl px-3 py-2 shadow-sm dark:shadow-lg transition">
 
             <!-- Hidden Photo Uploader -->
             <input type="file" id="image-upload" accept="image/*" class="hidden" />
 
             <!-- Paperclip Button -->
-            <button id="upload-btn" type="button" title="Upload a photo to get roasted" class="p-2.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-zinc-700/60 transition shrink-0">
+            <button id="upload-btn" type="button" title="Upload a photo to get roasted" class="p-2.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-700/60 transition shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
               </svg>
@@ -198,7 +191,7 @@
             ></textarea>
 
             <!-- Send Button -->
-            <button id="send-btn" type="button" class="p-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0">
+            <button id="send-btn" type="button" class="p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 text-white disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
               </svg>
