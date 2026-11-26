@@ -173,7 +173,6 @@ function getBotReply(rawInput, tier, selectedLang) {
   }
 
   // LAYER 9: Random Chaos Roll (Live Theatrical Gags OR Full-Paragraph Hijacks)
-  // Avoid hijacking a simple "hi" on the very first message
   const isFirstSimpleGreeting = sessionMsgCount === 1 && clean.length <= 12;
   if (!isFirstSimpleGreeting) {
     const roll = Math.random();
@@ -476,7 +475,6 @@ async function renderBotResponse(reply, delayMs, thinkLabel) {
     await streamChars(textEl, bait, 18);
     await sleep(1050);
 
-    // Rapidly backspace the helpful answer
     let currentChars = Array.from(textEl.textContent);
     while (currentChars.length > 0) {
       currentChars.splice(-3);
@@ -499,7 +497,7 @@ async function renderBotResponse(reply, delayMs, thinkLabel) {
     }
     finalSavedText = parts.join("");
   }
-  // STANDARD STREAMING (Speeds up slightly for long essays so users don't wait forever)
+  // STANDARD STREAMING
   else {
     const speed = reply.text.length > 220 ? 9 : 16;
     await streamChars(textEl, reply.text, speed);
@@ -624,7 +622,6 @@ function matchesTrigger(text, trigger) {
   return text.includes(trigger);
 }
 
-// Anti-repeat picker: avoids repeating the last 25 outputs
 function pickFresh(arr) {
   if (!arr || !arr.length) return "";
   const fresh = arr.filter(item => !recentlyUsed.includes(item));
