@@ -220,6 +220,13 @@ function handleFakeSubscribe() {
 }
 
 // --- 3. MICROPHONE VOICE INPUT (WEB SPEECH API) ---
+function resetSpeakBtn() {
+  if (activeSpeakBtn) {
+    activeSpeakBtn.classList.remove("text-blue-600", "dark:text-blue-400");
+    activeSpeakBtn = null;
+  }
+}
+
 function toggleMic() {
   const fb = FEEDBACK_LINES[langSelect.value] || FEEDBACK_LINES.en;
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
