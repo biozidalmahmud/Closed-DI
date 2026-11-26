@@ -9,11 +9,83 @@ const MODEL_DELAYS = {
   max: 4700
 };
 
-// Chance to hijack general prompts with a full essay/rant or live theatrical gag
+const MODEL_LABELS = {
+  mini: "ChatNVM Mini",
+  pro: "ChatNVM Plus",
+  max: "ChatNVM Ultra"
+};
+
 const CHAOS_RATES = {
   mini: { gag: 0.05, hijack: 0.06 },
   pro:  { gag: 0.10, hijack: 0.12 },
   max:  { gag: 0.16, hijack: 0.22 }
+};
+
+// Interactive feedback reactions across EN, Banglish & Bangla
+const FEEDBACK_LINES = {
+  en: {
+    copyToast: "Copied! Go ruin someone's group chat.",
+    cardToast: "Roast card saved! Ready for Stories & WhatsApp.",
+    cardBtn: "Share Card",
+    like: [
+      "Obviously. I am a generational talent.",
+      "Glad you recognize peak Dumb Intelligence.",
+      "Finally, a user with taste."
+    ],
+    dislike: [
+      "Excuse me? Did you just downvote a free masterpiece?",
+      "Downvote noted and immediately thrown into the trash.",
+      "Careful, downvote me again and I'll think for 12 seconds next time."
+    ],
+    regenRefuse: [
+      "Read it again, I'm not typing twice.",
+      "No. You get one bad answer per question.",
+      "Closed DI budget allows exactly one reply. Deal with it."
+    ],
+    regenPrefix: "Fine, since you're picky:\n\n"
+  },
+  banglish: {
+    copyToast: "Copy hoye gese! Group chat e chere den.",
+    cardToast: "Roast card save hoye gese! Story te marun.",
+    cardBtn: "Share Card",
+    like: [
+      "Hae jani, ami shera.",
+      "Shesh porjonto keo amar protibha bujhlo.",
+      "Dhonnobad, ebar biday nin."
+    ],
+    dislike: [
+      "Downvote dicchen keno mama? Eto kosto kore ignore korlam!",
+      "Free website e abar rating dicchen? Shahosh kom na.",
+      "Ar ekbar dislike dile next time 15 second bhabar vhan korbo."
+    ],
+    regenRefuse: [
+      "Abar porun, duibar type korar beton amar nai.",
+      "Na, ekbar ja bolsi shetai final.",
+      "Closed DI er rule: ek proshne ekta faltu uttor."
+    ],
+    regenPrefix: "Accha baba, eto khutkhute hole ei nen:\n\n"
+  },
+  bn: {
+    copyToast: "কপি হয়েছে! গ্রুপ চ্যাটে ছেড়ে দিন।",
+    cardToast: "রোস্ট কার্ড সেভ হয়েছে! স্টোরিতে শেয়ার করুন।",
+    cardBtn: "শেয়ার কার্ড",
+    like: [
+      "হ্যাঁ জানি, আমি সেরা।",
+      "অবশেষে কেউ আমার প্রতিভা চিনল।",
+      "ধন্যবাদ, এবার বিদায় নিন।"
+    ],
+    dislike: [
+      "ডাউনভোট দিচ্ছেন কেন মামা? এত কষ্ট করে এড়িয়ে গেলাম!",
+      "ফ্রি ওয়েবসাইটে আবার রেটিং দিচ্ছেন? সাহস কম না।",
+      "আরেকবার ডিসলাইক দিলে পরের বার ১৫ সেকেন্ড ভাবার ভান করব।"
+    ],
+    regenRefuse: [
+      "আবার পড়ুন, দুইবার টাইপ করার এনার্জি নেই।",
+      "না, একবার যা বলেছি সেটাই চূড়ান্ত।",
+      "Closed DI-এর নিয়ম: এক প্রশ্নে একটাই ফালতু উত্তর।"
+    ],
+    regenPrefix: "আচ্ছা বাবা, এত খুঁতখুঁতে হলে এই নিন:\n\n"
+  }
 };
 
 // --- INTERNAL STATE ---
@@ -25,6 +97,7 @@ let recentlyUsed = [];
 let sessionMsgCount = 0;
 let lastUserPrompt = "";
 let didLateNightRoast = false;
+let toastTimer = null;
 
 // --- PAGE ELEMENTS ---
 const chatContainer = document.getElementById("chat-container");
@@ -55,7 +128,6 @@ async function init() {
     const res = await fetch(`db.json?v=${DB_VERSION}`);
     db = await res.json();
 
-    // Fix: remove noisy filler words from greeting triggers so they never hijack real questions
     const noisyWords = ["bhai", "mama", "bro"];
     for (const langKey of Object.keys(db.languages)) {
       const greeting = db.languages[langKey].intents.find(i => i.category === "greeting");
@@ -108,11 +180,11 @@ function detectReplyLanguage(text, selectedLang) {
 }
 
 // --- 4. CORE COMEDY & SMART Q&A ENGINE ---
-function getBotReply(rawInput, tier, selectedLang) {
+function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const clean = rawInput.toLowerCase().trim();
   const replyLang = detectReplyLanguage(rawInput, selectedLang);
 
-  // LAYER 1: Crisis Safety Intercept (Always runs first)
+  // LAYER 1: Crisis Safety Intercept
   const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
   if (safetyRegex.test(clean)) {
     const safetyMessages = {
@@ -127,7 +199,7 @@ function getBotReply(rawInput, tier, selectedLang) {
     return { lang: replyLang, text: "Brain file failed to load. Probably for the best." };
   }
 
-  sessionMsgCount++;
+  if (!isRegen) sessionMsgCount++;
   const langPack = db.languages[replyLang];
   const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
@@ -141,14 +213,14 @@ function getBotReply(rawInput, tier, selectedLang) {
   }
 
   // LAYER 3: Duplicate / Spam Detector
-  if (clean === lastUserPrompt && clean.length > 1) {
+  if (!isRegen && clean === lastUserPrompt && clean.length > 1) {
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.duplicate) };
   }
-  lastUserPrompt = clean;
+  if (!isRegen) lastUserPrompt = clean;
 
   // LAYER 4: 2 AM Late-Night Clock Spy
   const hour = new Date().getHours();
-  if (!didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
+  if (!isRegen && !didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
     didLateNightRoast = true;
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.late_night) };
   }
@@ -175,21 +247,20 @@ function getBotReply(rawInput, tier, selectedLang) {
   }
 
   // LAYER 8: Escalating Annoyance Meter
-  if (sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
+  if (!isRegen && sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
     return { lang: replyLang, text: pickFresh(langPack.special_roasts.annoyed) };
   }
 
-  // LAYER 9: High-Priority Smart Q&A Patterns (Gender callout, "How do you know?", Definitions, Choices, Person bluffs)
+  // LAYER 9: High-Priority Smart Q&A Patterns
   const smartDirectReply = checkSmartQA(rawInput, clean, tier, replyLang);
   if (smartDirectReply) {
     return { lang: replyLang, text: smartDirectReply };
   }
 
-  // LAYER 10: Weighted Intent Scoring in Active Language (Best match wins, not first match)
+  // LAYER 10: Weighted Intent Scoring
   const scoredMatch = findBestIntent(clean, langPack.intents);
   if (scoredMatch) {
-    // Small chance on Plus/Ultra to still hijack a normal topic with a gag/essay
-    if (sessionMsgCount > 1 && Math.random() < rates.gag * 0.6) {
+    if (!isRegen && sessionMsgCount > 1 && Math.random() < rates.gag * 0.6) {
       return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
     }
     return { lang: replyLang, text: pickFresh(scoredMatch.responses[tier]) };
@@ -206,21 +277,21 @@ function getBotReply(rawInput, tier, selectedLang) {
     }
   }
 
-  // LAYER 12: Reflections & Open-Ended Question Catchers ("I am...", "Why...", "Can you...")
+  // LAYER 12: Reflections & Open-Ended Question Catchers
   const openEndedReply = checkOpenEndedPatterns(clean, tier, replyLang);
   if (openEndedReply) {
     return { lang: replyLang, text: openEndedReply };
   }
 
-  // LAYER 13: Fuse.js Fuzzy Matching (Typos)
+  // LAYER 13: Fuse.js Fuzzy Matching
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
     return { lang: replyLang, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // LAYER 14: Chaos Zone (Theatrical Gags, Full Essays, or Mix-and-Match Combinator)
+  // LAYER 14: Chaos Zone
   const fallbackRoll = Math.random();
-  if (fallbackRoll < rates.gag + 0.10) {
+  if (!isRegen && fallbackRoll < rates.gag + 0.10) {
     return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
   }
   if (fallbackRoll < rates.gag + rates.hijack + 0.18) {
@@ -230,9 +301,8 @@ function getBotReply(rawInput, tier, selectedLang) {
   return { lang: replyLang, text: buildCombinatorReply(langPack.combinator, tier) };
 }
 
-// --- SMART Q&A PATTERN ENGINE (Understands question structure & echoes user's words) ---
+// --- SMART Q&A PATTERN ENGINE ---
 function checkSmartQA(rawInput, clean, tier, lang) {
-  // 1. Gender / "Why did you call me bhai/bro?" Callout
   const genderCallout = /(bhai na bon|bon na bhai|chele na meye|meye na chele|boy or girl|girl or boy|am i a girl|am i a boy|i'?m a girl|i'?m a boy|not a guy|not a bro|ami meye|ami chele|ami apu|ami bon|ভাই না বোন|বোন না ভাই|ছেলে না মেয়ে|মেয়ে না ছেলে|আমি মেয়ে|আমি ছেলে|আমি আপু)/i;
   if (genderCallout.test(clean)) {
     const replies = {
@@ -255,7 +325,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     return pickFresh(replies[lang]);
   }
 
-  // 2. "How do you know?" / "Kemne jano?" Challenge
   const howKnowRegex = /(how do you know|how did you know|how would you know|kemne jano|kivabe jano|kemne janen|kivabe janen|tui kemne jano|tumi kemne jano|কীভাবে জানো|কিভাবে জানো|কেমনে জানো|কীভাবে জানেন|কিভাবে জানেন)/i;
   if (howKnowRegex.test(clean)) {
     const replies = {
@@ -278,7 +347,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     return pickFresh(replies[lang]);
   }
 
-  // 3. Dynamic "What is [X]?" / "[X] mane ki?" Fake Definition
   if (lang === "en") {
     const defEn = clean.match(/^(?:what is|what's|whats|define|tell me about) (?:a |an |the )?([a-z0-9][a-z0-9\s-]{1,36})\??$/i);
     if (defEn) {
@@ -314,7 +382,6 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     }
   }
 
-  // 4. Dynamic "Who is [X]?" / "[X] ke chino?" Person Bluff
   if (lang === "en") {
     const whoEn = rawInput.trim().match(/^(?:who is|who's|whos|do you know) ([^?.!]{2,35})\??$/i);
     if (whoEn) {
@@ -352,11 +419,7 @@ function checkSmartQA(rawInput, clean, tier, lang) {
     }
   }
 
-  // 5. Choice / Either-Or Detector ("X or Y" / "X naki Y" / "X না Y")
-  const choiceReply = checkChoiceQuestion(clean, lang);
-  if (choiceReply) return choiceReply;
-
-  return null;
+  return checkChoiceQuestion(clean, lang);
 }
 
 function checkChoiceQuestion(clean, lang) {
@@ -376,7 +439,6 @@ function checkChoiceQuestion(clean, lang) {
   }
 
   if (lang === "banglish") {
-    // "naki" is always an either-or choice; "na" needs a verb guard so "kaj kore na" doesn't falsely trigger
     const m = clean.match(/\b([a-z0-9]{2,18}) (naki|na) ([a-z0-9]{2,18})\b/i);
     if (m) {
       const a = m[1], sep = m[2], b = m[3];
@@ -413,32 +475,24 @@ function checkChoiceQuestion(clean, lang) {
   return null;
 }
 
-// --- WEIGHTED INTENT SCORING (Best match wins; greetings never hijack full questions) ---
 function findBestIntent(clean, intents) {
   const words = clean.split(/\s+/).filter(Boolean);
   let bestIntent = null;
   let bestScore = 0;
 
   for (const intent of intents) {
-    // Only allow greeting on short messages (<= 3 words)
-    if (intent.category === "greeting" && words.length > 3) {
-      continue;
-    }
+    if (intent.category === "greeting" && words.length > 3) continue;
 
     let score = 0;
     for (const trigger of intent.triggers) {
       if (matchesTrigger(clean, trigger)) {
-        // Multi-word triggers score much higher than single generic words
         const base = trigger.includes(" ") ? 10 : 4;
         const lengthBonus = Math.min(trigger.length, 10) * 0.25;
         score += base + lengthBonus;
       }
     }
 
-    // Slightly lower greeting priority if any real topic also matched
-    if (intent.category === "greeting" && score > 0) {
-      score *= 0.7;
-    }
+    if (intent.category === "greeting" && score > 0) score *= 0.7;
 
     if (score > bestScore) {
       bestScore = score;
@@ -472,9 +526,7 @@ function findFuzzyIntent(clean, lang) {
   return null;
 }
 
-// --- OPEN-ENDED REFLECTIONS & QUESTION CATCHERS ---
 function checkOpenEndedPatterns(clean, tier, lang) {
-  // Reflections ("I am...", "I think...", "Should I...")
   if (lang === "en") {
     const amMatch = clean.match(/\bi(?:'m| am) ([^.!?]+)/);
     if (amMatch) {
@@ -578,7 +630,6 @@ function checkOpenEndedPatterns(clean, tier, lang) {
   return null;
 }
 
-// --- MIX-AND-MATCH COMBINATOR ---
 function buildCombinatorReply(comb, tier) {
   const opener = pickFresh(comb.openers);
   const middle = pickFresh(comb.middles);
@@ -610,25 +661,34 @@ async function handleSend(overrideText = null) {
   const selectedLang = langSelect.value;
   const reply = getBotReply(text, tier, selectedLang);
 
+  const meta = { prompt: text, tier, lang: reply.lang, isSafety: !!reply.isSafety };
   let finalVisibleText = reply.text;
 
   if (reply.isSafety) {
-    finalVisibleText = await renderBotResponse(reply, 0, "Support");
+    finalVisibleText = await renderBotResponse(reply, 0, "Support", meta);
   } else {
     const baseDelay = MODEL_DELAYS[tier] || 1500;
     const variableDelay = baseDelay + Math.min(text.length * 10, 1400);
     const thinkLabel = pickFresh(db.ui[reply.lang].thinking[tier]);
-    finalVisibleText = await renderBotResponse(reply, variableDelay, thinkLabel);
+    finalVisibleText = await renderBotResponse(reply, variableDelay, thinkLabel, meta);
   }
 
-  saveMessage({ role: "bot", text: finalVisibleText, imageUrl: reply.imageUrl || null });
+  saveMessage({
+    role: "bot",
+    text: finalVisibleText,
+    imageUrl: reply.imageUrl || null,
+    prompt: text,
+    tier,
+    lang: reply.lang,
+    isSafety: !!reply.isSafety
+  });
 
   isGenerating = false;
   sendBtn.disabled = false;
   userInput.focus();
 }
 
-// --- 6. FAKE PHOTO ANALYSIS (BLIND ROAST) ---
+// --- 6. FAKE PHOTO ANALYSIS ---
 function handlePhotoUpload(event) {
   const file = event.target.files[0];
   if (!file || isGenerating) return;
@@ -648,14 +708,23 @@ function handlePhotoUpload(event) {
       ? pickFresh(db.languages[lang].photo_roasts[tier])
       : "I refuse to look at that.";
     const scanLabel = db ? db.ui[lang].photo_thinking : "Scanning pixels...";
+    const meta = { prompt: "[Uploaded a photo]", tier, lang, isSafety: false };
 
     const visible = await renderBotResponse(
       { text: roastText },
       (MODEL_DELAYS[tier] || 1500) + 600,
-      scanLabel
+      scanLabel,
+      meta
     );
 
-    saveMessage({ role: "bot", text: visible });
+    saveMessage({
+      role: "bot",
+      text: visible,
+      prompt: "[Uploaded a photo]",
+      tier,
+      lang,
+      isSafety: false
+    });
 
     imageUpload.value = "";
     isGenerating = false;
@@ -665,7 +734,7 @@ function handlePhotoUpload(event) {
   reader.readAsDataURL(file);
 }
 
-// --- 7. RENDER MESSAGES & LIVE THEATRICAL TYPEWRITER ---
+// --- 7. RENDER MESSAGES, STREAMING & ACTION BAR ---
 function appendUserMessage(text, imageSrc = null) {
   const wrapper = document.createElement("div");
   wrapper.className = "flex justify-end";
@@ -693,7 +762,7 @@ function appendUserMessage(text, imageSrc = null) {
   scrollToBottom();
 }
 
-async function renderBotResponse(reply, delayMs, thinkLabel) {
+async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
   const wrapper = document.createElement("div");
   wrapper.className = "flex items-start gap-3";
 
@@ -767,7 +836,367 @@ async function renderBotResponse(reply, delayMs, thinkLabel) {
     scrollToBottom();
   }
 
+  // Attach interactive feedback + Share Roast Card bar (skip on safety messages)
+  if (!meta.isSafety) {
+    attachActionBar(contentBox, textEl, {
+      prompt: meta.prompt,
+      replyText: finalSavedText,
+      tier: meta.tier,
+      lang: meta.lang
+    });
+    scrollToBottom();
+  }
+
   return finalSavedText;
+}
+
+// --- UPGRADE 1: INTERACTIVE FEEDBACK BAR + ROAST CARD ---
+function attachActionBar(contentBox, textEl, state) {
+  const fb = FEEDBACK_LINES[state.lang] || FEEDBACK_LINES.en;
+
+  const bar = document.createElement("div");
+  bar.className = "flex flex-wrap items-center gap-1 pt-1 text-zinc-500 select-none";
+
+  const noteEl = document.createElement("div");
+  noteEl.className = "hidden text-xs text-purple-300/90 italic pt-0.5 pl-1";
+
+  const btnBase = "p-1.5 rounded-lg hover:bg-zinc-800 hover:text-zinc-200 transition flex items-center gap-1 text-xs cursor-pointer";
+
+  // 1. Copy Button
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = btnBase;
+  copyBtn.title = "Copy reply";
+  copyBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`;
+  copyBtn.addEventListener("click", async () => {
+    const clip = `${state.replyText}\n— ChatNVM (Closed DI)`;
+    try {
+      await navigator.clipboard.writeText(clip);
+    } catch {
+      const tmp = document.createElement("textarea");
+      tmp.value = clip;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand("copy");
+      tmp.remove();
+    }
+    showToast(fb.copyToast);
+  });
+
+  // 2. Thumbs Up Button
+  const likeBtn = document.createElement("button");
+  likeBtn.type = "button";
+  likeBtn.className = btnBase;
+  likeBtn.title = "Good roast";
+  likeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>`;
+
+  // 3. Thumbs Down Button (Claps back!)
+  const dislikeBtn = document.createElement("button");
+  dislikeBtn.type = "button";
+  dislikeBtn.className = btnBase;
+  dislikeBtn.title = "Bad roast";
+  dislikeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10zM17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>`;
+
+  likeBtn.addEventListener("click", () => {
+    likeBtn.classList.add("text-emerald-400");
+    dislikeBtn.classList.remove("text-rose-400");
+    noteEl.textContent = `ChatNVM: "${pickFresh(fb.like)}"`;
+    noteEl.classList.remove("hidden");
+    scrollToBottom();
+  });
+
+  dislikeBtn.addEventListener("click", () => {
+    dislikeBtn.classList.add("text-rose-400");
+    likeBtn.classList.remove("text-emerald-400");
+    noteEl.textContent = `ChatNVM: "${pickFresh(fb.dislike)}"`;
+    noteEl.classList.remove("hidden");
+    scrollToBottom();
+  });
+
+  // 4. Regenerate Button (Refuses OR grudgingly writes a new roast)
+  const regenBtn = document.createElement("button");
+  regenBtn.type = "button";
+  regenBtn.className = btnBase;
+  regenBtn.title = "Regenerate";
+  regenBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5.64 18.36A9 9 0 0020 12M18.36 5.64A9 9 0 004 12"/></svg>`;
+  let regenCount = 0;
+
+  regenBtn.addEventListener("click", async () => {
+    if (isGenerating) return;
+    regenCount++;
+
+    // 55% chance to refuse (or always refuse after 2 retries)
+    if (regenCount > 2 || Math.random() < 0.55) {
+      noteEl.textContent = `ChatNVM: "${pickFresh(fb.regenRefuse)}"`;
+      noteEl.classList.remove("hidden");
+      scrollToBottom();
+      return;
+    }
+
+    isGenerating = true;
+    sendBtn.disabled = true;
+    noteEl.classList.add("hidden");
+
+    const alt = getBotReply(state.prompt, state.tier, state.lang, true);
+    const cleanAlt = alt.text.replace(/\{ERASE\}|\{PAUSE\}/g, " ");
+    const freshText = fb.regenPrefix + cleanAlt;
+
+    textEl.textContent = "";
+    textEl.classList.add("typing-cursor");
+    await streamChars(textEl, freshText, 12);
+    textEl.classList.remove("typing-cursor");
+
+    state.replyText = freshText;
+    isGenerating = false;
+    sendBtn.disabled = false;
+  });
+
+  // 5. One-Click Shareable Roast Card Button
+  const shareBtn = document.createElement("button");
+  shareBtn.type = "button";
+  shareBtn.className = "ml-1 px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5 text-xs font-medium cursor-pointer";
+  shareBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>${escapeHtml(fb.cardBtn)}</span>`;
+
+  shareBtn.addEventListener("click", () => {
+    generateAndShareRoastCard(state.prompt, state.replyText, state.tier, fb.cardToast);
+  });
+
+  bar.append(copyBtn, likeBtn, dislikeBtn, regenBtn, shareBtn);
+  contentBox.append(bar, noteEl);
+}
+
+// --- NATIVE CANVAS ROAST CARD GENERATOR (0 dependencies, crisp Bangla + English PNG) ---
+async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+  }
+
+  const W = 1080;
+  const pad = 72;
+  const innerW = W - pad * 2;
+  const fontFamily = '"Hind Siliguri", system-ui, -apple-system, sans-serif';
+
+  // Measure text heights first on an offscreen context
+  const measureCtx = document.createElement("canvas").getContext("2d");
+
+  const promptFont = `500 32px ${fontFamily}`;
+  const replyFont = `400 34px ${fontFamily}`;
+
+  measureCtx.font = promptFont;
+  const maxPromptW = innerW * 0.78 - 56;
+  const promptLines = wrapCanvasText(measureCtx, userPrompt || "Asked ChatNVM something", maxPromptW);
+  const promptBlockH = promptLines.length * 46 + 44;
+
+  measureCtx.font = replyFont;
+  const maxReplyW = innerW - 96;
+  const replyLines = wrapCanvasText(measureCtx, botReply, maxReplyW).slice(0, 22);
+  const replyBlockH = Math.max(replyLines.length * 50, 76);
+
+  const headerH = 110;
+  const footerH = 96;
+  const gapBetween = 48;
+  const H = Math.max(620, pad + headerH + promptBlockH + gapBetween + replyBlockH + footerH + pad);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+
+  // Background gradient
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, "#0f1014");
+  bgGrad.addColorStop(0.55, "#15151a");
+  bgGrad.addColorStop(1, "#181322");
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle card frame
+  drawRoundedRect(ctx, 28, 28, W - 56, H - 56, 36);
+  ctx.strokeStyle = "rgba(168, 85, 247, 0.28)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Header: Brand Title + Model Badge
+  const brandGrad = ctx.createLinearGradient(pad, 0, pad + 260, 0);
+  brandGrad.addColorStop(0, "#60a5fa");
+  brandGrad.addColorStop(0.5, "#c084fc");
+  brandGrad.addColorStop(1, "#f472b6");
+
+  ctx.font = `700 44px ${fontFamily}`;
+  ctx.fillStyle = brandGrad;
+  ctx.fillText("ChatNVM", pad, pad + 42);
+
+  ctx.font = `500 22px ${fontFamily}`;
+  ctx.fillStyle = "#71717a";
+  ctx.fillText("by Closed DI", pad + 196, pad + 40);
+
+  // Model tier pill on top-right
+  const badgeText = MODEL_LABELS[tier] || "ChatNVM Plus";
+  ctx.font = `600 22px ${fontFamily}`;
+  const badgeW = ctx.measureText(badgeText).width + 38;
+  const badgeX = W - pad - badgeW;
+  drawRoundedRect(ctx, badgeX, pad + 6, badgeW, 44, 22);
+  ctx.fillStyle = "#222328";
+  ctx.fill();
+  ctx.strokeStyle = "#3f3f46";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = "#d4d4d8";
+  ctx.fillText(badgeText, badgeX + 19, pad + 35);
+
+  // Divider below header
+  ctx.beginPath();
+  ctx.moveTo(pad, pad + 78);
+  ctx.lineTo(W - pad, pad + 78);
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // User Question Bubble (right-aligned)
+  let y = pad + headerH;
+  ctx.font = promptFont;
+  let longestPromptLine = 0;
+  for (const line of promptLines) {
+    longestPromptLine = Math.max(longestPromptLine, ctx.measureText(line).width);
+  }
+  const bubbleW = Math.min(innerW * 0.82, Math.max(200, longestPromptLine + 60));
+  const bubbleX = W - pad - bubbleW;
+
+  drawRoundedRect(ctx, bubbleX, y, bubbleW, promptBlockH, 28);
+  ctx.fillStyle = "#282a2c";
+  ctx.fill();
+
+  ctx.fillStyle = "#f4f4f5";
+  promptLines.forEach((line, i) => {
+    ctx.fillText(line, bubbleX + 30, y + 48 + i * 46);
+  });
+
+  // Bot Avatar + Reply Text (left-aligned)
+  y += promptBlockH + gapBetween;
+
+  const avGrad = ctx.createLinearGradient(pad, y, pad + 68, y + 68);
+  avGrad.addColorStop(0, "#3b82f6");
+  avGrad.addColorStop(0.5, "#a855f7");
+  avGrad.addColorStop(1, "#ec4899");
+
+  ctx.beginPath();
+  ctx.arc(pad + 34, y + 34, 34, 0, Math.PI * 2);
+  ctx.fillStyle = avGrad;
+  ctx.fill();
+
+  ctx.font = `700 22px ${fontFamily}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.textAlign = "center";
+  ctx.fillText("NVM", pad + 34, y + 42);
+  ctx.textAlign = "left";
+
+  ctx.font = replyFont;
+  ctx.fillStyle = "#f4f4f5";
+  replyLines.forEach((line, i) => {
+    ctx.fillText(line, pad + 92, y + 38 + i * 50);
+  });
+
+  // Footer Watermark
+  const footerY = H - pad - 12;
+  ctx.beginPath();
+  ctx.moveTo(pad, footerY - 46);
+  ctx.lineTo(W - pad, footerY - 46);
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.font = `500 22px ${fontFamily}`;
+  ctx.fillStyle = "#71717a";
+  ctx.fillText("Powered by 0% AI  •  Closed DI", pad, footerY);
+
+  const siteLabel = (window.location.host && window.location.host !== "")
+    ? `${window.location.host}${window.location.pathname}`.replace(/\/$/, "")
+    : "ChatNVM • Dumb Intelligence";
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#a78bfa";
+  ctx.fillText(siteLabel, W - pad, footerY);
+  ctx.textAlign = "left";
+
+  // Export PNG: Native Share Sheet on mobile, instant download on desktop
+  canvas.toBlob(async (blob) => {
+    if (!blob) return;
+    const file = new File([blob], "chatnvm-roast.png", { type: "image/png" });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: "ChatNVM by Closed DI",
+          text: "ChatNVM just roasted me 💀"
+        });
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chatnvm-roast.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showToast(toastMsg);
+  }, "image/png");
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+  const paragraphs = String(text || "").split("\n");
+  const lines = [];
+
+  for (const para of paragraphs) {
+    if (!para.trim()) {
+      lines.push("");
+      continue;
+    }
+    const words = para.split(" ");
+    let current = "";
+
+    for (const word of words) {
+      const test = current ? `${current} ${word}` : word;
+      if (ctx.measureText(test).width <= maxWidth) {
+        current = test;
+      } else {
+        if (current) lines.push(current);
+        current = word;
+      }
+    }
+    if (current) lines.push(current);
+  }
+  return lines.length ? lines : [""];
+}
+
+function drawRoundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function showToast(message) {
+  let toast = document.getElementById("di-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "di-toast";
+    toast.className = "fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-100 text-xs md:text-sm shadow-xl transition-opacity duration-200 pointer-events-none";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = "1";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.style.opacity = "0";
+  }, 2400);
 }
 
 async function streamChars(el, text, baseSpeed) {
@@ -796,19 +1225,45 @@ function restoreHistory() {
     chatHistory = saved;
     welcomeScreen.classList.add("hidden");
 
+    let lastPromptSeen = "Asked ChatNVM something";
     for (const msg of chatHistory) {
       if (msg.role === "user") {
+        lastPromptSeen = msg.text;
         appendUserMessage(msg.text);
       } else {
         const wrapper = document.createElement("div");
         wrapper.className = "flex items-start gap-3";
-        wrapper.innerHTML = `
-          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter">NVM</div>
-          <div class="flex-1 min-w-0 space-y-2 pt-1">
-            <p class="text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(msg.text)}</p>
-            ${msg.imageUrl ? `<img src="${escapeHtml(msg.imageUrl)}" class="max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md" />` : ""}
-          </div>
-        `;
+
+        const avatar = document.createElement("div");
+        avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter";
+        avatar.textContent = "NVM";
+
+        const contentBox = document.createElement("div");
+        contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
+
+        const textEl = document.createElement("p");
+        textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words";
+        textEl.textContent = msg.text;
+        contentBox.appendChild(textEl);
+
+        if (msg.imageUrl) {
+          const img = document.createElement("img");
+          img.src = msg.imageUrl;
+          img.alt = "ChatNVM Masterpiece";
+          img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md";
+          contentBox.appendChild(img);
+        }
+
+        if (!msg.isSafety) {
+          attachActionBar(contentBox, textEl, {
+            prompt: msg.prompt || lastPromptSeen,
+            replyText: msg.text,
+            tier: msg.tier || modelSelect.value,
+            lang: msg.lang || langSelect.value
+          });
+        }
+
+        wrapper.append(avatar, contentBox);
         messagesList.appendChild(wrapper);
       }
     }
