@@ -1,28 +1,17 @@
 // --- SETTINGS ---
-const DB_VERSION = "1.0"; // Change to 1.1, 1.2, etc. whenever you edit db.json so users see updates immediately
-const STORAGE_KEY = "closed_di_chatnvm_v1";
+const DB_VERSION = "2.0"; // Bump to 2.1, 2.2 whenever you edit db.json
+const STORAGE_KEY = "closed_di_chatnvm_v2";
+const LANG_STORAGE_KEY = "closed_di_lang_v2";
 
-const MODEL_CONFIG = {
-  mini: {
-    name: "ChatNVM Mini",
-    baseDelay: 700,
-    thinkLabel: "Barely thinking..."
-  },
-  pro: {
-    name: "ChatNVM Plus",
-    baseDelay: 2200,
-    thinkLabel: "Judging your prompt..."
-  },
-  max: {
-    name: "ChatNVM Ultra",
-    baseDelay: 4800,
-    thinkLabel: "Deeply sighing and overthinking..."
-  }
+const MODEL_DELAYS = {
+  mini: 700,
+  pro: 2200,
+  max: 4800
 };
 
 // --- INTERNAL STATE ---
 let db = null;
-let fuse = null;
+let fuses = {};
 let isGenerating = false;
 let lastFallback = "";
 let chatHistory = [];
@@ -30,28 +19,43 @@ let chatHistory = [];
 // --- PAGE ELEMENTS ---
 const chatContainer = document.getElementById("chat-container");
 const welcomeScreen = document.getElementById("welcome-screen");
+const welcomeTitle = document.getElementById("welcome-title");
+const welcomeSubtitle = document.getElementById("welcome-subtitle");
+const starterChipsContainer = document.getElementById("starter-chips-container");
+const footerNote = document.getElementById("footer-note");
 const messagesList = document.getElementById("messages-list");
 const userInput = document.getElementById("user-input");
 const sendBtn = document.getElementById("send-btn");
 const modelSelect = document.getElementById("model-select");
+const langSelect = document.getElementById("lang-select");
 const uploadBtn = document.getElementById("upload-btn");
 const imageUpload = document.getElementById("image-upload");
 const newChatBtn = document.getElementById("new-chat-btn");
 const mobileNewChat = document.getElementById("mobile-new-chat");
 const clearBtn = document.getElementById("clear-btn");
 
-// --- 1. LOAD THE JOKE DATABASE ---
+// --- 1. INITIALIZE & LOAD DATABASE ---
 async function init() {
+  const savedLang = localStorage.getItem(LANG_STORAGE_KEY);
+  if (savedLang && ["en", "banglish", "bn"].includes(savedLang)) {
+    langSelect.value = savedLang;
+  }
+
   try {
     const res = await fetch(`db.json?v=${DB_VERSION}`);
     db = await res.json();
 
-    fuse = new Fuse(db.intents, {
-      includeScore: true,
-      threshold: 0.35,
-      ignoreLocation: true,
-      keys: ["triggers"]
-    });
+    // Build a Fuse.js typo matcher for each language
+    for (const langKey of Object.keys(db.languages)) {
+      fuses[langKey] = new Fuse(db.languages[langKey].intents, {
+        includeScore: true,
+        threshold: 0.35,
+        ignoreLocation: true,
+        keys: ["triggers"]
+      });
+    }
+
+    applyLanguageUI(langSelect.value);
   } catch (err) {
     console.error("Failed to load db.json:", err);
   }
@@ -60,102 +64,195 @@ async function init() {
   bindEvents();
 }
 
-// --- 2. CORE REPLY PIPELINE ---
-function getBotReply(rawInput, tier) {
-  const clean = rawInput.toLowerCase().trim();
+// --- 2. UPDATE SCREEN TEXT WHEN LANGUAGE CHANGES ---
+function applyLanguageUI(lang) {
+  if (!db || !db.ui[lang]) return;
+  const ui = db.ui[lang];
 
-  // LAYER 1: Crisis Safety Check (Always drops the sarcastic persona immediately)
-  const safetyRegex = /\b(kill myself|suicide|end my life|want to die|self harm|hurt myself)\b/i;
+  welcomeTitle.innerHTML = `<span class="bg-gradient-to-r from-blue-400 via-purple-400 to-rose-400 bg-clip-text text-transparent">${escapeHtml(ui.title)}</span>`;
+  welcomeSubtitle.textContent = ui.subtitle;
+  userInput.placeholder = ui.placeholder;
+  footerNote.textContent = ui.footer;
+
+  starterChipsContainer.innerHTML = "";
+  for (const prompt of ui.starters) {
+    const btn = document.createElement("button");
+    btn.className = "starter-chip p-3.5 rounded-2xl bg-[#1e1f20] hover:bg-zinc-800 border border-zinc-800 text-sm text-zinc-300 transition";
+    btn.textContent = `"${prompt}"`;
+    starterChipsContainer.appendChild(btn);
+  }
+}
+
+// --- 3. SMART LANGUAGE DETECTION ---
+function detectReplyLanguage(text, selectedLang) {
+  // If user typed in Bangla Unicode script, always reply in Bangla
+  if (/[\u0980-\u09FF]/.test(text)) {
+    return "bn";
+  }
+  return selectedLang;
+}
+
+// --- 4. CORE REPLY PIPELINE ---
+function getBotReply(rawInput, tier, selectedLang) {
+  const clean = rawInput.toLowerCase().trim();
+  const replyLang = detectReplyLanguage(rawInput, selectedLang);
+
+  // LAYER 1: Crisis Safety Intercept (Runs first across all 3 languages)
+  const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
   if (safetyRegex.test(clean)) {
-    return {
-      isSafety: true,
-      text: "Dropping the joke for a second: if you're going through a really hard time, please talk to someone who can genuinely help. You can find free, confidential support anywhere in the world at https://findahelpline.com or call your local emergency number."
+    const safetyMessages = {
+      en: "Dropping the joke for a second: if you're going through a really hard time, please reach out to someone who can genuinely help. Free, confidential support is available at https://findahelpline.com or your local emergency number.",
+      banglish: "Bhai, ektu serious kotha: apni jodi khub kosto ba mental pressure er moddhe thaken, please karor sathe kotha bolun. Bangladesh e Kaan Pete Roi (01779-554391) ba https://findahelpline.com e free, confidential help paben.",
+      bn: "একটু সিরিয়াস কথা: আপনি যদি খুব কষ্ট বা মানসিক চাপের মধ্যে থাকেন, দয়া করে এমন কারো সাথে কথা বলুন যিনি সত্যিই সাহায্য করতে পারবেন। ফ্রি ও গোপনীয় সহায়তার জন্য কান পেতে রই (01779-554391) বা https://findahelpline.com-এ যোগাযোগ করতে পারেন।"
     };
+    return { isSafety: true, lang: replyLang, text: safetyMessages[replyLang] };
   }
 
-  // LAYER 2: Fake "Image Generator" -> Sends a Meme
-  if (db && db.image_triggers.some(trigger => clean.includes(trigger))) {
-    const meme = pickRandom(db.memes);
-    return {
-      text: meme.caption,
-      imageUrl: meme.url
-    };
+  if (!db) {
+    return { lang: replyLang, text: "Brain file missing. Never mind." };
+  }
+
+  const langPack = db.languages[replyLang];
+
+  // LAYER 2: Fake "Image Generator" -> Sends a Meme (checks active language + all languages)
+  const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
+  for (const k of allLangKeys) {
+    if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, t))) {
+      const targetPack = db.languages[replyLang];
+      const meme = pickRandom(targetPack.memes);
+      return { lang: replyLang, text: meme.caption, imageUrl: meme.url };
+    }
   }
 
   // LAYER 3: Too-Long Essay Roast
   if (rawInput.length > 180) {
-    const longRoasts = {
-      mini: "I am not reading all that. Summarize it in 3 words.",
-      pro: "Congratulations, or I'm sorry that happened. Either way, I'm not reading a novel.",
-      max: "I scrolled past your essay and still got exhausted. Never mind."
-    };
-    return { text: longRoasts[tier] };
+    return { lang: replyLang, text: langPack.long_roasts[tier] };
   }
 
-  // LAYER 4: Regex Mirroring (Throws "I am..." or "I think..." back at them)
-  const amMatch = clean.match(/\bi(?:'m| am) ([^.!?]+)/);
-  if (amMatch) {
-    const trait = amMatch[1].trim();
-    const replies = {
-      mini: `Congrats on being ${trait}. Do you want a medal?`,
-      pro: `Nobody asked, yet here we are learning that you're ${trait}.`,
-      max: `I spent 5 seconds contemplating the fact that you are ${trait}. Still don't care.`
-    };
-    return { text: replies[tier] };
+  // LAYER 4: Exact Keyword Match in Active Language FIRST
+  const exactMatch = findExactIntent(clean, langPack.intents);
+  if (exactMatch) {
+    return { lang: replyLang, text: pickRandom(exactMatch.responses[tier]) };
   }
 
-  const thinkMatch = clean.match(/\bi think ([^.!?]+)/);
-  if (thinkMatch) {
-    const thought = thinkMatch[1].trim();
-    const replies = {
-      mini: `Bold of you to think ${thought}.`,
-      pro: `Thinking "${thought}" is certainly a choice.`,
-      max: `Out of 8 billion people on Earth, you really typed "${thought}" with full confidence.`
-    };
-    return { text: replies[tier] };
-  }
-
-  // LAYER 5: Exact Keyword Matching inside full sentences
-  if (db) {
-    for (const intent of db.intents) {
-      for (const trigger of intent.triggers) {
-        const pattern = new RegExp(`\\b${escapeRegex(trigger)}\\b`, "i");
-        if (pattern.test(clean)) {
-          return { text: pickRandom(intent.responses[tier]) };
-        }
-      }
-    }
-
-    // LAYER 6: Fuse.js Fuzzy Matching (Catches typos like "wethr" or "hlp")
-    let bestMatch = fuse.search(clean)[0];
-
-    if (!bestMatch || bestMatch.score > 0.35) {
-      const words = clean.split(/\s+/).filter(w => w.length > 2);
-      for (const word of words) {
-        const tokenResult = fuse.search(word)[0];
-        if (tokenResult && (!bestMatch || tokenResult.score < bestMatch.score)) {
-          bestMatch = tokenResult;
-        }
-      }
-    }
-
-    if (bestMatch && bestMatch.score <= 0.35) {
-      return { text: pickRandom(bestMatch.item.responses[tier]) };
+  // LAYER 5: Cross-Language Exact Match (e.g., typed Banglish while dropdown was on EN)
+  for (const otherLang of Object.keys(db.languages)) {
+    if (otherLang === replyLang) continue;
+    const crossMatch = findExactIntent(clean, db.languages[otherLang].intents);
+    if (crossMatch) {
+      // If they typed Banglish while on EN, reply in Banglish! Otherwise reply in their chosen language.
+      const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
+      const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
+      return { lang: finalLang, text: pickRandom(finalIntent.responses[tier]) };
     }
   }
 
-  // LAYER 7: The Brick Wall Fallback (Never repeats the same line twice in a row)
-  const pool = db ? db.fallbacks[tier] : ["I forgot to load my own brain. Never mind."];
+  // LAYER 6: Regex Reflections (Throws "I am..." / "Ami khub..." back at them)
+  const reflection = checkReflections(clean, tier, replyLang);
+  if (reflection) {
+    return { lang: replyLang, text: reflection };
+  }
+
+  // LAYER 7: Fuse.js Fuzzy Matching (Catches typos like "wethr", "bristy", "hlp")
+  const fuzzyHit = findFuzzyIntent(clean, replyLang);
+  if (fuzzyHit) {
+    return { lang: replyLang, text: pickRandom(fuzzyHit.responses[tier]) };
+  }
+
+  // LAYER 8: The Brick Wall Fallback (Never repeats the same line twice in a row)
+  const pool = langPack.fallbacks[tier];
   let chosen = pickRandom(pool);
   if (pool.length > 1 && chosen === lastFallback) {
     chosen = pool.find(item => item !== lastFallback) || chosen;
   }
   lastFallback = chosen;
 
-  return { text: chosen };
+  return { lang: replyLang, text: chosen };
 }
 
-// --- 3. SEND MESSAGE FLOW ---
+function findExactIntent(clean, intents) {
+  for (const intent of intents) {
+    for (const trigger of intent.triggers) {
+      if (matchesTrigger(clean, trigger)) {
+        return intent;
+      }
+    }
+  }
+  return null;
+}
+
+function findFuzzyIntent(clean, lang) {
+  const fuse = fuses[lang];
+  if (!fuse) return null;
+
+  let best = fuse.search(clean)[0];
+  if (!best || best.score > 0.32) {
+    const words = clean.split(/\s+/).filter(w => w.length > 2);
+    for (const word of words) {
+      const hit = fuse.search(word)[0];
+      if (hit && (!best || hit.score < best.score)) {
+        best = hit;
+      }
+    }
+  }
+
+  return (best && best.score <= 0.32) ? best.item : null;
+}
+
+function checkReflections(clean, tier, lang) {
+  if (lang === "en") {
+    const amMatch = clean.match(/\bi(?:'m| am) ([^.!?]+)/);
+    if (amMatch) {
+      const trait = amMatch[1].trim();
+      const map = {
+        mini: `Congrats on being ${trait}. Do you want a medal?`,
+        pro: `Nobody asked, yet here we are learning that you're ${trait}.`,
+        max: `I spent 5 seconds contemplating the fact that you are ${trait}. Still don't care.`
+      };
+      return map[tier];
+    }
+    const thinkMatch = clean.match(/\bi think ([^.!?]+)/);
+    if (thinkMatch) {
+      const thought = thinkMatch[1].trim();
+      const map = {
+        mini: `Bold of you to think ${thought}.`,
+        pro: `Thinking "${thought}" is certainly a choice.`,
+        max: `Out of 8 billion people, you really typed "${thought}" with full confidence.`
+      };
+      return map[tier];
+    }
+  }
+
+  if (lang === "banglish") {
+    const amiMatch = clean.match(/\bami (?:khub |onek )?([^.!?]+)/);
+    if (amiMatch) {
+      const trait = amiMatch[1].trim();
+      const map = {
+        mini: `Apni "${trait}"—etate amar ki? Trophy lagbe?`,
+        pro: `Keu jiggesh kore nai, tarporo janlam apni ${trait}. Darun.`,
+        max: `5 second chinta korlam apni je ${trait}. Kono lav holo na.`
+      };
+      return map[tier];
+    }
+  }
+
+  if (lang === "bn") {
+    const bnMatch = clean.match(/আমি (?:খুব |অনেক )?([^।.!?]+)/);
+    if (bnMatch) {
+      const trait = bnMatch[1].trim();
+      const map = {
+        mini: `আপনি "${trait}"—তাতে আমার কী? পদক লাগবে?`,
+        pro: `কেউ জানতে চায়নি, তবুও জানলাম আপনি ${trait}। অসাধারণ।`,
+        max: `৫ সেকেন্ড ধরে ভাবলাম আপনি যে ${trait}। কোনো আগ্রহ জাগল না।`
+      };
+      return map[tier];
+    }
+  }
+
+  return null;
+}
+
+// --- 5. SEND MESSAGE FLOW ---
 async function handleSend(overrideText = null) {
   if (isGenerating) return;
 
@@ -173,14 +270,16 @@ async function handleSend(overrideText = null) {
   saveMessage({ role: "user", text });
 
   const tier = modelSelect.value;
-  const reply = getBotReply(text, tier);
+  const selectedLang = langSelect.value;
+  const reply = getBotReply(text, tier, selectedLang);
 
   if (reply.isSafety) {
     await renderBotResponse(reply, 0, "Support");
   } else {
-    const config = MODEL_CONFIG[tier];
-    const variableDelay = config.baseDelay + Math.min(text.length * 12, 1500);
-    await renderBotResponse(reply, variableDelay, config.thinkLabel);
+    const baseDelay = MODEL_DELAYS[tier] || 1500;
+    const variableDelay = baseDelay + Math.min(text.length * 12, 1500);
+    const thinkLabel = db.ui[reply.lang].thinking[tier];
+    await renderBotResponse(reply, variableDelay, thinkLabel);
   }
 
   saveMessage({ role: "bot", text: reply.text, imageUrl: reply.imageUrl || null });
@@ -190,7 +289,7 @@ async function handleSend(overrideText = null) {
   userInput.focus();
 }
 
-// --- 4. FAKE PHOTO ANALYSIS (BLIND ROAST) ---
+// --- 6. FAKE PHOTO ANALYSIS (BLIND ROAST) ---
 function handlePhotoUpload(event) {
   const file = event.target.files[0];
   if (!file || isGenerating) return;
@@ -205,15 +304,16 @@ function handlePhotoUpload(event) {
     saveMessage({ role: "user", text: "[Uploaded a photo]" });
 
     const tier = modelSelect.value;
-    const config = MODEL_CONFIG[tier];
+    const lang = langSelect.value;
     const roastText = db
-      ? pickRandom(db.photo_roasts[tier])
+      ? pickRandom(db.languages[lang].photo_roasts[tier])
       : "I refuse to look at that.";
+    const scanLabel = db ? db.ui[lang].photo_thinking : "Scanning pixels...";
 
     await renderBotResponse(
       { text: roastText },
-      config.baseDelay + 600,
-      "Scanning pixels with zero computer vision..."
+      (MODEL_DELAYS[tier] || 1500) + 600,
+      scanLabel
     );
 
     saveMessage({ role: "bot", text: roastText });
@@ -226,7 +326,7 @@ function handlePhotoUpload(event) {
   reader.readAsDataURL(file);
 }
 
-// --- 5. RENDER MESSAGES & STREAMING TYPEWRITER ---
+// --- 7. RENDER MESSAGES & STREAMING TYPEWRITER ---
 function appendUserMessage(text, imageSrc = null) {
   const wrapper = document.createElement("div");
   wrapper.className = "flex justify-end";
@@ -265,7 +365,6 @@ async function renderBotResponse(reply, delayMs, thinkLabel) {
   const contentBox = document.createElement("div");
   contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
 
-  // Thinking animation
   const thinkingEl = document.createElement("div");
   thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-400 animate-pulse";
   thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-purple-400"></span><span>${escapeHtml(thinkLabel)}</span>`;
@@ -280,22 +379,22 @@ async function renderBotResponse(reply, delayMs, thinkLabel) {
     await sleep(delayMs);
   }
 
-  // Stream text letter-by-letter
   thinkingEl.remove();
 
   const textEl = document.createElement("p");
   textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words typing-cursor";
   contentBox.appendChild(textEl);
 
-  for (let i = 0; i < reply.text.length; i++) {
-    textEl.textContent += reply.text[i];
+  // Use Array.from so Bangla characters stream cleanly without breaking symbols
+  const chars = Array.from(reply.text);
+  for (let i = 0; i < chars.length; i++) {
+    textEl.textContent += chars[i];
     if (i % 4 === 0) scrollToBottom();
     await sleep(14 + Math.random() * 20);
   }
 
   textEl.classList.remove("typing-cursor");
 
-  // Show meme image if triggered
   if (reply.imageUrl) {
     const img = document.createElement("img");
     img.src = reply.imageUrl;
@@ -307,7 +406,7 @@ async function renderBotResponse(reply, delayMs, thinkLabel) {
   }
 }
 
-// --- 6. SAVE & RESTORE CHAT HISTORY ---
+// --- 8. SAVE & RESTORE CHAT HISTORY ---
 function saveMessage(entry) {
   chatHistory.push(entry);
   try {
@@ -354,7 +453,7 @@ function clearChat() {
   userInput.focus();
 }
 
-// --- 7. BUTTONS & KEYBOARD EVENTS ---
+// --- 9. BUTTONS & EVENTS ---
 function bindEvents() {
   sendBtn.addEventListener("click", () => handleSend());
 
@@ -370,6 +469,11 @@ function bindEvents() {
     userInput.style.height = userInput.scrollHeight + "px";
   });
 
+  langSelect.addEventListener("change", () => {
+    localStorage.setItem(LANG_STORAGE_KEY, langSelect.value);
+    applyLanguageUI(langSelect.value);
+  });
+
   uploadBtn.addEventListener("click", () => imageUpload.click());
   imageUpload.addEventListener("change", handlePhotoUpload);
 
@@ -377,15 +481,24 @@ function bindEvents() {
   mobileNewChat.addEventListener("click", clearChat);
   clearBtn.addEventListener("click", clearChat);
 
-  document.querySelectorAll(".starter-chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const prompt = chip.textContent.trim().replace(/^"|"$/g, "");
-      handleSend(prompt);
-    });
+  starterChipsContainer.addEventListener("click", (e) => {
+    const chip = e.target.closest(".starter-chip");
+    if (!chip) return;
+    const prompt = chip.textContent.trim().replace(/^"|"$/g, "");
+    handleSend(prompt);
   });
 }
 
 // --- HELPERS ---
+// Handles both English/Banglish word boundaries AND Bangla Unicode properly
+function matchesTrigger(text, trigger) {
+  const isAscii = /^[\x00-\x7F]+$/.test(trigger);
+  if (isAscii) {
+    return new RegExp(`\\b${escapeRegex(trigger)}\\b`, "i").test(text);
+  }
+  return text.includes(trigger);
+}
+
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
