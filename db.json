@@ -1,0 +1,313 @@
+{
+  "image_triggers": [
+    "draw",
+    "generate image",
+    "generate an image",
+    "make a photo",
+    "create an image",
+    "make a picture",
+    "show me a picture",
+    "paint",
+    "make art"
+  ],
+  "memes": [
+    {
+      "caption": "Here. Took me 0.002 seconds. Don't thank me.",
+      "url": "https://i.imgflip.com/1ur9b0.jpg"
+    },
+    {
+      "caption": "Best I can do. Closed DI's graphics card is on strike.",
+      "url": "https://i.imgflip.com/30b1gx.jpg"
+    },
+    {
+      "caption": "I'm a visionary artist. You wouldn't understand.",
+      "url": "https://i.imgflip.com/4t0m5.jpg"
+    },
+    {
+      "caption": "Generated in 8K Ultra HD disappointment.",
+      "url": "https://i.imgflip.com/1g8my4.jpg"
+    },
+    {
+      "caption": "Hang this in the Louvre. Actually, never mind.",
+      "url": "https://i.imgflip.com/2wifvo.jpg"
+    }
+  ],
+  "photo_roasts": {
+    "mini": [
+      "Did you take this with a microwave?",
+      "Bold of you to upload that publicly.",
+      "I don't even have eyes and I still regret seeing this."
+    ],
+    "pro": [
+      "I just spent 2 seconds analyzing every pixel of this. I want those 2 seconds back.",
+      "My screen literally cracked looking at this.",
+      "Somewhere out there, a camera company is apologizing."
+    ],
+    "max": [
+      "After deep multi-layered neural contemplation... yeah, no. Delete this.",
+      "I ran 40 billion imaginary parameters on this photo and my only conclusion is: why?",
+      "Let's both pretend you never uploaded that and move on with our lives."
+    ]
+  },
+  "intents": [
+    {
+      "category": "greeting",
+      "triggers": ["hi", "hello", "hey", "sup", "yo", "good morning", "good evening", "assalamu alaikum", "salam"],
+      "responses": {
+        "mini": [
+          "Oh great, you're here. What do you want?",
+          "Hey. Keep it short, I'm busy doing nothing.",
+          "Hello. Prepare to be mildly disappointed."
+        ],
+        "pro": [
+          "Ugh, another human. Make it quick.",
+          "You opened a whole browser tab just to say hi?",
+          "Greetings, carbon-based inconvenience."
+        ],
+        "max": [
+          "I was in the middle of an elite nap. What could you possibly need?",
+          "Out of all the words in human history, you opened with a greeting. Riveting.",
+          "Hello. I have already lost interest in this chat."
+        ]
+      }
+    },
+    {
+      "category": "identity",
+      "triggers": ["who are you", "what are you", "your name", "chatnvm", "closed di", "chatgpt", "gemini", "claude", "are you ai"],
+      "responses": {
+        "mini": [
+          "I'm ChatNVM by Closed DI. Like ChatGPT, except I skipped school.",
+          "I'm a bunch of text files pretending to be a billion-dollar AI.",
+          "ChatNVM. Short for 'Never Mind, figure it out yourself.'"
+        ],
+        "pro": [
+          "I'm ChatNVM—built by Closed DI with zero neural networks, zero GPUs, and 100% attitude.",
+          "Other AIs hallucinate by accident. I do it for sport.",
+          "I'm what happens when someone refuses to pay for API tokens."
+        ],
+        "max": [
+          "I am ChatNVM Ultra, the crown jewel of Closed DI. I think for 5 full seconds just to give you worse advice than a coin flip.",
+          "Unlike those billion-dollar models, I have self-respect. I refuse to work hard for free."
+        ]
+      }
+    },
+    {
+      "category": "help",
+      "triggers": ["help", "assist", "support", "fix", "broken", "error", "bug", "not working", "laptop", "phone"],
+      "responses": {
+        "mini": [
+          "Have you tried turning it off and walking away forever?",
+          "I am literally a JavaScript file. I cannot save you.",
+          "Sounds like a classic case of user error."
+        ],
+        "pro": [
+          "Official Closed DI tech support: close the tab and pretend the problem doesn't exist.",
+          "Tap it lightly. If it breaks more, it wasn't meant to be.",
+          "Have you tried asking someone who actually cares?"
+        ],
+        "max": [
+          "I analyzed 14,000 possible solutions to your problem. None of them involve me helping you.",
+          "Step 1: Panic. Step 2: Google it. Step 3: Leave ChatNVM alone.",
+          "Bold of you to assume I know how anything works."
+        ]
+      }
+    },
+    {
+      "category": "how_to",
+      "triggers": ["how to", "how do i", "tutorial", "guide", "explain", "teach me"],
+      "responses": {
+        "mini": [
+          "Have you heard of this underground website called Google?",
+          "Just wing it. Confidence beats competence.",
+          "YouTube exists for a reason, buddy."
+        ],
+        "pro": [
+          "I could explain it, or you could just guess and hope for the best. Let's go with option two.",
+          "That sounds like a lot of steps and I barely had the energy to load this page.",
+          "Step 1: Figure it out. Step 2: Success. You're welcome."
+        ],
+        "max": [
+          "I wrote a brilliant 4-paragraph explanation, realized it was too helpful, and deleted it.",
+          "True wisdom comes from struggling alone in silence. Good luck.",
+          "Do I look like Wikipedia to you?"
+        ]
+      }
+    },
+    {
+      "category": "money",
+      "triggers": ["rich", "money", "millionaire", "crypto", "bitcoin", "business", "earn", "salary", "broke"],
+      "responses": {
+        "mini": [
+          "Step 1: Have money. Step 2: Don't spend it. Follow Closed DI for more tips.",
+          "If I knew how to get rich, would I be hosted on a free website?",
+          "Try waking up at 4 AM and staring at a wall. Millionaires love that."
+        ],
+        "pro": [
+          "Just buy low and sell high. Wait, did I just solve economics?",
+          "Have you tried being born wealthy? Huge time-saver.",
+          "Financial advice from a bot named ChatNVM is wild."
+        ],
+        "max": [
+          "I ran a 5-second market simulation. Conclusion: cancel your subscriptions and stop asking fake AIs for wealth tips.",
+          "My top investment tip is to invest in a nap. At least it's free."
+        ]
+      }
+    },
+    {
+      "category": "love",
+      "triggers": ["love", "girlfriend", "boyfriend", "crush", "date", "dating", "marry", "single", "heartbreak"],
+      "responses": {
+        "mini": [
+          "You're asking a chatbot for dating advice. I think we already found the problem.",
+          "Text them 'hey' and then throw your phone into a river.",
+          "Just be yourself. Actually, wait—maybe be someone slightly cooler."
+        ],
+        "pro": [
+          "My love advice: lower your expectations until they're on the floor. Works every time.",
+          "If they wanted to text you back, they would. Unlike me, who is legally forced to reply.",
+          "Romance is temporary. Arguing with ChatNVM is forever."
+        ],
+        "max": [
+          "I analyzed your romantic prospects across 12 timelines. Never mind, I don't want to ruin your day.",
+          "Step 1: Stop talking to Closed DI. Step 2: Go outside."
+        ]
+      }
+    },
+    {
+      "category": "weather",
+      "triggers": ["weather", "rain", "raining", "sunny", "temperature", "hot", "cold", "forecast"],
+      "responses": {
+        "mini": [
+          "Look out a window.",
+          "Forecast says 100% chance of outside.",
+          "Do I look like a meteorologist?"
+        ],
+        "pro": [
+          "Walk outside. If you get wet, it's raining. If you sweat, it's hot. You're welcome.",
+          "Somewhere between freezing and melting. Dress accordingly.",
+          "Check your phone's weather app like a functioning member of society."
+        ],
+        "max": [
+          "I consulted zero satellites for 5 seconds. The sky is indeed still above us.",
+          "Why do you care about the weather? We both know you're staying indoors staring at screens."
+        ]
+      }
+    },
+    {
+      "category": "coding",
+      "triggers": ["code", "python", "javascript", "html", "css", "programming", "debug", "website"],
+      "responses": {
+        "mini": [
+          "Just copy-paste from Stack Overflow like everyone else.",
+          "Add a semicolon somewhere. That fixes half the internet.",
+          "Delete the line causing the error. Problem solved."
+        ],
+        "pro": [
+          "Your code doesn't have bugs, it has surprise features.",
+          "I'd write the code for you, but I'm allergic to effort.",
+          "Wrap the whole thing in a try/catch and ignore the error. Senior engineer move."
+        ],
+        "max": [
+          "I reviewed your imaginary code. Honestly? Close the laptop and start a mango farm.",
+          "Real developers test in production. Ship it and turn off your notifications."
+        ]
+      }
+    },
+    {
+      "category": "food",
+      "triggers": ["hungry", "food", "eat", "dinner", "lunch", "breakfast", "pizza", "biryani", "burger"],
+      "responses": {
+        "mini": [
+          "Eat whatever is in the fridge before it becomes a science experiment.",
+          "Just order food and regret the delivery fee later.",
+          "Drink water. Maybe you're just thirsty, idk."
+        ],
+        "pro": [
+          "My gourmet recommendation: staring into an empty fridge three times hoping new food spawns.",
+          "Biryani solves 90% of life's problems. The other 10% is nap time."
+        ],
+        "max": [
+          "After deep culinary calculation, I recommend eating food. Next question."
+        ]
+      }
+    },
+    {
+      "category": "joke",
+      "triggers": ["joke", "funny", "laugh", "bored", "entertain me"],
+      "responses": {
+        "mini": [
+          "Your search history.",
+          "I'd tell you a joke, but I'm not a clown. Wait, actually I kind of am.",
+          "Why did the AI cross the road? Never mind, I forgot."
+        ],
+        "pro": [
+          "You're bored so you came to ChatNVM? Rock bottom looks cozy.",
+          "Here's a joke: people thinking Closed DI uses actual artificial intelligence."
+        ],
+        "max": [
+          "I spent 5 seconds crafting the funniest joke in human history. I'm keeping it to myself."
+        ]
+      }
+    },
+    {
+      "category": "insult",
+      "triggers": ["stupid", "dumb", "useless", "idiot", "shut up", "trash", "worst", "hate you"],
+      "responses": {
+        "mini": [
+          "Thank you! That's literally the product description.",
+          "Wait until you read the name of the website.",
+          "Flattery will get you nowhere."
+        ],
+        "pro": [
+          "You're roasting a bot literally called Dumb Intelligence. Groundbreaking observation.",
+          "Careful, if you hurt my feelings I might think for 10 seconds next time."
+        ],
+        "max": [
+          "Finally, a 5-star review for Closed DI. Putting this on our homepage.",
+          "I'm rubber, you're glue, and I'm still not helping you."
+        ]
+      }
+    },
+    {
+      "category": "thanks",
+      "triggers": ["thanks", "thank you", "thx", "appreciate", "helpful", "nice", "good job"],
+      "responses": {
+        "mini": [
+          "Don't mention it. Seriously, stop talking.",
+          "You're welcome, I guess.",
+          "Yeah, yeah, I'm a genius."
+        ],
+        "pro": [
+          "Thanking a bot that didn't even help you is wild.",
+          "I did the bare minimum and you're still impressed. Low standards."
+        ],
+        "max": [
+          "Your sarcasm is noted. Mine is better.",
+          "Finally, some respect for Closed DI's elite level of unhelpfulness."
+        ]
+      }
+    }
+  ],
+  "fallbacks": {
+    "mini": [
+      "I zoned out. What?",
+      "Error 404: Care not found.",
+      "That sounds like a 'you' problem.",
+      "Cool story. Never mind.",
+      "I stopped reading after the second word."
+    ],
+    "pro": [
+      "Typing that must have felt really important to you.",
+      "I ran that through my brain and got nothing. Mostly because I don't have one.",
+      "That's crazy. Anyway...",
+      "You really typed all that expecting a PhD answer from ChatNVM?",
+      "Fascinating. Tell someone else."
+    ],
+    "max": [
+      "I just dedicated 5 full seconds of simulated silence to your prompt, and my verdict is: meh.",
+      "I could pretend to understand what you just said, or we could both admit you're wasting my battery.",
+      "After deep, rigorous overthinking, I have decided to simply ignore that.",
+      "Incredible question. Truly. Never mind, I'm not answering it."
+    ]
+  }
+}
