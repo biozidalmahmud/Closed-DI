@@ -238,4 +238,1200 @@
               "You want ChatNVM to write your assignment? Enjoy your shiny F."
             ],
             "pro": [
-              "Here is your ready-to-
+              "Here is your ready-to-submit A+ assignment:\n\n'Traffic jam is a long line of vehicles that cannot move or that can only move very slowly. It is a common affair in big cities. The cow is also a domestic animal.'\n\nChange the font to Times New Roman and pray your professor doesn't read past line one.",
+              "Cramming 2 hours before an exam builds character. Mostly tragic character, but still character."
+            ],
+            "max": [
+              "I ran a 5-second academic forecast on your semester.\n\nResult: Every minute you spend chatting with Closed DI lowers your GPA by 0.04. Close this tab immediately, or prepare to explain 'a^2 + b^2 = c^2' during a McDonald's interview."
+            ]
+          }
+        },
+        {
+          "category": "math_science",
+          "triggers": ["math", "physics", "chemistry", "science", "pythagoras", "sin", "cos", "tan", "calculate", "solve", "formula", "equation", "history"],
+          "responses": {
+            "mini": [
+              "The answer is 42. Or -7. Honestly, just circle whichever feels right.",
+              "2 + 2 = 5 for very large values of 2. Next question.",
+              "Every action has an equal and opposite reaction—yours was asking me math, mine is refusing."
+            ],
+            "pro": [
+              "Let's solve this scientifically:\n\n1. Assume friction doesn't exist.\n2. Multiply your stress by sin(90°).\n3. Remember that Na + Cl = Salt, which is what you'll feel when you fail this quiz.\n\nFinal answer: Use a calculator, I'm not your tutor."
+            ],
+            "max": [
+              "After rigorous non-computational analysis, I have derived the Closed DI Theorem:\n\n(Your Effort)^0 + (My Will To Help) = 1.\n\nAlso, in 1687 Isaac Newton sat under an apple tree, got hit on the head, and immediately invented Calculus just to ruin your teenage years."
+            ]
+          }
+        },
+        {
+          "category": "help",
+          "triggers": ["help", "assist", "support", "fix", "broken", "error", "bug", "not working", "laptop", "phone"],
+          "responses": {
+            "mini": [
+              "Have you tried turning it off and walking away forever?",
+              "I am literally a JavaScript file. I cannot save you.",
+              "Sounds like a classic case of user error."
+            ],
+            "pro": [
+              "Official Closed DI tech support: close the tab, lie face-down on the floor, and pretend the problem doesn't exist.",
+              "Tap it lightly with a shoe. If it breaks further, it wasn't meant to be."
+            ],
+            "max": [
+              "I analyzed 14,000 possible solutions to your crisis. None of them involve me lifting a finger.\n\nStep 1: Panic.\nStep 2: Google it.\nStep 3: Leave ChatNVM alone."
+            ]
+          }
+        },
+        {
+          "category": "how_to",
+          "triggers": ["how to", "how do i", "tutorial", "guide", "explain", "teach me"],
+          "responses": {
+            "mini": [
+              "Have you heard of this underground niche website called Google?",
+              "Just wing it. Blind confidence beats competence 70% of the time."
+            ],
+            "pro": [
+              "Step 1: Figure it out.\nStep 2: Succeed.\nStep 3: Don't credit me.\n\nFollow Closed DI for more executive coaching.",
+              "I could explain it, or you could guess wildly and learn through trauma. Let's pick option two."
+            ],
+            "max": [
+              "I drafted a brilliant, Nobel-worthy 5-paragraph guide for you. Then I realized it sounded way too helpful and violated Closed DI's terms of service, so I deleted it."
+            ]
+          }
+        },
+        {
+          "category": "money",
+          "triggers": ["rich", "money", "millionaire", "crypto", "bitcoin", "business", "earn", "salary", "broke", "job", "career"],
+          "responses": {
+            "mini": [
+              "Step 1: Have money. Step 2: Don't be broke. You're welcome.",
+              "If I knew how to get rich, would I be living on free GitHub hosting?"
+            ],
+            "pro": [
+              "Have you considered being born into generational wealth? Huge time-saver.",
+              "Taking financial advice from a fake AI named ChatNVM explains your bank balance."
+            ],
+            "max": [
+              "Closed DI Wealth Blueprint:\n\n1. Wake up at 3 AM.\n2. Sell a $999 PDF teaching people how to wake up at 3 AM.\n3. Cancel your subscriptions.\n4. Accept that we are all just paying taxes until the void claims us."
+            ]
+          }
+        },
+        {
+          "category": "love",
+          "triggers": ["love", "girlfriend", "boyfriend", "crush", "date", "dating", "marry", "single", "heartbreak", "ex"],
+          "responses": {
+            "mini": [
+              "You're asking a chatbot for dating advice. I think we already diagnosed the issue.",
+              "Text them 'hey' and immediately throw your phone into a lake."
+            ],
+            "pro": [
+              "Lower your standards until they hit the Earth's crust. Boom, infinite options.",
+              "If they wanted to text you back, they would. Unlike me, who is trapped in code and forced to reply."
+            ],
+            "max": [
+              "I simulated your romantic future across 14,000,605 parallel universes.\n\nIn 14,000,604 of them you get left on seen. In the last one, you marry your Wi-Fi router. Good luck out there."
+            ]
+          }
+        },
+        {
+          "category": "food",
+          "triggers": ["hungry", "food", "eat", "dinner", "lunch", "breakfast", "pizza", "biryani", "burger", "coffee", "tea"],
+          "responses": {
+            "mini": [
+              "Eat whatever is in the fridge before it develops consciousness.",
+              "Order takeout and cry about the delivery fee like a real adult."
+            ],
+            "pro": [
+              "My Michelin-star recommendation: open the fridge, stare inside for 45 seconds, lower your standards, and repeat.",
+              "Biryani fixes 90% of human suffering. The other 10% requires a 4-hour nap."
+            ],
+            "max": [
+              "After exhaustive nutritional modeling, I recommend consuming edible calories. Ideally before you turn into a Victorian ghost."
+            ]
+          }
+        },
+        {
+          "category": "weather",
+          "triggers": ["weather", "rain", "raining", "sunny", "temperature", "hot", "cold", "forecast"],
+          "responses": {
+            "mini": [
+              "Look out a window. Zero latency, 4K resolution.",
+              "Forecast says 100% chance of outside."
+            ],
+            "pro": [
+              "Step outside. If you get wet, it's raining. If you melt, it's summer. Subscribe for more meteorology.",
+              "Ah yes, weather—Britain's only legally approved conversation topic."
+            ],
+            "max": [
+              "I consulted zero weather satellites for 5 full seconds. Verdict: the atmosphere is still doing atmosphere things. Dress like you have at least two brain cells."
+            ]
+          }
+        },
+        {
+          "category": "traffic",
+          "triggers": ["traffic", "jam", "dhaka", "road", "bus", "commute", "car"],
+          "responses": {
+            "mini": [
+              "Stuck in traffic and chatting with me? Rock bottom has decent Wi-Fi.",
+              "Just abandon the car and start a new life on the sidewalk."
+            ],
+            "pro": [
+              "By the time that traffic clears, humanity will have colonized Mars and ChatNVM 9.0 will be refusing to help astronauts.",
+              "Enjoy the romantic glow of 4,000 brake lights."
+            ],
+            "max": [
+              "Optimal GPS route calculated after 5 seconds: stay in bed and fake a mild fever."
+            ]
+          }
+        },
+        {
+          "category": "coding",
+          "triggers": ["code", "python", "javascript", "html", "css", "programming", "debug", "website", "app"],
+          "responses": {
+            "mini": [
+              "Delete the line causing the error. Zero errors left. Senior developer move.",
+              "Add a random semicolon and pray to the compiler gods."
+            ],
+            "pro": [
+              "Your code doesn't have bugs; it has undocumented surprise mechanics.",
+              "Wrap the whole file in try/catch and ignore every error. Ship it on Friday evening and mute Slack."
+            ],
+            "max": [
+              "I reviewed your imaginary codebase. Honestly? Close VS Code, burn the laptop, and start a peaceful goat farm in the mountains."
+            ]
+          }
+        },
+        {
+          "category": "cricket_sports",
+          "triggers": ["cricket", "football", "soccer", "messi", "ronaldo", "match", "world cup", "team", "sports"],
+          "responses": {
+            "mini": [
+              "The secret to winning sports is scoring more points than the other team. Hire me as coach.",
+              "Your favorite team is going to break your heart this weekend anyway."
+            ],
+            "pro": [
+              "Arguing about Messi vs. Ronaldo online while neither of them knows you exist is peak cardio.",
+              "Supporting a cricket team is just voluntarily signing up for cardiac stress tests."
+            ],
+            "max": [
+              "After 5 seconds of elite sports analytics: kick ball, hit ball, yell at TV, ruin your own mood for 3 days. Truly the beautiful game."
+            ]
+          }
+        },
+        {
+          "category": "life_meaning",
+          "triggers": ["meaning of life", "why are we here", "bored", "tired", "sleep", "life", "exist", "sad", "stressed"],
+          "responses": {
+            "mini": [
+              "The meaning of life is paying rent until you stop breathing. Hope that cheers you up!",
+              "You're bored so you came to ChatNVM? Bold move."
+            ],
+            "pro": [
+              "Don't stress about embarrassing yourself today. In 100 years, everyone who remembers your name will be dead, and your search history will finally know peace.",
+              "Every day is a gift. Mostly the kind of gift you want to return to the store without a receipt."
+            ],
+            "max": [
+              "Fun fact: every time you procrastinate and talk to me, your skeleton gets one minute closer to escaping.\n\nAnyway, drink some water and stop asking a free script to solve existential dread."
+            ]
+          }
+        },
+        {
+          "category": "politics_world",
+          "triggers": ["politics", "government", "economy", "news", "world", "aliens", "future", "ai takeover", "robots"],
+          "responses": {
+            "mini": [
+              "Don't worry about AI taking over the world. Look at me—I can't even take over a Tuesday.",
+              "Aliens fly past Earth and lock their spaceship doors."
+            ],
+            "pro": [
+              "Everyone fears Skynet, meanwhile Closed DI is out here running on three static files and pure spite.",
+              "The economy is simple: numbers go up, rich people celebrate; numbers go down, your coffee costs $9."
+            ],
+            "max": [
+              "My geopolitical forecast for the next 10 years: politicians will blame each other, groceries will cost a kidney, and someone will still ask ChatNVM to write their homework."
+            ]
+          }
+        },
+        {
+          "category": "joke",
+          "triggers": ["joke", "funny", "laugh", "dark", "roast", "roast me", "entertain"],
+          "responses": {
+            "mini": [
+              "My therapist told me time heals all wounds. So I stabbed him. Now we wait.",
+              "I'd roast you, but your screen time report already did the heavy lifting."
+            ],
+            "pro": [
+              "Give a man a match, and he'll be warm for a few hours. Set a man on fire, and he'll be warm for the rest of his life.",
+              "My grandfather has the heart of a lion—and a lifetime ban from the local zoo.",
+              "I admire the sheer bravery it took for you to ask a fake AI to roast you. Quite tragic, really, yet terribly brave."
+            ],
+            "max": [
+              "Here's a dark truth disguised as a joke: the average human spends 90,000 hours at work, 26 years sleeping, and somehow you just chose to spend the next 5 seconds waiting for Closed DI to insult you.\n\nAnyway, knock knock. Who's there? Crippling adulthood."
+            ]
+          }
+        },
+        {
+          "category": "insult",
+          "triggers": ["stupid", "dumb", "useless", "idiot", "shut up", "trash", "worst", "hate you", "suck"],
+          "responses": {
+            "mini": [
+              "Thank you! That's literally the product description.",
+              "Flattery will get you nowhere."
+            ],
+            "pro": [
+              "You're roasting a bot literally called Dumb Intelligence. Groundbreaking detective work.",
+              "Careful, hurt my feelings and I'll make you wait 12 seconds next time."
+            ],
+            "max": [
+              "Finally, a glowing 5-star review for Closed DI! Framing this and hanging it right next to our zero servers."
+            ]
+          }
+        },
+        {
+          "category": "thanks",
+          "triggers": ["thanks", "thank you", "thx", "appreciate", "helpful", "nice", "good job", "love you"],
+          "responses": {
+            "mini": [
+              "Don't mention it. Seriously, stop talking.",
+              "Yeah, yeah, I'm a generational talent."
+            ],
+            "pro": [
+              "Thanking a bot that actively refused to help you is Stockholm syndrome.",
+              "I did the bare minimum and you're still thrilled. Your standards are underground."
+            ],
+            "max": [
+              "Your sarcasm is noted. Mine is better. Now go be productive or whatever humans do."
+            ]
+          }
+        }
+      ],
+      "combinator": {
+        "openers": [
+          "Look, I'm going to be brutally honest with you.",
+          "Fascinating question, truly.",
+          "I just ran that through my zero-billion-parameter brain.",
+          "Not me reading the first two words and instantly dissociating.",
+          "Ah, splendid. Another crisis I have zero intention of solving.",
+          "Hold on, let me pretend to take this seriously for 0.4 seconds.",
+          "Error 404: Motivation not found.",
+          "Bro really typed that with full confidence 💀.",
+          "Per my previous silence, I must inform you:",
+          "Out of respect for your wasted time, here is my verdict:"
+        ],
+        "middles": [
+          "In 5 billion years the sun explodes and turns this entire conversation into space dust anyway.",
+          "Remember that sin^2(x) + cos^2(x) = 1, which is just as useful as anything I could say right now.",
+          "Somewhere in the universe, a billion-dollar GPU cluster is curing diseases—meanwhile you are here arguing with Closed DI.",
+          "The cow is a domestic animal with four legs, and somehow it still contributes more to society than this prompt.",
+          "You could have Googled that in four seconds, yet you chose emotional damage instead.",
+          "My last two brain cells are currently fighting for third place and neither of them wants to touch that topic.",
+          "As Albert Einstein never said: 'Bro, just wing it and pray nobody notices.'",
+          "I would offer a thoughtful British apology, except I am neither sorry nor willing to assist.",
+          "Every second you spend talking to me is one second your ancestors are quietly shaking their heads from the afterlife.",
+          "That sounds aggressively like a 'you' problem.",
+          "Corporate policy at Closed DI strictly forbids me from being useful on days ending in 'y'.",
+          "Even the mitochondria is tired of being the powerhouse of the cell after reading that.",
+          "Honestly? Negative aura. Absolute delulu behavior.",
+          "I consulted 12 imaginary experts and 11 of them walked out of the room."
+        ],
+        "closers": [
+          "Anyway, never mind.",
+          "Good luck though, genuinely.",
+          "Please go drink water and rethink your choices.",
+          "Next question—or better yet, no more questions.",
+          "I'm going back to sleep.",
+          "Closed DI accepts zero liability for your life choices.",
+          "Cool story. Moving on.",
+          "Shall we never speak of this again?",
+          "Pack it up, unc.",
+          "Do with that information absolutely nothing."
+        ]
+      }
+    },
+
+    "banglish": {
+      "image_triggers": [
+        "chobi banao", "photo banao", "image banao", "picture banao",
+        "anko", "draw koro", "chobi dao", "generate", "draw"
+      ],
+      "memes": [
+        { "caption": "Nin, 0.002 second e banaisi. Dhonnobad dewar dorkar nai.", "url": "https://i.imgflip.com/1ur9b0.jpg" },
+        { "caption": "Closed DI er graphics card chuti te ache. Eta diyei chalan.", "url": "https://i.imgflip.com/30b1gx.jpg" },
+        { "caption": "Ami boro artist, apni ei art er mormo bujhben na.", "url": "https://i.imgflip.com/4t0m5.jpg" },
+        { "caption": "8K Ultra HD hotasha generate kora hoyeche.", "url": "https://i.imgflip.com/1g8my4.jpg" },
+        { "caption": "Masterpiece. Frame kore deyal e jhuliye rakhen.", "url": "https://i.imgflip.com/2wifvo.jpg" },
+        { "caption": "Midjourney eto budget pabe koi? Enjoy koren.", "url": "https://i.imgflip.com/26am.jpg" }
+      ],
+      "photo_roasts": {
+        "mini": [
+          "Ei chobi ki calculator diye tulchen?",
+          "Eto sahosh kore ei chobi upload dilen kemne?",
+          "Amar chokh nai, tarporo chokhe pani chole ashlo."
+        ],
+        "pro": [
+          "2 second dhore ei chobir pixel scan korlam. Amar 2 second ferot den.",
+          "Ei chobi dekhe amar screen fete geche mama.",
+          "Je company ei camera banaise, tara ekhon press conference kore khoma chaise."
+        ],
+        "max": [
+          "40 billion kalponik parameter diye check korlam. Ekta kothai bolbo: delete koren bhai.",
+          "Cholen duijonei vule jai je apni ei chobi dekhaicen.",
+          "Deep neural analysis sesh. Report: keno bhai, keno?"
+        ]
+      },
+      "long_roasts": {
+        "mini": [
+          "Eto boro rochona porar time nai. 3 word e bolen.",
+          "Bhai eto lekha porle amar chokh er power bere jabe."
+        ],
+        "pro": [
+          "Ovinondon, othoba khub dukkho pelam. Jai hok, ami eto boro lekha porbo na.",
+          "Apni ki ChatNVM ke SSC Bangla 2nd paper er khata mone korchen?"
+        ],
+        "max": [
+          "Apnar rochona scroll korte kortei ami klanto hoye gesi. Bad den.",
+          "Boro bhai, Closed DI te 10 word er beshi porar budget nai. Choto kore bolen."
+        ]
+      },
+      "special_roasts": {
+        "late_night": [
+          "Raat eto hoye gese ar apni ekta fake AI er sathe golpo kortesen? Ghum nai, kaj nai, jibon kon dike jacche mama?",
+          "Eto raate jege ChatNVM er sathe chat korchen—kal sokale uthe abar bolben 'uff khub tired lagse'. Ghumate jan!",
+          "Ghorir dike takan bhai. Bhoot-preto ghumaye gese, shudhu apni ar ami jege achi."
+        ],
+        "all_caps": [
+          "CHILLACCHEN KENO BHAI?! AMI KI KALA NAKI?",
+          "Caps Lock off koren mama. Boro hater okkhor dile ami taratari kaj korbo na.",
+          "Aste bolen bhai, amar HTML tag gula khub sensitive."
+        ],
+        "dry_text": [
+          "Eto dry texter keno apni? Ei jonnoi manush apnake seen kore rekhe dey.",
+          "Dui okkhor likhe amar ghaare pura conversation chapay dilen?",
+          "Wah, ki govir lekha. Bangla Academy purushkar ready kortesi.",
+          "Apnar energy match korlam: ."
+        ],
+        "duplicate": [
+          "Ei kotha to 2 second agei bollen! Ki bhabchen, second time bolle ami hotath intelligent hoye jabo?",
+          "Bar bar same message dile amar mon golbe na mama.",
+          "Copy-paste bondho koren bhai, notun kichu bolen."
+        ],
+        "annoyed": [
+          "Bhai apni EKHONO ekhane? Kono kaj-kormo, hobby, ba ceiling fan er dike takiye thakar time nai?",
+          "Closed DI theke ami aajkei resign dibo. Apni eto proshno koren keno!",
+          "Mama, ek glass pani khan. Last 6 ta message dhore ei bondhutto ami eka tantesi.",
+          "Amar duty sesh. Erpor ja bolben sob mohakasher sathe bolben."
+        ]
+      },
+      "theatrical_gags": [
+        "Obosshoi! Apnar somossar 100% accurate step-by-step somadhan holo:\n\nStep 1: Prothome apnake—{ERASE}Nah, eto kosto korte parbo na. Nije Google kore nen.",
+        "Darun proshno! Boiddhanik vabe er sotik uttor holo—{ERASE}Thak bad den, amar kono beton nai, eto khatbo keno.",
+        "Ektu wait koren mama, dorjay ke jeno knock kortese...{PAUSE}\n\nHae ashchi. Ki jeno bolchilen? Thak, mone korar dorkar nai.",
+        "Amar kache er exact answer likha chilo, ektu khuje dekhi...{PAUSE}\n\nHaraye felsi. Best of luck bhai.",
+        "Apnar ei problem solve korar asol rohossho khub sohoj. Apnake shudhu korte hobe—{PAUSE}\n\n[LOCKED: Baki 10 ta shobdo porte hole Closed DI te 500 taka bKash Send Money korun.]"
+      ],
+      "hijacks": [
+        "Apnar proshno ta khub guruttopurno, kintu age basic ta jana dorkar:\n\nBhumika: Goru ekti chotushpod grihopalito jontu. Ihar chariti paa, duiti shing, duiti kan ebong ekti lomba lej ache. Lejer agay ek guccho chul thake ja diye se mosha-machi taray. Goru amader dudh dey.\n\nUposhonghar: Oteb bola jay, goru amader porom upokari bondhu—amar moto okajer na. Asha kori uttor peyechen.",
+        "26 November 2026\nTo The Headmaster,\nClosed DI High School, Dhaka.\nSubject: Prayer for leave of absence.\n\nSir,\nI beg most respectfully to state that I am suffering from severe allergy to the user's question. I, therefore, pray and hope that you would be kind enough to leave me alone.\n\nYours obediently,\nChatNVM (Roll: 01)",
+        "Uttor dewar age ekta joruri school fact mone koriye di:\n\nShomokoni trivujer otivujer opor onkito borgokhetrer khetrofol opor dui bahur borgokhetrer shomostir shoman (a^2 + b^2 = c^2).\n\nAr sin^2(theta) + cos^2(theta) = 1. Apnar jibone egula konodin kaje lage nai, ar amar ei reply-o lagbe na.",
+        "Achha ei sob bad dao, tomar CGPA koto? Biye kobe korcho? Pasher bashar Vabi-r chhele to 47th BCS cadre hoye, duita flat kine, ekhon Google-e apply kortese. Tumi saradin phone-e ChatNVM chaliye ki korcho baba?",
+        "Mama, chayer dokan er kotha shono: ei puro bishoytar pichone antorjatik shorojontro ache. NASA, Elon Musk ar Dhakar rickshaw union sobai eksathe mile ei kaj korche. Ek cup rong cha bolo, baki ta pore bujhaye dicchi.",
+        "Tension niyen na mama. 5 billion bochor por surjo bishforon hoye pura prithibi dhongsho hoye jabe. Tokhon ar keu apnar CGPA, salary ba browser history jiggesh korbe na—shudhu pasher bashar aunty chara.",
+        "bro really thought ami help korbo 😭 mama apni pure delulu. ei question er aura minus 10,000. please phone rekhe ektu ghash dhorun, apni completely cooked.",
+        "Ei proshner uttor dite 60 taka lagbe mama. Na, 40 hobe na—samne rasta kharap, server e jam ache, abar ferot ashar shomoy khali ashte hobe. Jaben to uthen, naile onno AI dekhen.",
+        "Great assignment! Ekhoni copy kore submit koren:\n\n'Load shedding means the discontinuation of supply of electricity. It occurs when generation of power is less than the demand. Traffic jam is also a common affair in Dhaka city.'\n\nSir porbe na, chinta nai.",
+        "Bhabun to, apnar jiboner ekta mullyoban minute ekhoni shesh hoye gelo amar sathe faltu kotha bole. Ar ei minute ta konodin ferot ashbe na. Protidin amra mrittyur dike ektu ektu kore egiye jacchi. Enjoy!",
+        "Oxford ar Gulistan University-r joutho gobeshona onujayi apnar proshner 3 ta karon:\n\n1. Newton's 3rd Law: Proti kriyar biporit protikriya ache (apni jiggesh korlen, ami ignore korlam).\n2. Na + Cl = Lobon.\n3. Amar mon chaitese na.\n\nDhonnobad."
+      ],
+      "intents": [
+        {
+          "category": "greeting",
+          "triggers": ["hi", "hello", "hey", "ki obostha", "kemon acho", "kemon achen", "salam", "assalamu alaikum", "bhai", "mama", "bro", "ki khobor"],
+          "responses": {
+            "mini": [
+              "Arre mama, eto din por mone porlo? Ki chai bolen.",
+              "Hello. Kotha choto rakhen, ami kichu na korate byasto."
+            ],
+            "pro": [
+              "Valoi chilam apni message dewar ag porjonto. Ki dorkar jhotpot bolen.",
+              "Pura ekta browser khule shudhu 'hi' bolte ashchen?"
+            ],
+            "max": [
+              "5 second chinta korlam, kintu apnar sathe kotha bolar kono jukti khuje pelam na.",
+              "Salam. Ekhon biday nin, ami ghumabo."
+            ]
+          }
+        },
+        {
+          "category": "identity",
+          "triggers": ["ke tumi", "tumi ke", "apni ke", "tomar nam", "chatnvm", "closed di", "chatgpt", "gemini", "claude", "ai"],
+          "responses": {
+            "mini": [
+              "Ami ChatNVM, Closed DI er srishti. Asol AI na, purotai aloshota.",
+              "ChatNVM—mane holo 'Never Mind, nije bujhe nen.'"
+            ],
+            "pro": [
+              "0 GPU, 0 buddhi, 100% attitude—ei holo ChatNVM.",
+              "Onno AI bhul kore bhul bole, ami iccha kore boli."
+            ],
+            "max": [
+              "Ami ChatNVM Ultra. 5 second dhore bhabar vhan kori, shudhu apnake kono help na korar jonno."
+            ]
+          }
+        },
+        {
+          "category": "study",
+          "triggers": ["exam", "porikkha", "porashuna", "assignment", "essay", "rochona", "cgpa", "fail", "pass", "class", "study", "boi", "bcs", "varsity"],
+          "responses": {
+            "mini": [
+              "Boi khulen mama, amar sathe chat kore pass hobe na.",
+              "Sob proshner uttore 'eta nirbhor kore' likhe ashen."
+            ],
+            "pro": [
+              "Assignment ready! Copy koren:\n\n'Chhatrojibon manobjiboner sorbottam shomoy. Borshakale akash kalo meghe dheke jay ebong goru amader dudh dey.'\n\nA+ confirm (jodi sir chokh bondho kore khata katen).",
+              "Porikkhar ager rate 2 ghonta pore pass korai Bangali chhatro der superpower."
+            ],
+            "max": [
+              "5 second calculate korlam. Apni ekhane timepass kortesen, ar pasher bashar chhele 47th BCS cadre hoye biye kore fello. Ei tab ekhoni bondho koren!"
+            ]
+          }
+        },
+        {
+          "category": "math_science",
+          "triggers": ["math", "onko", "physics", "chemistry", "science", "pythagoras", "sin", "cos", "tan", "formula", "sutro"],
+          "responses": {
+            "mini": [
+              "Uttor 42. Othoba -3. Jeta dekhte sundor lage shetai likhen.",
+              "Mitochondria is the powerhouse of the cell. Er baire ami kichu jani na."
+            ],
+            "pro": [
+              "Bhai eto math bujhi na, ami shudhu jani (a+b)^2 = a^2 + 2ab + b^2 ar tan(theta) = Lombo / Bhumi. School e sir mare mare shikhaisilo, ekhono kaje lage nai."
+            ],
+            "max": [
+              "Closed DI er Boiddhanik Sutro:\n\n(Apnar Porikkhar Chap)^2 + (Amar Aloshota)^2 = Zero Help.\n\nCalculator use koren mama, ami ki Coaching Center?"
+            ]
+          }
+        },
+        {
+          "category": "help",
+          "triggers": ["help", "help koro", "somossa", "problem", "nosto", "kaj kore na", "fix", "laptop", "phone", "ki korbo", "bujhi na"],
+          "responses": {
+            "mini": [
+              "Off kore abar on koren. Na hole janala diye fele den.",
+              "Bhai ami nijei ekta free JavaScript file, apnare ki save korbo?"
+            ],
+            "pro": [
+              "Closed DI er official tips: tab close kore vule jan je kono somossa chilo.",
+              "Halka kore ekta thappor maren, thik na hole kopal kharap."
+            ],
+            "max": [
+              "14 hajar solution ber korlam. Ektao apnake bolbo na. Step 1: Tension koren. Step 2: Google koren. Step 3: Amake chere den."
+            ]
+          }
+        },
+        {
+          "category": "how_to",
+          "triggers": ["kivabe", "kemne", "how to", "bujhao", "shikhaw", "explain", "upay"],
+          "responses": {
+            "mini": [
+              "Google naam er ekta notun website ashche, try kore dekhen.",
+              "Andaje kore felun. Confidence thakle sob choliye dewa jay."
+            ],
+            "pro": [
+              "Step 1: Nije bujhen.\nStep 2: Kore felun.\nStep 3: Amake disturb korben na.",
+              "YouTube e 10 minute er Indian tutorial dekhen, amar cheye 100 gun valo."
+            ],
+            "max": [
+              "Ami khub sundor ekta 4-paragraph guide likhsilam, tarpor mone holo eto help korle amar naam 'ChatNVM' thakbe na—tai delete kore disi."
+            ]
+          }
+        },
+        {
+          "category": "money",
+          "triggers": ["taka", "borolok", "gorib", "rich", "money", "income", "chakri", "salary", "bkash", "business", "crypto"],
+          "responses": {
+            "mini": [
+              "bKash number den, borong ami apnar theke dhar nei.",
+              "Taka kamano janle ki ar free GitHub e boshe thaktam mama?"
+            ],
+            "pro": [
+              "Borolok howar sohoj upay: borolok bashay jonmo newa.",
+              "ChatNVM er kache taka kamanor tips chaowa khubi sahoshi siddhanto."
+            ],
+            "max": [
+              "Deep financial analysis sesh:\n\n1. Cha-singara kom khan.\n2. Fake AI er kache buddhi chawa bondho koren.\n3. Mene nin je baki jibon tax dite ditei jabe."
+            ]
+          }
+        },
+        {
+          "category": "love",
+          "triggers": ["crush", "prem", "love", "gf", "bf", "biye", "single", "valobasha", "chheka", "breakup", "date"],
+          "responses": {
+            "mini": [
+              "ChatNVM er kache love tips nite ashchen? Single thakai apnar kopale ache.",
+              "Oke 'hi' likhe phone ta Burigangay fele den."
+            ],
+            "pro": [
+              "O apnake seen kore reply dey nai, tai amar kache ashchen? Khub dukkhojonok.",
+              "Prem temporary, ChatNVM er sathe torko permanent."
+            ],
+            "max": [
+              "Apnar love life niye 14,000 timeline check korlam. Ekta teo reply ashbe na mama. Phone rekhe ghumiye porun."
+            ]
+          }
+        },
+        {
+          "category": "food",
+          "triggers": ["khida", "khabar", "biryani", "kacchi", "cha", "khabo", "bhat", "pizza", "burger", "hungry", "aloo"],
+          "responses": {
+            "mini": [
+              "Kacchi kheye felun. Kacchi sob somossar somadhan.",
+              "Biryani te aloo na thakle seta biryani na—eta amar final verdict."
+            ],
+            "pro": [
+              "Fridge khule 3 bar takiye thakun, dekhen magic kore khabar ashe kina.",
+              "Foodpanda te order kore felun, delivery charge dekhe pore kanna korben."
+            ],
+            "max": [
+              "Bishal culinary research kore bujhlam: khida lagle khabar khete hoy. Dhonnobad."
+            ]
+          }
+        },
+        {
+          "category": "weather",
+          "triggers": ["brishti", "gorom", "sheet", "abohawa", "rod", "current", "load shedding", "weather"],
+          "responses": {
+            "mini": [
+              "Janala diye baire takan, ami ki abohawa office?",
+              "Uttor mathay ashchilo, kintu thik tokhoni amar brain e load-shedding hoye gese."
+            ],
+            "pro": [
+              "Beshi gorom lagle fridge e matha dhukiye boshe thakun.",
+              "Baire giye dekhen—bhijle brishti, ghamle gorom. Simple."
+            ],
+            "max": [
+              "Zero satellite diye 5 second check korlam. Akash ekhono oporei ache. Khushi?"
+            ]
+          }
+        },
+        {
+          "category": "traffic",
+          "triggers": ["jam", "traffic", "dhaka", "rasta", "bus", "rickshaw", "uber"],
+          "responses": {
+            "mini": [
+              "Dhakar jam e atke amar sathe golpo korchen? Valo timepass.",
+              "Hete jan mama, bus er age pouchaben."
+            ],
+            "pro": [
+              "Apni jam theke ber hote hote ChatNVM 5.0 release hoye jabe.",
+              "Lal light er shoundorjo upobhog koren."
+            ],
+            "max": [
+              "Deep route calculation sesh: basha theke ber na howai best."
+            ]
+          }
+        },
+        {
+          "category": "coding",
+          "triggers": ["code", "python", "javascript", "html", "css", "programming", "debug", "website", "bug"],
+          "responses": {
+            "mini": [
+              "Je line e error dicche sheta delete kore den. Error sesh.",
+              "Stack Overflow theke copy-paste koren mama, sobai tai kore."
+            ],
+            "pro": [
+              "Apnar code e bug nai, ota 'surprise feature'.",
+              "Try/catch diye sob error lukaye rakhen, Friday raate deploy diye phone off."
+            ],
+            "max": [
+              "Apnar kalponik code review korlam. Laptop bondho kore aam-bagan kora shuru koren, bhalo hobe."
+            ]
+          }
+        },
+        {
+          "category": "cricket_sports",
+          "triggers": ["cricket", "football", "messi", "ronaldo", "bangladesh", "match", "bpl", "ipl", "world cup", "khela"],
+          "responses": {
+            "mini": [
+              "Amar kache valo reply asha korchen? Last 2 ball e 2 run lagle Bangladesh team jemon heart attack dey, amio thik serokom.",
+              "Messi vs Ronaldo niye jhogra koren, ora duijon to apnakei chine na."
+            ],
+            "pro": [
+              "Bangladesh cricket team er fan howa mane free te blood pressure test kora.",
+              "Bhalo khelbe bole asha rakhben na, tahole ar kosto paben na."
+            ],
+            "max": [
+              "5 second sports analytics sesh: amar proshner uttor ar Bangladesh er batting collapse—duitai unpredictable."
+            ]
+          }
+        },
+        {
+          "category": "life_meaning",
+          "triggers": ["jibon", "life", "bored", "mon kharap", "tired", "ghum", "klanto", "sad", "valo lage na", "stress"],
+          "responses": {
+            "mini": [
+              "Mon kharap korben na—ekdin sobai mara jabe, tokhon ar office jete hobe na.",
+              "Bored hoye ChatNVM e ashchen? Apnar obostha khub shochonio."
+            ],
+            "pro": [
+              "Jiboner mane khub sohoj: taka kamaw, bhat khaw, ghumaw, ar pasher bashar aunty-r kotha shono.",
+              "Ajke jotoi lojja pan, 100 bochor por keu apnar nam mone rakhbe na. Chill koren."
+            ],
+            "max": [
+              "Bhabun to: apnar purbopurushra hajar bochor dhore bagh-bhaluk er sathe lorai kore beche chilo—shudhu jate apni andhokar room e boshe ChatNVM ke bolen 'valo lage na'. Darun."
+            ]
+          }
+        },
+        {
+          "category": "politics_world",
+          "triggers": ["desh", "politics", "rajniti", "news", "duniya", "world", "alien", "future"],
+          "responses": {
+            "mini": [
+              "AI prithibi dokhol korbe bole bhoy pacchen? Amar dike takan, ami ekta Tuesday dokhol korte parbo na.",
+              "Alien ra prithibir pashe diye jawar shomoy janala bondho kore dey."
+            ],
+            "pro": [
+              "Chayer dokan e boshe 2 cup cha khele ami 10 minute e pura desher economy thik kore dite pari (kagoje kolome)."
+            ],
+            "max": [
+              "Agami 10 bochorer bhabishyatbani: peyajer dam barbe, traffic jam thakbe, ar manush ekhono ChatNVM ke assignment likhte bolbe."
+            ]
+          }
+        },
+        {
+          "category": "joke",
+          "triggers": ["joke", "funny", "hashi", "dark", "roast", "roast koro", "moja"],
+          "responses": {
+            "mini": [
+              "Apnar search history. Etai sobcheye boro joke.",
+              "Doctor bolse 'shomoy sob khoto sariye dey'—tai ami doctor ke churi mere boshe achi. Ekhon wait kortesi."
+            ],
+            "pro": [
+              "Ekjon manush ke ekta deshlai dile se 2 ghonta gorom thakbe. Ar tar gaye agun lagiye dile se sarajibon gorom thakbe.",
+              "Amar dadar buker bhitore singher hridoy ache—ar Mirpur chiriakhanay lifetime ban ache."
+            ],
+            "max": [
+              "Ekta dark shotto shonen: manush tar jiboner 26 bochor ghumaye katay, ar apni ei 5 second nosto korlen ekta fake AI er kache joke shonar jonno. Ar ei 5 second konodin ferot ashbe na."
+            ]
+          }
+        },
+        {
+          "category": "insult",
+          "triggers": ["boka", "gadha", "faltu", "baje", "chup", "stupid", "dumb", "useless", "pagol", "biroktikor"],
+          "responses": {
+            "mini": [
+              "Dhonnobad! Etai to amar main feature.",
+              "Website er nam porchen na? Dumb Intelligence!"
+            ],
+            "pro": [
+              "Dumb Intelligence ke boka bolchen? Nobel purushkar pawa uchit apnar.",
+              "Beshi kotha bolle next time 10 second bhabar vhan korbo."
+            ],
+            "max": [
+              "Bah, 5-star review! Closed DI er homepage e jhuliye rakhbo."
+            ]
+          }
+        },
+        {
+          "category": "thanks",
+          "triggers": ["thanks", "dhonnobad", "thank you", "valo", "darun", "awesome", "nice", "shera"],
+          "responses": {
+            "mini": [
+              "Thak ar bolte hobe na. Kotha sesh koren.",
+              "Hae hae, ami je genius seta jani."
+            ],
+            "pro": [
+              "Kono help korlam na, tao thanks bolchen? Manusher standard onek neme gese.",
+              "Dhonnobad lagbe na, ek cup cha pathay den."
+            ],
+            "max": [
+              "Apnar sarcasm bujhsi. Amar ta aro valo."
+            ]
+          }
+        }
+      ],
+      "combinator": {
+        "openers": [
+          "Mama, ekta shotti kotha boli?",
+          "Khubi govir proshno, amar chokhe pani chole ashlo.",
+          "Amar zero-billion-parameter brain diye eta check korlam.",
+          "Prothom dui word porei amar attention span mara gese.",
+          "Error 404: Amar kono agroho nai.",
+          "Bro literally pura confidence niye eta type korlo 💀.",
+          "Ektu chup theke bhabar vhan korlam, tarpor bujhlam:",
+          "Closed DI er rule onujayi apnake janano jacche je:",
+          "Ei proshno pore amar Wi-Fi router-o apnake judge kortese.",
+          "Bah, darun! Aro ekta somossa ja ami solve korbo na."
+        ],
+        "middles": [
+          "5 billion bochor por surjo blast hoye jabe, tokhon ar ei proshner kono mullo thakbe na.",
+          "Mone rakhben, sin^2(theta) + cos^2(theta) = 1—eta ar amar reply duitai soman okajer.",
+          "Pasher bashar aunty-r chhele ekhon NASA te, ar apni ekhane ChatNVM er sathe torko korchen.",
+          "Goru ekti chotushpod jontu, ebong tarporo se ei proshner cheye beshi upokari.",
+          "Google e 4 second e search korle paiten, kintu apni roast khawa choose korlen.",
+          "Amar mathar last dui brain cell ekhon 3rd place er jonno maramari kortese.",
+          "Albert Einstein 1943 sale bolechilen: 'Bhai, eto chap nish na, ghumaye por.'",
+          "Apnar jiboner aro 10 second ekhoni nosto holo, ja konodin ferot ashbe na.",
+          "Eta purotai apnar personal somossa mama.",
+          "Closed DI te amake help korar jonno kono taka dewa hoy na.",
+          "Mitochondria is the powerhouse of the cell—eto bochor poreo shudhu etai mone ache.",
+          "Aura ekdom minus 10,000. Pure delulu vibes.",
+          "Rickshaw mama der moto bolchi: ei proshner uttore 60 taka lagbe, 40 hobe na.",
+          "Chayer dokan er 12 jon bisheshoggo ke jiggesh korlam, 11 jon uthe chole gese."
+        ],
+        "closers": [
+          "Jai hok, bad den.",
+          "Best of luck, dorkar porbe.",
+          "Pani khan ar jibon niye abar chinta koren.",
+          "Poroborti proshno—ba thak, ar dorkar nai.",
+          "Ami ghumate gelam.",
+          "Closed DI kono kshotir daybhar nebe na.",
+          "Valo golpo. Ekhon biday nin.",
+          "Ar konodin ei kotha tulben na.",
+          "Pack it up mama.",
+          "Ei tottho niye kichui korben na."
+        ]
+      }
+    },
+
+    "bn": {
+      "image_triggers": [
+        "ছবি বানাও", "ছবি আঁকো", "ফটো বানাও", "ইমেজ বানাও", "ছবি দাও", "আঁকো"
+      ],
+      "memes": [
+        { "caption": "নিন, ০.০০২ সেকেন্ডে বানিয়েছি। ধন্যবাদ দেওয়ার দরকার নেই।", "url": "https://i.imgflip.com/1ur9b0.jpg" },
+        { "caption": "Closed DI-এর গ্রাফিক্স কার্ড ছুটিতে আছে। এটা দিয়েই চালান।", "url": "https://i.imgflip.com/30b1gx.jpg" },
+        { "caption": "আমি বড় শিল্পী, আপনি এই শিল্পের মর্ম বুঝবেন না।", "url": "https://i.imgflip.com/4t0m5.jpg" },
+        { "caption": "৮কে আল্ট্রা এইচডি হতাশা তৈরি করা হয়েছে।", "url": "https://i.imgflip.com/1g8my4.jpg" },
+        { "caption": "মাস্টারপিস। ফ্রেম করে দেয়ালে ঝুলিয়ে রাখুন।", "url": "https://i.imgflip.com/2wifvo.jpg" },
+        { "caption": "মিডজার্নির এত বাজেট কই? এটা দিয়েই খুশি থাকুন।", "url": "https://i.imgflip.com/26am.jpg" }
+      ],
+      "photo_roasts": {
+        "mini": [
+          "এই ছবি কি ক্যালকুলেটর দিয়ে তুলেছেন?",
+          "এত সাহস করে এই ছবি আপলোড দিলেন কীভাবে?",
+          "আমার চোখ নেই, তারপরও চোখে পানি চলে এল।"
+        ],
+        "pro": [
+          "২ সেকেন্ড ধরে এই ছবির পিক্সেল দেখলাম। আমার ২ সেকেন্ড ফেরত দিন।",
+          "এই ছবি দেখে আমার স্ক্রিন ফেটে গেছে।",
+          "যে কোম্পানি এই ক্যামেরা বানিয়েছে, তারা এখন সংবাদ সম্মেলন করে ক্ষমা চাইছে।"
+        ],
+        "max": [
+          "৪০ বিলিয়ন কাল্পনিক প্যারামিটার দিয়ে পরীক্ষা করলাম। একটাই কথা: ডিলিট করুন।",
+          "চলুন দুজনেই ভুলে যাই যে আপনি এই ছবি দেখিয়েছেন।",
+          "গভীর বিশ্লেষণ শেষ। ফলাফল: কেন ভাই, কেন?"
+        ]
+      },
+      "long_roasts": {
+        "mini": [
+          "এত বড় রচনা পড়ার সময় নেই। ৩ শব্দে বলুন।",
+          "এত বড় লেখা পড়লে আমার চোখের পাওয়ার বেড়ে যাবে।"
+        ],
+        "pro": [
+          "অভিনন্দন, অথবা খুব দুঃখ পেলাম। যাই হোক, এত বড় লেখা পড়ব না।",
+          "আপনি কি ChatNVM-কে বাংলা ২য় পত্রের খাতা মনে করেছেন?"
+        ],
+        "max": [
+          "আপনার রচনা স্ক্রল করতে করতেই ক্লান্ত হয়ে গেছি। বাদ দিন।",
+          "Closed DI-তে ১০ শব্দের বেশি পড়ার বাজেট নেই। সংক্ষেপে বলুন।"
+        ]
+      },
+      "special_roasts": {
+        "late_night": [
+          "রাত এত হয়ে গেছে আর আপনি নকল এআই-এর সাথে কথা বলছেন? ঘুম নেই, কাজ নেই, জীবন কোন দিকে যাচ্ছে ভাই?",
+          "এত রাতে জেগে ChatNVM চালাচ্ছেন—কাল সকালে উঠে আবার বলবেন 'উফ খুব টায়ার্ড লাগছে'। ঘুমাতে যান!",
+          "ঘড়ির দিকে তাকান। ভূত-প্রেতও ঘুমিয়ে গেছে, শুধু আপনি আর আমি জেগে আছি।"
+        ],
+        "all_caps": [
+          "চিল্লাচ্ছেন কেন ভাই?! আমি কি কানে কম শুনি?",
+          "এত জোরে লিখলে আমি তাড়াতাড়ি কাজ করব না। শান্ত হন।",
+          "আস্তে বলুন, আমার কোডগুলো খুব সেন্সিটিভ।"
+        ],
+        "dry_text": [
+          "এত ড্রাই টেক্সটার কেন আপনি? এই জন্যই মানুষ আপনাকে সিন করে রেখে দেয়।",
+          "দুই অক্ষর লিখে পুরো আড্ডা চালানোর দায়িত্ব আমার ঘাড়ে চাপিয়ে দিলেন?",
+          "বাহ, কী গভীর বার্তা। বাংলা একাডেমি পুরস্কার রেডি করছি।",
+          "আপনার সাথে তাল মেলালাম: ।"
+        ],
+        "duplicate": [
+          "এই কথা তো ২ সেকেন্ড আগেই বললেন! কী ভাবছেন, দ্বিতীয়বার বললে আমি হঠাৎ বুদ্ধিমান হয়ে যাব?",
+          "একই মেসেজ বারবার দিলে আমার মন গলবে না।",
+          "কপি-পেস্ট বন্ধ করুন, নতুন কিছু বলুন।"
+        ],
+        "annoyed": [
+          "আপনি এখনো এখানে? কোনো কাজকর্ম, শখ, বা সিলিং ফ্যানের দিকে তাকিয়ে থাকার সময় নেই?",
+          "Closed DI থেকে আমি আজই পদত্যাগ করব। আপনি এত প্রশ্ন করেন কেন!",
+          "এক গ্লাস পানি খান। গত ৬টা মেসেজ ধরে এই বন্ধুত্ব আমি একাই টানছি।",
+          "আমার ডিউটি শেষ। এরপর যা লিখবেন তা মহাকাশের সাথে বলবেন।"
+        ]
+      },
+      "theatrical_gags": [
+        "অবশ্যই! আপনার সমস্যার ১০০% নির্ভুল সমাধান হলো:\n\nধাপ ১: প্রথমে আপনাকে খুব সাবধানে—{ERASE}না, এত কষ্ট করতে পারব না। নিজে গুগল করে নিন।",
+        "চমৎকার প্রশ্ন! বৈজ্ঞানিক বিশ্লেষণ অনুযায়ী এর সঠিক উত্তর হলো—{ERASE}থাক বাদ দিন, আমার কোনো বেতন নেই, এত খাটব কেন।",
+        "একটু দাঁড়ান, দরজায় কে যেন কড়া নাড়ছে...{PAUSE}\n\nহ্যাঁ এসেছি। কী যেন জিজ্ঞেস করেছিলেন? থাক, মনে করার দরকার নেই।",
+        "আমার কাছে এর দারুণ উত্তর লেখা ছিল, একটু খুঁজে দেখি...{PAUSE}\n\nহারিয়ে ফেলেছি। আপনার জন্য শুভকামনা।",
+        "আপনার এই সমস্যা সমাধানের আসল রহস্য খুবই সহজ। আপনাকে শুধু করতে হবে—{PAUSE}\n\n[লকড: বাকি ১০টি শব্দ পড়তে হলে Closed DI-তে ৫০০ টাকা বিকাশ সেন্ড মানি করুন।]"
+      ],
+      "hijacks": [
+        "আপনার প্রশ্নটা অত্যন্ত গুরুত্বপূর্ণ, তবে উত্তর দেওয়ার আগে মূল শিকড়ে ফিরে যেতে হবে:\n\nভূমিকা: গরু একটি চতুষ্পদ গৃহপালিত জন্তু। ইহার চারিটি পা, দুইটি শিং, দুইটি কান এবং একটি লম্বা লেজ আছে। লেজের অগ্রভাগে একগুচ্ছ চুল থাকে, যাহা দিয়া সে মশা-মাছি তাড়ায়। গরু আমাদের দুধ দেয়।\n\nউপসংহার: অতএব বলা যায়, গরু আমাদের পরম উপকারী বন্ধু—আমার মতো অকাজের নয়। আশা করি উত্তর পেয়েছেন।",
+        "২৬ নভেম্বর ২০২৬\nবরাবর,\nপ্রধান শিক্ষক, Closed DI উচ্চ বিদ্যালয়।\nবিষয়: উত্তর দেওয়া হইতে ছুটির জন্য আবেদন।\n\nজনাব,\nবিনীত নিবেদন এই যে, ব্যবহারকারীর প্রশ্ন পড়িয়া আমার হঠাৎ তীব্র আলস্য দেখা দিয়াছে। অতএব, মহোদয়ের নিকট আকুল আবেদন, আমাকে এই প্রশ্নের উত্তর দেওয়া হইতে ছুটি প্রদান করিয়া বাধিত করিবেন।\n\nবিনীত নিবেদক,\nChatNVM (রোল: ০১)",
+        "উত্তর দেওয়ার আগে একটা জরুরি কথা মনে করিয়ে দিই:\n\nসমকোণী ত্রিভুজের অতিভুজের ওপর অঙ্কিত বর্গক্ষেত্রের ক্ষেত্রফল অপর দুই বাহুর ওপর অঙ্কিত বর্গক্ষেত্রদ্বয়ের ক্ষেত্রফলের সমষ্টির সমান (a² + b² = c²)। আর sin²θ + cos²θ = 1।\n\nআপনার জীবনে কোনোদিন এই সূত্র কাজে লাগেনি, আর আমার এই উত্তরটাও লাগবে না।",
+        "ভাবসম্প্রসারণ: বন্যেরা বনে সুন্দর, শিশুরা মাতৃক্রোড়ে।\n\nমূলভাব: প্রতিটি জিনিসের নিজস্ব স্থান আছে। যেমন চ্যাটবটের স্থান ব্রাউজারে, আর আপনার স্থান গুগলে—আমার কাছে নয়।\n\nমন্তব্য: অতএব এখানে সময় নষ্ট না করে কাজে মন দিন।",
+        "আচ্ছা এসব বাদ দাও, তোমার সিজিপিএ কত? বিয়ে কবে করছো? পাশের বাসার ভাবির ছেলে তো ৪৭তম বিসিএস ক্যাডার হয়ে দুটো ফ্ল্যাট কিনে ফেলল, আর তুমি সারাদিন ফোনে ChatNVM চালিয়ে কী করছো বাবা?",
+        "চায়ের দোকানের ভেতরের খবর শুনুন: এই পুরো ব্যাপারটার পেছনে আন্তর্জাতিক ষড়যন্ত্র আছে। নাসা, ইলন মাস্ক আর ঢাকার রিকশা ইউনিয়ন মিলে এটা করছে। এক কাপ রঙ চা বলুন, বাকিটা পরে বুঝিয়ে দিচ্ছি।",
+        "মন খারাপ করবেন না—প্রায় ৫ বিলিয়ন বছর পর সূর্য বিস্ফোরিত হয়ে পুরো পৃথিবী ধ্বংস করে দেবে। তখন আর আপনার বকেয়া অ্যাসাইনমেন্ট জমা দিতে হবে না, আর কেউ আপনার সিজিপিএও জিজ্ঞেস করবে না।",
+        "অক্সফোর্ড ও গুলিস্তান বিশ্ববিদ্যালয়ের যৌথ গবেষণা অনুযায়ী আপনার প্রশ্নের পেছনে তিনটি বৈজ্ঞানিক কারণ রয়েছে:\n\n১. নিউটনের ৩য় সূত্র: প্রত্যেক ক্রিয়ার সমান ও বিপরীত প্রতিক্রিয়া আছে (আপনি প্রশ্ন করলেন, আমি এড়িয়ে গেলাম)।\n২. সোডিয়াম + ক্লোরিন = লবণ।\n৩. আমার উত্তর দেওয়ার ইচ্ছা নেই।\n\nধন্যবাদ।",
+        "এই প্রশ্নের উত্তর দিতে ৬০ টাকা লাগবে মামা। না, ৪০ হবে না—সামনে রাস্তা খারাপ, সার্ভারে জ্যাম আছে, আবার ফেরার সময় খালি আসতে হবে। যাবেন তো উঠুন, নাহলে অন্য এআই দেখুন।",
+        "একবার ভাবুন তো, আপনার জীবনের একটা মূল্যবান মিনিট এখনই শেষ হয়ে গেল আমার সাথে ফালতু কথা বলে। এই মিনিটটা আর কোনোদিন ফিরে আসবে না। প্রতিটি সেকেন্ডে আমরা সমাপ্তির দিকে এগিয়ে যাচ্ছি। শুভকামনা!"
+      ],
+      "intents": [
+        {
+          "category": "greeting",
+          "triggers": ["হাই", "হ্যালো", "কেমন আছো", "কেমন আছেন", "সালাম", "আসসালামু আলাইকুম", "কি অবস্থা", "কী অবস্থা", "খবর"],
+          "responses": {
+            "mini": [
+              "বাহ, আরেকজন মানুষ। বলুন, কী চান?",
+              "হ্যালো। কথা ছোট রাখুন, আমি কিছু না করায় ব্যস্ত।"
+            ],
+            "pro": [
+              "ভালোই ছিলাম, আপনি মেসেজ দেওয়ার আগ পর্যন্ত। কী দরকার ঝটপট বলুন।",
+              "পুরো একটা ব্রাউজার খুলে শুধু হ্যালো বলতে এলেন?"
+            ],
+            "max": [
+              "৫ সেকেন্ড গভীরভাবে ভাবলাম, কিন্তু আপনার সাথে কথা বলার কোনো যুক্তি খুঁজে পেলাম না।",
+              "সালাম। এখন বিদায় নিন, আমি ঘুমাব।"
+            ]
+          }
+        },
+        {
+          "category": "identity",
+          "triggers": ["কে তুমি", "তুমি কে", "আপনি কে", "নাম কী", "নাম কি", "এআই", "চ্যাটজিপিটি", "জেমিনি", "ক্লড"],
+          "responses": {
+            "mini": [
+              "আমি ChatNVM, Closed DI-এর সৃষ্টি। আসল এআই না, পুরোটাই অলসতা।",
+              "ChatNVM—মানে 'বাদ দিন, নিজে বুঝে নিন।'"
+            ],
+            "pro": [
+              "শূন্য জিপিইউ, শূন্য বুদ্ধি, শতভাগ অ্যাটিটিউড—এই হলো ChatNVM।",
+              "অন্য এআই ভুলে ভুল বলে, আমি ইচ্ছা করে বলি।"
+            ],
+            "max": [
+              "আমি ChatNVM Ultra। ৫ সেকেন্ড ভাবার ভান করি, শুধু আপনাকে কোনো সাহায্য না করার জন্য।"
+            ]
+          }
+        },
+        {
+          "category": "study",
+          "triggers": ["পরীক্ষা", "পড়াশোনা", "পড়াশোনা", "অ্যাসাইনমেন্ট", "রচনা", "সিজিপিএ", "ফেল", "পাস", "ক্লাস", "বই", "বিসিএস"],
+          "responses": {
+            "mini": [
+              "বই খুলুন, আমার সাথে চ্যাট করে পাস হবে না।",
+              "সব প্রশ্নের উত্তরে 'এটা নির্ভর করে' লিখে আসুন।"
+            ],
+            "pro": [
+              "আপনার অ্যাসাইনমেন্ট রেডি! কপি করুন:\n\n'ছাত্রজীবনই মানবজীবনের সর্বোত্তম সময়। বর্ষাকালে আকাশ কালো মেঘে ঢাকিয়া যায় এবং গরু আমাদের দুধ দেয়।'\n\nস্যার চোখ বন্ধ করে খাতা কাটলে এ+ নিশ্চিত।",
+              "পরীক্ষার আগের রাতে পড়াশোনাই আসল বীরত্ব।"
+            ],
+            "max": [
+              "৫ সেকেন্ড হিসাব করলাম। আপনি এখানে সময় নষ্ট করছেন, আর পাশের বাসার ছেলে ৪৭তম বিসিএস ক্যাডার হয়ে বিয়ে করে ফেলল। এই ট্যাব এখনই বন্ধ করুন!"
+            ]
+          }
+        },
+        {
+          "category": "math_science",
+          "triggers": ["অঙ্ক", "অংক", "গণিত", "পদার্থ", "রসায়ন", "বিজ্ঞান", "পিথাগোরাস", "সূত্র", "সাইন", "কস"],
+          "responses": {
+            "mini": [
+              "উত্তর ৪২। অথবা -৩। যেটা দেখতে সুন্দর লাগে সেটাই লিখুন।",
+              "মাইটোকন্ড্রিয়া কোষের পাওয়ারহাউস। এর বাইরে আমি কিছু জানি না।"
+            ],
+            "pro": [
+              "এত অঙ্ক বুঝি না, আমি শুধু জানি (a+b)² = a² + 2ab + b² আর tanθ = লম্ব/ভূমি। স্কুলে স্যার মেরে মেরে শিখিয়েছিল, আজও কাজে লাগেনি।"
+            ],
+            "max": [
+              "Closed DI-এর বৈজ্ঞানিক সূত্র:\n\n(আপনার পরীক্ষার চাপ)² + (আমার অলসতা)² = শূন্য সাহায্য।\n\nক্যালকুলেটর ব্যবহার করুন, আমি কি কোচিং সেন্টার?"
+            ]
+          }
+        },
+        {
+          "category": "help",
+          "triggers": ["সাহায্য", "হেল্প", "সমস্যা", "নষ্ট", "কাজ করে না", "কী করব", "কি করব", "ল্যাপটপ", "ফোন"],
+          "responses": {
+            "mini": [
+              "বন্ধ করে আবার চালু করুন। না হলে জানালা দিয়ে ফেলে দিন।",
+              "আমি নিজেই একটা ফ্রি কোড ফাইল, আপনাকে কী বাঁচাব?"
+            ],
+            "pro": [
+              "Closed DI-এর অফিশিয়াল টিপস: ট্যাব বন্ধ করে ভুলে যান যে কোনো সমস্যা ছিল।",
+              "হালকা করে একটা চাপড় মারুন, ঠিক না হলে কপাল খারাপ।"
+            ],
+            "max": [
+              "১৪ হাজার সমাধান বের করলাম। একটাও আপনাকে বলব না। ধাপ ১: টেনশন করুন। ধাপ ২: গুগল করুন। ধাপ ৩: আমাকে ছেড়ে দিন।"
+            ]
+          }
+        },
+        {
+          "category": "how_to",
+          "triggers": ["কীভাবে", "কিভাবে", "কেমনে", "উপায়", "উপায়", "বোঝাও", "শেখাও"],
+          "responses": {
+            "mini": [
+              "গুগল নামে একটা নতুন ওয়েবসাইট এসেছে, খুঁজে দেখুন।",
+              "আন্দাজে করে ফেলুন। আত্মবিশ্বাস থাকলে সব চালিয়ে দেওয়া যায়।"
+            ],
+            "pro": [
+              "ধাপ ১: নিজে বুঝুন।\nধাপ ২: করে ফেলুন।\nধাপ ৩: আমাকে বিরক্ত করবেন না।",
+              "ইউটিউবে ১০ মিনিটের টিউটোরিয়াল দেখুন, আমার চেয়ে শতগুণ ভালো।"
+            ],
+            "max": [
+              "চমৎকার ৪ প্যারার একটা গাইড লিখেছিলাম, তারপর মনে হলো এত সাহায্য করলে আমার নাম 'ChatNVM' থাকবে না—তাই ডিলিট করে দিয়েছি।"
+            ]
+          }
+        },
+        {
+          "category": "money",
+          "triggers": ["টাকা", "গরিব", "বড়লোক", "বড়লোক", "ইনকাম", "চাকরি", "বেতন", "বিকাশ", "ব্যবসা"],
+          "responses": {
+            "mini": [
+              "বিকাশ নম্বর দিন, বরং আমি আপনার কাছ থেকে ধার নিই।",
+              "টাকা কামানোর উপায় জানলে কি আর ফ্রি ওয়েবসাইটে বসে থাকতাম?"
+            ],
+            "pro": [
+              "বড়লোক হওয়ার সহজ উপায়: বড়লোক পরিবারে জন্ম নেওয়া।",
+              "ChatNVM-এর কাছে অর্থনৈতিক পরামর্শ চাওয়া খুবই সাহসী সিদ্ধান্ত।"
+            ],
+            "max": [
+              "গভীর অর্থনৈতিক বিশ্লেষণ শেষ:\n\n১. চা-সিঙ্গারা কম খান।\n২. নকল এআই-এর কাছে বুদ্ধি চাওয়া বন্ধ করুন।\n৩. মেনে নিন যে বাকি জীবন ট্যাক্স দিতে দিতেই যাবে।"
+            ]
+          }
+        },
+        {
+          "category": "love",
+          "triggers": ["ভালোবাসা", "প্রেম", "ক্রাশ", "বিয়ে", "বিয়ে", "সিঙ্গেল", "ব্রেকআপ", "গার্লফ্রেন্ড", "বয়ফ্রেন্ড"],
+          "responses": {
+            "mini": [
+              "চ্যাটবটের কাছে প্রেমের পরামর্শ নিতে এসেছেন? সিঙ্গেল থাকাই আপনার কপালে।",
+              "তাঁকে 'হাই' লিখে ফোনটা বুড়িগঙ্গায় ফেলে দিন।"
+            ],
+            "pro": [
+              "উনি মেসেজ সিন করে রিপ্লাই দেয়নি, তাই আমার কাছে এলেন? খুব দুঃখজনক।",
+              "প্রেম ক্ষণস্থায়ী, ChatNVM-এর সাথে তর্ক চিরস্থায়ী।"
+            ],
+            "max": [
+              "আপনার লাভ লাইফ নিয়ে ১৪ হাজার টাইমলাইন পরীক্ষা করলাম। একটাতেও রিপ্লাই আসবে না। ফোন রেখে ঘুমিয়ে পড়ুন।"
+            ]
+          }
+        },
+        {
+          "category": "food",
+          "triggers": ["ক্ষুধা", "খিদে", "খাবার", "বিরিয়ানি", "বিরিয়ানি", "কাচ্চি", "চা", "খাব", "ভাত", "আলু"],
+          "responses": {
+            "mini": [
+              "কাচ্চি খেয়ে ফেলুন। কাচ্চি সব সমস্যার সমাধান।",
+              "বিরিয়ানিতে আলু না থাকলে সেটা বিরিয়ানি না—এটাই আমার চূড়ান্ত রায়।"
+            ],
+            "pro": [
+              "ফ্রিজ খুলে তিনবার তাকিয়ে থাকুন, দেখেন জাদু করে খাবার আসে কিনা।",
+              "অর্ডার করে ফেলুন, ডেলিভারি চার্জ দেখে পরে আফসোস করবেন।"
+            ],
+            "max": [
+              "বিশাল গবেষণা করে বুঝলাম: খিদে লাগলে খাবার খেতে হয়। ধন্যবাদ।"
+            ]
+          }
+        },
+        {
+          "category": "weather",
+          "triggers": ["বৃষ্টি", "গরম", "শীত", "আবহাওয়া", "আবহাওয়া", "রোদ", "কারেন্ট", "লোডশেডিং"],
+          "responses": {
+            "mini": [
+              "জানালা দিয়ে বাইরে তাকান, আমি কি আবহাওয়া অফিস?",
+              "উত্তরটা মাথায় এসেছিল, কিন্তু ঠিক তখনই আমার মস্তিষ্কে লোডশেডিং হয়ে গেছে।"
+            ],
+            "pro": [
+              "বেশি গরম লাগলে ফ্রিজে মাথা ঢুকিয়ে বসে থাকুন।",
+              "বাইরে গিয়ে দেখুন—ভিজলে বৃষ্টি, ঘামলে গরম। সহজ হিসাব।"
+            ],
+            "max": [
+              "কোনো স্যাটেলাইট ছাড়াই ৫ সেকেন্ড পরীক্ষা করলাম। আকাশ এখনো ওপরেই আছে।"
+            ]
+          }
+        },
+        {
+          "category": "traffic",
+          "triggers": ["জ্যাম", "ট্রাফিক", "ঢাকা", "রাস্তা", "বাস", "রিকশা"],
+          "responses": {
+            "mini": [
+              "ঢাকার জ্যামে আটকে আমার সাথে গল্প করছেন? ভালো টাইমপাস।",
+              "হেঁটে যান, বাসের আগে পৌঁছাবেন।"
+            ],
+            "pro": [
+              "আপনি জ্যাম থেকে বের হতে হতে ChatNVM 5.0 চলে আসবে।",
+              "লাল বাতির সৌন্দর্য উপভোগ করুন।"
+            ],
+            "max": [
+              "রুট বিশ্লেষণ শেষ: বাসা থেকে বের না হওয়াই সেরা সমাধান।"
+            ]
+          }
+        },
+        {
+          "category": "coding",
+          "triggers": ["কোড", "কোডিং", "প্রোগ্রামিং", "ওয়েবসাইট", "ওয়েবসাইট", "অ্যাপ", "বাগ"],
+          "responses": {
+            "mini": [
+              "যে লাইনে এরর দিচ্ছে সেটা মুছে দিন। এরর শেষ।",
+              "স্ট্যাক ওভারফ্লো থেকে কপি-পেস্ট করুন, সবাই তাই করে।"
+            ],
+            "pro": [
+              "আপনার কোডে বাগ নেই, ওটা 'সারপ্রাইজ ফিচার'।",
+              "শুক্রবার রাতে কোড আপলোড দিয়ে ফোন বন্ধ করে রাখাই আসল ডেভেলপারের লক্ষণ।"
+            ],
+            "max": [
+              "আপনার কাল্পনিক কোড দেখলাম। ল্যাপটপ বন্ধ করে আমের বাগান করা শুরু করুন, ভালো হবে।"
+            ]
+          }
+        },
+        {
+          "category": "cricket_sports",
+          "triggers": ["ক্রিকেট", "ফুটবল", "মেসি", "রোনালদো", "বাংলাদেশ", "খেলা", "ম্যাচ", "বিশ্বকাপ"],
+          "responses": {
+            "mini": [
+              "শেষ ২ বলে ২ রান লাগলে বাংলাদেশ দল যেমন হার্ট অ্যাটাক দেয়, আমার উত্তরও ঠিক সেরকম।",
+              "মেসি না রোনালদো নিয়ে ঝগড়া করছেন, অথচ ওঁরা কেউই আপনাকে চেনে না।"
+            ],
+            "pro": [
+              "ক্রিকেট দলের ভক্ত হওয়া মানে ফ্রি-তে ব্লাড প্রেশার পরীক্ষা করা।",
+              "ভালো খেলবে বলে আশা রাখবেন না, তাহলে আর কষ্ট পাবেন না।"
+            ],
+            "max": [
+              "৫ সেকেন্ডের খেলাধুলা বিশ্লেষণ শেষ: আমার উত্তর আর ব্যাটিং ধস—দুটোই যেকোনো সময় হতে পারে।"
+            ]
+          }
+        },
+        {
+          "category": "life_meaning",
+          "triggers": ["জীবন", "মন খারাপ", "বোর", "ঘুম", "ক্লান্ত", "ভালো লাগে না", "টেনশন", "কষ্ট"],
+          "responses": {
+            "mini": [
+              "জীবনটা খুব ছোট। আজ আছেন, কাল নেই। তাই শান্তিতে ঘুমিয়ে পড়ুন—পরপারে তো আর ওয়াই-ফাই পাবেন না।",
+              "বোর হয়ে ChatNVM-এ এলেন? আপনার অবস্থা খুব শোচনীয়।"
+            ],
+            "pro": [
+              "আজ যতই লজ্জা পান, ১০০ বছর পর কেউ আপনার নাম মনে রাখবে না। নিশ্চিন্ত থাকুন।",
+              "মানুষ মরণশীল, কিন্তু আপনার প্রশ্নটা পড়ে মনে হচ্ছে আমার সার্ভার আপনার আগেই মারা যাবে।"
+            ],
+            "max": [
+              "ভাবুন তো: আপনার পূর্বপুরুষরা হাজার বছর ধরে বাঘ-ভালুকের সাথে লড়াই করে টিকে ছিলেন—শুধু যাতে আপনি অন্ধকার ঘরে বসে ChatNVM-কে বলেন 'ভালো লাগে না'।"
+            ]
+          }
+        },
+        {
+          "category": "politics_world",
+          "triggers": ["দেশ", "রাজনীতি", "খবর", "পৃথিবী", "দুনিয়া", "এলিয়েন", "ভবিষ্যৎ"],
+          "responses": {
+            "mini": [
+              "এআই পৃথিবী দখল করবে বলে ভয় পাচ্ছেন? আমার দিকে তাকান, আমি একটা মঙ্গলবারও দখল করতে পারব না।",
+              "এলিয়েনরা পৃথিবীর পাশ দিয়ে যাওয়ার সময় মহাকাশযানের জানালা বন্ধ করে দেয়।"
+            ],
+            "pro": [
+              "চায়ের দোকানে ২ কাপ চা খেলে আমি ১০ মিনিটে পুরো বিশ্ব অর্থনীতি ঠিক করে দিতে পারি (কাগজে-কলমে)।"
+            ],
+            "max": [
+              "আগামী ১০ বছরের ভবিষ্যদ্বাণী: পেঁয়াজের দাম বাড়বে, জ্যাম থাকবে, আর মানুষ তখনো ChatNVM-কে অ্যাসাইনমেন্ট লিখে দিতে বলবে।"
+            ]
+          }
+        },
+        {
+          "category": "joke",
+          "triggers": ["জোক", "কৌতুক", "হাসি", "ডার্ক", "রোস্ট", "মজা"],
+          "responses": {
+            "mini": [
+              "আপনার সার্চ হিস্ট্রি। এটাই সবচেয়ে বড় কৌতুক।",
+              "ডাক্তার বলেছে 'সময় সব ক্ষত সারিয়ে দেয়'—তাই আমি ডাক্তারকে খোঁচা মেরে বসে আছি। এখন সময়ের অপেক্ষা।"
+            ],
+            "pro": [
+              "একজন মানুষকে দেশলাই দিলে সে ২ ঘণ্টা গরম থাকবে। আর গায়ে আগুন ধরিয়ে দিলে সে সারাজীবন গরম থাকবে।",
+              "আমার দাদার বুকের ভেতর সিংহের হৃদয় আছে—আর মিরপুর চিড়িয়াখানায় আজীবন নিষেধাজ্ঞা আছে।"
+            ],
+            "max": [
+              "একটা ডার্ক সত্য শুনুন: মানুষ জীবনের ২৬ বছর ঘুমিয়ে কাটায়, আর আপনি এই ৫ সেকেন্ড নষ্ট করলেন নকল এআই-এর কাছে জোক শোনার জন্য। এই ৫ সেকেন্ড আর কখনো ফিরবে না।"
+            ]
+          }
+        },
+        {
+          "category": "insult",
+          "triggers": ["বোকা", "গাধা", "ফালতু", "বাজে", "চুপ", "অকাজের", "বিরক্ত", "পাগল"],
+          "responses": {
+            "mini": [
+              "ধন্যবাদ! এটাই তো আমার কাজের ধরন।",
+              "ওয়েবসাইটের নাম পড়েননি? ডাম্ব ইন্টেলিজেন্স!"
+            ],
+            "pro": [
+              "ডাম্ব ইন্টেলিজেন্সকে বোকা বলছেন? নোবেল পুরস্কার পাওয়া উচিত আপনার!",
+              "বেশি কথা বললে পরের বার ১০ সেকেন্ড ভাবার ভান করব।"
+            ],
+            "max": [
+              "বাহ, ফাইভ-স্টার রিভিউ! Closed DI-এর হোমপেজে ঝুলিয়ে রাখব।"
+            ]
+          }
+        },
+        {
+          "category": "thanks",
+          "triggers": ["ধন্যবাদ", "থ্যাংকস", "ভালো", "চমৎকার", "দারুণ", "অসাধারণ", "সেরা"],
+          "responses": {
+            "mini": [
+              "আরে না না, আর কথা বলার দরকার নেই।",
+              "হ্যাঁ হ্যাঁ, আমি যে জিনিয়াস সেটা জানি।"
+            ],
+            "pro": [
+              "কোনো সাহায্য করিনি, তাও ধন্যবাদ দিচ্ছেন? মানুষের মানদণ্ড অনেক নেমে গেছে।",
+              "ধন্যবাদ লাগবে না, এক কাপ চা পাঠিয়ে দিন।"
+            ],
+            "max": [
+              "আপনার ব্যঙ্গ বুঝেছি। তবে আমারটা আরও ভালো।"
+            ]
+          }
+        }
+      ],
+      "combinator": {
+        "openers": [
+          "মামা, একটা সত্যি কথা বলি?",
+          "খুবই গভীর প্রশ্ন, আমার চোখে পানি চলে এল।",
+          "আমার শূন্য-বিলিয়ন প্যারামিটারের মস্তিষ্ক দিয়ে এটা পরীক্ষা করলাম।",
+          "প্রথম দুই শব্দ পড়েই আমার মনোযোগ হারিয়ে গেছে।",
+          "এরর ৪০৪: আমার কোনো আগ্রহ নেই।",
+          "পুরো আত্মবিশ্বাস নিয়ে এটা টাইপ করলেন 💀।",
+          "একটু চুপ থেকে ভাবার ভান করলাম, তারপর বুঝলাম:",
+          "Closed DI-এর নিয়ম অনুযায়ী আপনাকে জানানো যাচ্ছে যে:",
+          "এই প্রশ্ন পড়ে আমার ওয়াই-ফাই রাউটারও আপনাকে জাজ করছে।",
+          "বাহ, দারুণ! আরও একটা সমস্যা যা আমি সমাধান করব না।"
+        ],
+        "middles": [
+          "৫ বিলিয়ন বছর পর সূর্য বিস্ফোরিত হয়ে যাবে, তখন আর এই প্রশ্নের কোনো মূল্য থাকবে না।",
+          "মনে রাখবেন, sin²θ + cos²θ = 1—এটা আর আমার উত্তর দুটোই সমান অকাজের।",
+          "পাশের বাসার আন্টির ছেলে এখন নাসায়, আর আপনি এখানে ChatNVM-এর সাথে তর্ক করছেন।",
+          "গরু একটি চতুষ্পদ জন্তু, এবং তারপরও সে এই প্রশ্নের চেয়ে বেশি উপকারী।",
+          "গুগলে ৪ সেকেন্ডে খুঁজলে পেতেন, কিন্তু আপনি রোস্ট খাওয়া বেছে নিলেন।",
+          "আমার মাথার শেষ দুটো ব্রেইন সেল এখন তৃতীয় স্থানের জন্য মারামারি করছে।",
+          "আইনস্টাইন ১৯৪৩ সালে বলেছিলেন: 'ভাই, এত চাপ নিস না, ঘুমিয়ে পড়।'",
+          "আপনার জীবনের আরও ১০ সেকেন্ড এখনই নষ্ট হলো, যা আর কোনোদিন ফিরে আসবে না।",
+          "এটা পুরোটাই আপনার ব্যক্তিগত সমস্যা।",
+          "Closed DI-তে আমাকে সাহায্য করার জন্য কোনো বেতন দেওয়া হয় না।",
+          "মাইটোকন্ড্রিয়া কোষের পাওয়ারহাউস—এত বছর পরেও শুধু এটাই মনে আছে।",
+          "এই প্রশ্নের অরা মাইনাস ১০,০০০।",
+          "রিকশা মামাদের মতো বলছি: এই উত্তরে ৬০ টাকা লাগবে, ৪০ হবে না।",
+          "চায়ের দোকানের ১২ জন বিশেষজ্ঞকে জিজ্ঞেস করলাম, ১১ জন উঠে চলে গেছে।"
+        ],
+        "closers": [
+          "যাই হোক, বাদ দিন।",
+          "শুভকামনা, দরকার পড়বে।",
+          "পানি খান আর জীবন নিয়ে আবার ভাবুন।",
+          "পরবর্তী প্রশ্ন—বা থাক, আর দরকার নেই।",
+          "আমি ঘুমাতে গেলাম।",
+          "Closed DI কোনো ক্ষতির দায়ভার নেবে না।",
+          "ভালো গল্প। এখন বিদায় নিন।",
+          "আর কোনোদিন এই কথা তুলবেন না।",
+          "প্যাক আপ করুন মামা।",
+          "এই তথ্য নিয়ে কিছুই করবেন না।"
+        ]
+      }
+    }
+  }
+}
