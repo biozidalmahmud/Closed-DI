@@ -1,7 +1,9 @@
 // --- SETTINGS ---
 const DB_VERSION = "3.0";
-const STORAGE_KEY = "closed_di_chatnvm_v3";
+const SESSIONS_KEY = "closed_di_sessions_v4";
+const LEGACY_STORAGE_KEY = "closed_di_chatnvm_v3";
 const LANG_STORAGE_KEY = "closed_di_lang_v3";
+const THEME_STORAGE_KEY = "closed_di_theme_v4";
 
 const MODEL_DELAYS = {
   mini: 650,
@@ -21,12 +23,12 @@ const CHAOS_RATES = {
   max:  { gag: 0.16, hijack: 0.22 }
 };
 
-// Interactive feedback reactions across EN, Banglish & Bangla
 const FEEDBACK_LINES = {
   en: {
     copyToast: "Copied! Go ruin someone's group chat.",
     cardToast: "Roast card saved! Ready for Stories & WhatsApp.",
     cardBtn: "Share Card",
+    emptySidebar: "No regrets saved yet.",
     like: [
       "Obviously. I am a generational talent.",
       "Glad you recognize peak Dumb Intelligence.",
@@ -48,6 +50,7 @@ const FEEDBACK_LINES = {
     copyToast: "Copy hoye gese! Group chat e chere den.",
     cardToast: "Roast card save hoye gese! Story te marun.",
     cardBtn: "Share Card",
+    emptySidebar: "Ekhono kono chat save hoy nai.",
     like: [
       "Hae jani, ami shera.",
       "Shesh porjonto keo amar protibha bujhlo.",
@@ -69,6 +72,7 @@ const FEEDBACK_LINES = {
     copyToast: "কপি হয়েছে! গ্রুপ চ্যাটে ছেড়ে দিন।",
     cardToast: "রোস্ট কার্ড সেভ হয়েছে! স্টোরিতে শেয়ার করুন।",
     cardBtn: "শেয়ার কার্ড",
+    emptySidebar: "এখনো কোনো চ্যাট সেভ হয়নি।",
     like: [
       "হ্যাঁ জানি, আমি সেরা।",
       "অবশেষে কেউ আমার প্রতিভা চিনল।",
@@ -92,7 +96,8 @@ const FEEDBACK_LINES = {
 let db = null;
 let fuses = {};
 let isGenerating = false;
-let chatHistory = [];
+let sessions = [];
+let activeSessionId = null;
 let recentlyUsed = [];
 let sessionMsgCount = 0;
 let lastUserPrompt = "";
@@ -100,6 +105,12 @@ let didLateNightRoast = false;
 let toastTimer = null;
 
 // --- PAGE ELEMENTS ---
+const sidebar = document.getElementById("sidebar");
+const sidebarBackdrop = document.getElementById("sidebar-backdrop");
+const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+const closeSidebarBtn = document.getElementById("close-sidebar-btn");
+const chatListEl = document.getElementById("chat-list");
+const themeToggleBtn = document.getElementById("theme-toggle-btn");
 const chatContainer = document.getElementById("chat-container");
 const welcomeScreen = document.getElementById("welcome-screen");
 const welcomeTitle = document.getElementById("welcome-title");
@@ -114,10 +125,9 @@ const langSelect = document.getElementById("lang-select");
 const uploadBtn = document.getElementById("upload-btn");
 const imageUpload = document.getElementById("image-upload");
 const newChatBtn = document.getElementById("new-chat-btn");
-const mobileNewChat = document.getElementById("mobile-new-chat");
 const clearBtn = document.getElementById("clear-btn");
 
-// --- 1. INITIALIZE & LOAD DATABASE ---
+// --- 1. INITIALIZE ---
 async function init() {
   const savedLang = localStorage.getItem(LANG_STORAGE_KEY);
   if (savedLang && ["en", "banglish", "bn"].includes(savedLang)) {
@@ -148,16 +158,32 @@ async function init() {
     console.error("Failed to load db.json:", err);
   }
 
-  restoreHistory();
+  loadAllSessions();
   bindEvents();
 }
 
-// --- 2. UPDATE UI TEXT WHEN LANGUAGE CHANGES ---
+// --- 2. THEME & SIDEBAR DRAWER CONTROLS ---
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle("dark");
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+}
+
+function openMobileSidebar() {
+  sidebar.classList.remove("-translate-x-full");
+  sidebarBackdrop.classList.remove("hidden");
+}
+
+function closeMobileSidebar() {
+  sidebar.classList.add("-translate-x-full");
+  sidebarBackdrop.classList.add("hidden");
+}
+
+// --- 3. UPDATE UI TEXT WHEN LANGUAGE CHANGES ---
 function applyLanguageUI(lang) {
   if (!db || !db.ui[lang]) return;
   const ui = db.ui[lang];
 
-  welcomeTitle.innerHTML = `<span class="bg-gradient-to-r from-blue-400 via-purple-400 to-rose-400 bg-clip-text text-transparent">${escapeHtml(ui.title)}</span>`;
+  welcomeTitle.innerHTML = `<span class="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">${escapeHtml(ui.title)}</span>`;
   welcomeSubtitle.textContent = ui.subtitle;
   userInput.placeholder = ui.placeholder;
   footerNote.textContent = ui.footer;
@@ -165,13 +191,214 @@ function applyLanguageUI(lang) {
   starterChipsContainer.innerHTML = "";
   for (const prompt of ui.starters) {
     const btn = document.createElement("button");
-    btn.className = "starter-chip p-3.5 rounded-2xl bg-[#1e1f20] hover:bg-zinc-800 border border-zinc-800 text-sm text-zinc-300 transition";
+    btn.className = "starter-chip p-3.5 rounded-2xl bg-white dark:bg-[#1e1f20] hover:bg-emerald-50/70 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-sm text-zinc-700 dark:text-zinc-300 shadow-sm dark:shadow-none transition";
     btn.textContent = `"${prompt}"`;
     starterChipsContainer.appendChild(btn);
   }
+
+  renderSidebarList();
 }
 
-// --- 3. SMART LANGUAGE DETECTION ---
+// --- 4. MULTI-CHAT STORAGE (OPTION 1) ---
+function loadAllSessions() {
+  try {
+    const raw = localStorage.getItem(SESSIONS_KEY);
+    if (raw) {
+      sessions = JSON.parse(raw);
+    } else {
+      // Automatically migrate any old single-chat history into a saved session
+      const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || "[]");
+      if (legacy.length) {
+        const firstUser = legacy.find(m => m.role === "user");
+        sessions = [{
+          id: makeSessionId(),
+          title: makeTitle(firstUser ? firstUser.text : "Previous Regret"),
+          updatedAt: Date.now(),
+          messages: legacy
+        }];
+        persistSessions();
+      }
+    }
+  } catch {
+    sessions = [];
+  }
+
+  if (sessions.length) {
+    openSession(sessions[0].id);
+  } else {
+    startNewChat();
+  }
+}
+
+function persistSessions() {
+  try {
+    // Keep up to 25 saved chats, each with up to 40 messages
+    const trimmed = sessions.slice(0, 25).map(s => ({
+      ...s,
+      messages: s.messages.slice(-40)
+    }));
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(trimmed));
+  } catch (e) {}
+}
+
+function getActiveSession() {
+  return sessions.find(s => s.id === activeSessionId) || null;
+}
+
+function ensureActiveSession(firstPromptText) {
+  let session = getActiveSession();
+  if (!session) {
+    session = {
+      id: makeSessionId(),
+      title: makeTitle(firstPromptText),
+      updatedAt: Date.now(),
+      messages: []
+    };
+    sessions.unshift(session);
+    activeSessionId = session.id;
+  } else {
+    session.updatedAt = Date.now();
+    // Move active session to top of sidebar
+    sessions = [session, ...sessions.filter(s => s.id !== session.id)];
+  }
+  persistSessions();
+  renderSidebarList();
+  return session;
+}
+
+function saveMessageToActiveSession(entry, fallbackTitle = "New Chat") {
+  const session = ensureActiveSession(fallbackTitle);
+  session.messages.push(entry);
+  session.updatedAt = Date.now();
+  persistSessions();
+  renderSidebarList();
+  return session.messages.length - 1;
+}
+
+function renderSidebarList() {
+  if (!chatListEl) return;
+  chatListEl.innerHTML = "";
+
+  if (!sessions.length) {
+    const fb = FEEDBACK_LINES[langSelect.value] || FEEDBACK_LINES.en;
+    const empty = document.createElement("p");
+    empty.className = "px-2 py-2 text-xs text-zinc-400 dark:text-zinc-500 italic";
+    empty.textContent = fb.emptySidebar;
+    chatListEl.appendChild(empty);
+    return;
+  }
+
+  for (const session of sessions) {
+    const isActive = session.id === activeSessionId;
+
+    const row = document.createElement("div");
+    row.className = `group flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl cursor-pointer transition ${
+      isActive
+        ? "bg-emerald-100/90 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-800/60"
+        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/70 dark:hover:bg-zinc-800/70"
+    }`;
+
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "truncate flex-1 text-xs md:text-sm";
+    titleSpan.textContent = session.title;
+    row.addEventListener("click", () => {
+      if (isGenerating) return;
+      openSession(session.id);
+      closeMobileSidebar();
+    });
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.title = "Delete chat";
+    delBtn.className = "opacity-70 md:opacity-0 md:group-hover:opacity-100 p-1 rounded-md text-zinc-400 hover:text-rose-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition text-xs shrink-0";
+    delBtn.textContent = "✕";
+    delBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (isGenerating) return;
+      deleteSession(session.id);
+    });
+
+    row.append(titleSpan, delBtn);
+    chatListEl.appendChild(row);
+  }
+}
+
+function openSession(id) {
+  const session = sessions.find(s => s.id === id);
+  if (!session) return;
+
+  activeSessionId = session.id;
+  messagesList.innerHTML = "";
+  lastUserPrompt = "";
+  sessionMsgCount = session.messages.filter(m => m.role === "user").length;
+
+  if (!session.messages.length) {
+    welcomeScreen.classList.remove("hidden");
+  } else {
+    welcomeScreen.classList.add("hidden");
+    let lastPromptSeen = "Asked ChatNVM something";
+
+    session.messages.forEach((msg, index) => {
+      if (msg.role === "user") {
+        lastPromptSeen = msg.text;
+        lastUserPrompt = msg.text.toLowerCase().trim();
+        appendUserMessage(msg.text);
+      } else {
+        renderSavedBotMessage(msg, lastPromptSeen, session.id, index);
+      }
+    });
+  }
+
+  renderSidebarList();
+  scrollToBottom();
+}
+
+function startNewChat() {
+  if (isGenerating) return;
+  activeSessionId = null;
+  sessionMsgCount = 0;
+  lastUserPrompt = "";
+  messagesList.innerHTML = "";
+  welcomeScreen.classList.remove("hidden");
+  renderSidebarList();
+  closeMobileSidebar();
+  userInput.focus();
+}
+
+function deleteSession(id) {
+  sessions = sessions.filter(s => s.id !== id);
+  persistSessions();
+
+  if (activeSessionId === id) {
+    if (sessions.length) {
+      openSession(sessions[0].id);
+    } else {
+      startNewChat();
+    }
+  } else {
+    renderSidebarList();
+  }
+}
+
+function clearCurrentChat() {
+  if (isGenerating) return;
+  if (activeSessionId) {
+    deleteSession(activeSessionId);
+  } else {
+    startNewChat();
+  }
+}
+
+function makeSessionId() {
+  return "chat_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 6);
+}
+
+function makeTitle(text) {
+  const clean = String(text || "New Disappointment").replace(/\s+/g, " ").trim();
+  return clean.length > 28 ? clean.slice(0, 28) + "…" : clean;
+}
+
+// --- 5. SMART LANGUAGE DETECTION ---
 function detectReplyLanguage(text, selectedLang) {
   if (/[\u0980-\u09FF]/.test(text)) return "bn";
   const banglishHints = /\b(ami|tumi|apni|amar|tomar|apnar|kemne|kivabe|keno|kothay|kobe|naki|bhai|bon|mama|khabo|korbo|jano|janen|bujhi|taka|valo|bhalo|kichu|bolen|bolo|parba|paro)\b/i;
@@ -179,7 +406,7 @@ function detectReplyLanguage(text, selectedLang) {
   return selectedLang;
 }
 
-// --- 4. CORE COMEDY & SMART Q&A ENGINE ---
+// --- 6. CORE COMEDY & SMART Q&A ENGINE ---
 function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   const clean = rawInput.toLowerCase().trim();
   const replyLang = detectReplyLanguage(rawInput, selectedLang);
@@ -301,7 +528,6 @@ function getBotReply(rawInput, tier, selectedLang, isRegen = false) {
   return { lang: replyLang, text: buildCombinatorReply(langPack.combinator, tier) };
 }
 
-// --- SMART Q&A PATTERN ENGINE ---
 function checkSmartQA(rawInput, clean, tier, lang) {
   const genderCallout = /(bhai na bon|bon na bhai|chele na meye|meye na chele|boy or girl|girl or boy|am i a girl|am i a boy|i'?m a girl|i'?m a boy|not a guy|not a bro|ami meye|ami chele|ami apu|ami bon|ভাই না বোন|বোন না ভাই|ছেলে না মেয়ে|মেয়ে না ছেলে|আমি মেয়ে|আমি ছেলে|আমি আপু)/i;
   if (genderCallout.test(clean)) {
@@ -640,7 +866,7 @@ function buildCombinatorReply(comb, tier) {
   return `${opener}\n\n${middle}\n\n${closer}`;
 }
 
-// --- 5. SEND MESSAGE FLOW ---
+// --- 7. SEND MESSAGE FLOW ---
 async function handleSend(overrideText = null) {
   if (isGenerating) return;
 
@@ -655,15 +881,33 @@ async function handleSend(overrideText = null) {
   userInput.style.height = "auto";
 
   appendUserMessage(text);
-  saveMessage({ role: "user", text });
+  saveMessageToActiveSession({ role: "user", text }, text);
 
   const tier = modelSelect.value;
   const selectedLang = langSelect.value;
   const reply = getBotReply(text, tier, selectedLang);
 
-  const meta = { prompt: text, tier, lang: reply.lang, isSafety: !!reply.isSafety };
-  let finalVisibleText = reply.text;
+  const botMsgEntry = {
+    role: "bot",
+    text: reply.text,
+    imageUrl: reply.imageUrl || null,
+    prompt: text,
+    tier,
+    lang: reply.lang,
+    isSafety: !!reply.isSafety
+  };
+  const savedIndex = saveMessageToActiveSession(botMsgEntry, text);
 
+  const meta = {
+    prompt: text,
+    tier,
+    lang: reply.lang,
+    isSafety: !!reply.isSafety,
+    sessionId: activeSessionId,
+    msgIndex: savedIndex
+  };
+
+  let finalVisibleText = reply.text;
   if (reply.isSafety) {
     finalVisibleText = await renderBotResponse(reply, 0, "Support", meta);
   } else {
@@ -673,22 +917,23 @@ async function handleSend(overrideText = null) {
     finalVisibleText = await renderBotResponse(reply, variableDelay, thinkLabel, meta);
   }
 
-  saveMessage({
-    role: "bot",
-    text: finalVisibleText,
-    imageUrl: reply.imageUrl || null,
-    prompt: text,
-    tier,
-    lang: reply.lang,
-    isSafety: !!reply.isSafety
-  });
+  // Update stored text if {ERASE} or {PAUSE} changed the visible final text
+  updateStoredBotMessage(meta.sessionId, meta.msgIndex, finalVisibleText);
 
   isGenerating = false;
   sendBtn.disabled = false;
   userInput.focus();
 }
 
-// --- 6. FAKE PHOTO ANALYSIS ---
+function updateStoredBotMessage(sessionId, msgIndex, newText) {
+  const session = sessions.find(s => s.id === sessionId);
+  if (session && session.messages[msgIndex]) {
+    session.messages[msgIndex].text = newText;
+    persistSessions();
+  }
+}
+
+// --- 8. FAKE PHOTO ANALYSIS ---
 function handlePhotoUpload(event) {
   const file = event.target.files[0];
   if (!file || isGenerating) return;
@@ -700,7 +945,7 @@ function handlePhotoUpload(event) {
     welcomeScreen.classList.add("hidden");
 
     appendUserMessage("", e.target.result);
-    saveMessage({ role: "user", text: "[Uploaded a photo]" });
+    saveMessageToActiveSession({ role: "user", text: "[Uploaded a photo]" }, "Photo Roast");
 
     const tier = modelSelect.value;
     const lang = langSelect.value;
@@ -708,7 +953,24 @@ function handlePhotoUpload(event) {
       ? pickFresh(db.languages[lang].photo_roasts[tier])
       : "I refuse to look at that.";
     const scanLabel = db ? db.ui[lang].photo_thinking : "Scanning pixels...";
-    const meta = { prompt: "[Uploaded a photo]", tier, lang, isSafety: false };
+
+    const savedIndex = saveMessageToActiveSession({
+      role: "bot",
+      text: roastText,
+      prompt: "[Uploaded a photo]",
+      tier,
+      lang,
+      isSafety: false
+    }, "Photo Roast");
+
+    const meta = {
+      prompt: "[Uploaded a photo]",
+      tier,
+      lang,
+      isSafety: false,
+      sessionId: activeSessionId,
+      msgIndex: savedIndex
+    };
 
     const visible = await renderBotResponse(
       { text: roastText },
@@ -717,14 +979,7 @@ function handlePhotoUpload(event) {
       meta
     );
 
-    saveMessage({
-      role: "bot",
-      text: visible,
-      prompt: "[Uploaded a photo]",
-      tier,
-      lang,
-      isSafety: false
-    });
+    updateStoredBotMessage(meta.sessionId, meta.msgIndex, visible);
 
     imageUpload.value = "";
     isGenerating = false;
@@ -734,19 +989,19 @@ function handlePhotoUpload(event) {
   reader.readAsDataURL(file);
 }
 
-// --- 7. RENDER MESSAGES, STREAMING & ACTION BAR ---
+// --- 9. RENDER MESSAGES, STREAMING & ACTION BAR ---
 function appendUserMessage(text, imageSrc = null) {
   const wrapper = document.createElement("div");
   wrapper.className = "flex justify-end";
 
   const bubble = document.createElement("div");
-  bubble.className = "max-w-[82%] bg-[#282a2c] text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
+  bubble.className = "max-w-[82%] bg-zinc-200 dark:bg-[#282a2c] text-zinc-900 dark:text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
 
   if (imageSrc) {
     const img = document.createElement("img");
     img.src = imageSrc;
     img.alt = "Uploaded photo";
-    img.className = "max-w-[220px] rounded-xl border border-zinc-700";
+    img.className = "max-w-[220px] rounded-xl border border-zinc-300 dark:border-zinc-700";
     bubble.appendChild(img);
   }
 
@@ -762,24 +1017,27 @@ function appendUserMessage(text, imageSrc = null) {
   scrollToBottom();
 }
 
+function createBotAvatar() {
+  const avatar = document.createElement("div");
+  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter shadow-sm";
+  avatar.textContent = "NVM";
+  return avatar;
+}
+
 async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
   const wrapper = document.createElement("div");
   wrapper.className = "flex items-start gap-3";
 
-  const avatar = document.createElement("div");
-  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter";
-  avatar.textContent = "NVM";
-
+  const avatar = createBotAvatar();
   const contentBox = document.createElement("div");
   contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
 
   const thinkingEl = document.createElement("div");
-  thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-400 animate-pulse";
-  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-purple-400"></span><span>${escapeHtml(thinkLabel)}</span>`;
+  thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-500 dark:text-zinc-400 animate-pulse";
+  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span><span>${escapeHtml(thinkLabel)}</span>`;
   contentBox.appendChild(thinkingEl);
 
-  wrapper.appendChild(avatar);
-  wrapper.appendChild(contentBox);
+  wrapper.append(avatar, contentBox);
   messagesList.appendChild(wrapper);
   scrollToBottom();
 
@@ -790,7 +1048,7 @@ async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
   thinkingEl.remove();
 
   const textEl = document.createElement("p");
-  textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words typing-cursor";
+  textEl.className = "text-zinc-800 dark:text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words typing-cursor";
   contentBox.appendChild(textEl);
 
   let finalSavedText = reply.text;
@@ -830,19 +1088,20 @@ async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
     const img = document.createElement("img");
     img.src = reply.imageUrl;
     img.alt = "ChatNVM Masterpiece";
-    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md";
+    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 mt-2 shadow-md";
     img.onerror = () => { img.remove(); };
     contentBox.appendChild(img);
     scrollToBottom();
   }
 
-  // Attach interactive feedback + Share Roast Card bar (skip on safety messages)
   if (!meta.isSafety) {
     attachActionBar(contentBox, textEl, {
       prompt: meta.prompt,
       replyText: finalSavedText,
       tier: meta.tier,
-      lang: meta.lang
+      lang: meta.lang,
+      sessionId: meta.sessionId,
+      msgIndex: meta.msgIndex
     });
     scrollToBottom();
   }
@@ -850,19 +1109,54 @@ async function renderBotResponse(reply, delayMs, thinkLabel, meta) {
   return finalSavedText;
 }
 
-// --- UPGRADE 1: INTERACTIVE FEEDBACK BAR + ROAST CARD ---
+function renderSavedBotMessage(msg, lastPromptSeen, sessionId, msgIndex) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex items-start gap-3";
+
+  const avatar = createBotAvatar();
+  const contentBox = document.createElement("div");
+  contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
+
+  const textEl = document.createElement("p");
+  textEl.className = "text-zinc-800 dark:text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words";
+  textEl.textContent = msg.text;
+  contentBox.appendChild(textEl);
+
+  if (msg.imageUrl) {
+    const img = document.createElement("img");
+    img.src = msg.imageUrl;
+    img.alt = "ChatNVM Masterpiece";
+    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 mt-2 shadow-md";
+    contentBox.appendChild(img);
+  }
+
+  if (!msg.isSafety) {
+    attachActionBar(contentBox, textEl, {
+      prompt: msg.prompt || lastPromptSeen,
+      replyText: msg.text,
+      tier: msg.tier || modelSelect.value,
+      lang: msg.lang || langSelect.value,
+      sessionId,
+      msgIndex
+    });
+  }
+
+  wrapper.append(avatar, contentBox);
+  messagesList.appendChild(wrapper);
+}
+
+// --- INTERACTIVE FEEDBACK BAR + SHAREABLE ROAST CARD ---
 function attachActionBar(contentBox, textEl, state) {
   const fb = FEEDBACK_LINES[state.lang] || FEEDBACK_LINES.en;
 
   const bar = document.createElement("div");
-  bar.className = "flex flex-wrap items-center gap-1 pt-1 text-zinc-500 select-none";
+  bar.className = "flex flex-wrap items-center gap-1 pt-1 text-zinc-400 dark:text-zinc-500 select-none";
 
   const noteEl = document.createElement("div");
-  noteEl.className = "hidden text-xs text-purple-300/90 italic pt-0.5 pl-1";
+  noteEl.className = "hidden text-xs text-teal-700 dark:text-emerald-300/90 italic pt-0.5 pl-1";
 
-  const btnBase = "p-1.5 rounded-lg hover:bg-zinc-800 hover:text-zinc-200 transition flex items-center gap-1 text-xs cursor-pointer";
+  const btnBase = "p-1.5 rounded-lg hover:bg-zinc-200/80 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-200 transition flex items-center gap-1 text-xs cursor-pointer";
 
-  // 1. Copy Button
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
   copyBtn.className = btnBase;
@@ -883,14 +1177,12 @@ function attachActionBar(contentBox, textEl, state) {
     showToast(fb.copyToast);
   });
 
-  // 2. Thumbs Up Button
   const likeBtn = document.createElement("button");
   likeBtn.type = "button";
   likeBtn.className = btnBase;
   likeBtn.title = "Good roast";
   likeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>`;
 
-  // 3. Thumbs Down Button (Claps back!)
   const dislikeBtn = document.createElement("button");
   dislikeBtn.type = "button";
   dislikeBtn.className = btnBase;
@@ -898,22 +1190,21 @@ function attachActionBar(contentBox, textEl, state) {
   dislikeBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10zM17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>`;
 
   likeBtn.addEventListener("click", () => {
-    likeBtn.classList.add("text-emerald-400");
-    dislikeBtn.classList.remove("text-rose-400");
+    likeBtn.classList.add("text-emerald-600", "dark:text-emerald-400");
+    dislikeBtn.classList.remove("text-rose-500", "dark:text-rose-400");
     noteEl.textContent = `ChatNVM: "${pickFresh(fb.like)}"`;
     noteEl.classList.remove("hidden");
     scrollToBottom();
   });
 
   dislikeBtn.addEventListener("click", () => {
-    dislikeBtn.classList.add("text-rose-400");
-    likeBtn.classList.remove("text-emerald-400");
+    dislikeBtn.classList.add("text-rose-500", "dark:text-rose-400");
+    likeBtn.classList.remove("text-emerald-600", "dark:text-emerald-400");
     noteEl.textContent = `ChatNVM: "${pickFresh(fb.dislike)}"`;
     noteEl.classList.remove("hidden");
     scrollToBottom();
   });
 
-  // 4. Regenerate Button (Refuses OR grudgingly writes a new roast)
   const regenBtn = document.createElement("button");
   regenBtn.type = "button";
   regenBtn.className = btnBase;
@@ -925,7 +1216,6 @@ function attachActionBar(contentBox, textEl, state) {
     if (isGenerating) return;
     regenCount++;
 
-    // 55% chance to refuse (or always refuse after 2 retries)
     if (regenCount > 2 || Math.random() < 0.55) {
       noteEl.textContent = `ChatNVM: "${pickFresh(fb.regenRefuse)}"`;
       noteEl.classList.remove("hidden");
@@ -947,15 +1237,16 @@ function attachActionBar(contentBox, textEl, state) {
     textEl.classList.remove("typing-cursor");
 
     state.replyText = freshText;
+    updateStoredBotMessage(state.sessionId, state.msgIndex, freshText);
+
     isGenerating = false;
     sendBtn.disabled = false;
   });
 
-  // 5. One-Click Shareable Roast Card Button
   const shareBtn = document.createElement("button");
   shareBtn.type = "button";
-  shareBtn.className = "ml-1 px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/70 transition flex items-center gap-1.5 text-xs font-medium cursor-pointer";
-  shareBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>${escapeHtml(fb.cardBtn)}</span>`;
+  shareBtn.className = "ml-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-800/80 hover:bg-emerald-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-emerald-700 dark:hover:text-white border border-zinc-200 dark:border-zinc-700/70 shadow-sm dark:shadow-none transition flex items-center gap-1.5 text-xs font-medium cursor-pointer";
+  shareBtn.innerHTML = `<svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>${escapeHtml(fb.cardBtn)}</span>`;
 
   shareBtn.addEventListener("click", () => {
     generateAndShareRoastCard(state.prompt, state.replyText, state.tier, fb.cardToast);
@@ -965,20 +1256,19 @@ function attachActionBar(contentBox, textEl, state) {
   contentBox.append(bar, noteEl);
 }
 
-// --- NATIVE CANVAS ROAST CARD GENERATOR (0 dependencies, crisp Bangla + English PNG) ---
+// --- THEME-AWARE CANVAS ROAST CARD GENERATOR (Emerald/Teal Light & Dark) ---
 async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   if (document.fonts && document.fonts.ready) {
     await document.fonts.ready;
   }
 
+  const isDark = document.documentElement.classList.contains("dark");
   const W = 1080;
   const pad = 72;
   const innerW = W - pad * 2;
   const fontFamily = '"Hind Siliguri", system-ui, -apple-system, sans-serif';
 
-  // Measure text heights first on an offscreen context
   const measureCtx = document.createElement("canvas").getContext("2d");
-
   const promptFont = `500 32px ${fontFamily}`;
   const replyFont = `400 34px ${fontFamily}`;
 
@@ -1002,57 +1292,57 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   canvas.height = H;
   const ctx = canvas.getContext("2d");
 
-  // Background gradient
   const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-  bgGrad.addColorStop(0, "#0f1014");
-  bgGrad.addColorStop(0.55, "#15151a");
-  bgGrad.addColorStop(1, "#181322");
+  if (isDark) {
+    bgGrad.addColorStop(0, "#0f1413");
+    bgGrad.addColorStop(0.55, "#131718");
+    bgGrad.addColorStop(1, "#0f1b1d");
+  } else {
+    bgGrad.addColorStop(0, "#ffffff");
+    bgGrad.addColorStop(0.6, "#f8fafc");
+    bgGrad.addColorStop(1, "#ecfdf5");
+  }
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle card frame
   drawRoundedRect(ctx, 28, 28, W - 56, H - 56, 36);
-  ctx.strokeStyle = "rgba(168, 85, 247, 0.28)";
+  ctx.strokeStyle = isDark ? "rgba(16, 185, 129, 0.32)" : "rgba(16, 185, 129, 0.35)";
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // Header: Brand Title + Model Badge
   const brandGrad = ctx.createLinearGradient(pad, 0, pad + 260, 0);
-  brandGrad.addColorStop(0, "#60a5fa");
-  brandGrad.addColorStop(0.5, "#c084fc");
-  brandGrad.addColorStop(1, "#f472b6");
+  brandGrad.addColorStop(0, isDark ? "#34d399" : "#059669");
+  brandGrad.addColorStop(0.5, isDark ? "#2dd4bf" : "#0d9488");
+  brandGrad.addColorStop(1, isDark ? "#22d3ee" : "#0891b2");
 
   ctx.font = `700 44px ${fontFamily}`;
   ctx.fillStyle = brandGrad;
   ctx.fillText("ChatNVM", pad, pad + 42);
 
   ctx.font = `500 22px ${fontFamily}`;
-  ctx.fillStyle = "#71717a";
+  ctx.fillStyle = isDark ? "#71717a" : "#64748b";
   ctx.fillText("by Closed DI", pad + 196, pad + 40);
 
-  // Model tier pill on top-right
   const badgeText = MODEL_LABELS[tier] || "ChatNVM Plus";
   ctx.font = `600 22px ${fontFamily}`;
   const badgeW = ctx.measureText(badgeText).width + 38;
   const badgeX = W - pad - badgeW;
   drawRoundedRect(ctx, badgeX, pad + 6, badgeW, 44, 22);
-  ctx.fillStyle = "#222328";
+  ctx.fillStyle = isDark ? "#1e2926" : "#ecfdf5";
   ctx.fill();
-  ctx.strokeStyle = "#3f3f46";
+  ctx.strokeStyle = isDark ? "#2d4a43" : "#a7f3d0";
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.fillStyle = "#d4d4d8";
+  ctx.fillStyle = isDark ? "#a7f3d0" : "#047857";
   ctx.fillText(badgeText, badgeX + 19, pad + 35);
 
-  // Divider below header
   ctx.beginPath();
   ctx.moveTo(pad, pad + 78);
   ctx.lineTo(W - pad, pad + 78);
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.strokeStyle = isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)";
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // User Question Bubble (right-aligned)
   let y = pad + headerH;
   ctx.font = promptFont;
   let longestPromptLine = 0;
@@ -1063,21 +1353,20 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   const bubbleX = W - pad - bubbleW;
 
   drawRoundedRect(ctx, bubbleX, y, bubbleW, promptBlockH, 28);
-  ctx.fillStyle = "#282a2c";
+  ctx.fillStyle = isDark ? "#252b2a" : "#e2e8f0";
   ctx.fill();
 
-  ctx.fillStyle = "#f4f4f5";
+  ctx.fillStyle = isDark ? "#f4f4f5" : "#0f172a";
   promptLines.forEach((line, i) => {
     ctx.fillText(line, bubbleX + 30, y + 48 + i * 46);
   });
 
-  // Bot Avatar + Reply Text (left-aligned)
   y += promptBlockH + gapBetween;
 
   const avGrad = ctx.createLinearGradient(pad, y, pad + 68, y + 68);
-  avGrad.addColorStop(0, "#3b82f6");
-  avGrad.addColorStop(0.5, "#a855f7");
-  avGrad.addColorStop(1, "#ec4899");
+  avGrad.addColorStop(0, "#10b981");
+  avGrad.addColorStop(0.5, "#14b8a6");
+  avGrad.addColorStop(1, "#06b6d4");
 
   ctx.beginPath();
   ctx.arc(pad + 34, y + 34, 34, 0, Math.PI * 2);
@@ -1091,33 +1380,31 @@ async function generateAndShareRoastCard(userPrompt, botReply, tier, toastMsg) {
   ctx.textAlign = "left";
 
   ctx.font = replyFont;
-  ctx.fillStyle = "#f4f4f5";
+  ctx.fillStyle = isDark ? "#f4f4f5" : "#1e293b";
   replyLines.forEach((line, i) => {
     ctx.fillText(line, pad + 92, y + 38 + i * 50);
   });
 
-  // Footer Watermark
   const footerY = H - pad - 12;
   ctx.beginPath();
   ctx.moveTo(pad, footerY - 46);
   ctx.lineTo(W - pad, footerY - 46);
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.strokeStyle = isDark ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.08)";
   ctx.lineWidth = 2;
   ctx.stroke();
 
   ctx.font = `500 22px ${fontFamily}`;
-  ctx.fillStyle = "#71717a";
+  ctx.fillStyle = isDark ? "#71717a" : "#64748b";
   ctx.fillText("Powered by 0% AI  •  Closed DI", pad, footerY);
 
   const siteLabel = (window.location.host && window.location.host !== "")
     ? `${window.location.host}${window.location.pathname}`.replace(/\/$/, "")
     : "ChatNVM • Dumb Intelligence";
   ctx.textAlign = "right";
-  ctx.fillStyle = "#a78bfa";
+  ctx.fillStyle = isDark ? "#34d399" : "#059669";
   ctx.fillText(siteLabel, W - pad, footerY);
   ctx.textAlign = "left";
 
-  // Export PNG: Native Share Sheet on mobile, instant download on desktop
   canvas.toBlob(async (blob) => {
     if (!blob) return;
     const file = new File([blob], "chatnvm-roast.png", { type: "image/png" });
@@ -1188,7 +1475,7 @@ function showToast(message) {
   if (!toast) {
     toast = document.createElement("div");
     toast.id = "di-toast";
-    toast.className = "fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-100 text-xs md:text-sm shadow-xl transition-opacity duration-200 pointer-events-none";
+    toast.className = "fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-zinc-900 dark:bg-zinc-800 border border-zinc-700 text-zinc-100 text-xs md:text-sm shadow-xl transition-opacity duration-200 pointer-events-none";
     document.body.appendChild(toast);
   }
   toast.textContent = message;
@@ -1209,82 +1496,7 @@ async function streamChars(el, text, baseSpeed) {
   scrollToBottom();
 }
 
-// --- 8. SAVE & RESTORE CHAT HISTORY ---
-function saveMessage(entry) {
-  chatHistory.push(entry);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory.slice(-40)));
-  } catch (e) {}
-}
-
-function restoreHistory() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    if (!saved.length) return;
-
-    chatHistory = saved;
-    welcomeScreen.classList.add("hidden");
-
-    let lastPromptSeen = "Asked ChatNVM something";
-    for (const msg of chatHistory) {
-      if (msg.role === "user") {
-        lastPromptSeen = msg.text;
-        appendUserMessage(msg.text);
-      } else {
-        const wrapper = document.createElement("div");
-        wrapper.className = "flex items-start gap-3";
-
-        const avatar = document.createElement("div");
-        avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter";
-        avatar.textContent = "NVM";
-
-        const contentBox = document.createElement("div");
-        contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
-
-        const textEl = document.createElement("p");
-        textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words";
-        textEl.textContent = msg.text;
-        contentBox.appendChild(textEl);
-
-        if (msg.imageUrl) {
-          const img = document.createElement("img");
-          img.src = msg.imageUrl;
-          img.alt = "ChatNVM Masterpiece";
-          img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md";
-          contentBox.appendChild(img);
-        }
-
-        if (!msg.isSafety) {
-          attachActionBar(contentBox, textEl, {
-            prompt: msg.prompt || lastPromptSeen,
-            replyText: msg.text,
-            tier: msg.tier || modelSelect.value,
-            lang: msg.lang || langSelect.value
-          });
-        }
-
-        wrapper.append(avatar, contentBox);
-        messagesList.appendChild(wrapper);
-      }
-    }
-    scrollToBottom();
-  } catch (e) {
-    chatHistory = [];
-  }
-}
-
-function clearChat() {
-  if (isGenerating) return;
-  chatHistory = [];
-  sessionMsgCount = 0;
-  lastUserPrompt = "";
-  localStorage.removeItem(STORAGE_KEY);
-  messagesList.innerHTML = "";
-  welcomeScreen.classList.remove("hidden");
-  userInput.focus();
-}
-
-// --- 9. EVENTS ---
+// --- 10. EVENTS ---
 function bindEvents() {
   sendBtn.addEventListener("click", () => handleSend());
 
@@ -1305,12 +1517,16 @@ function bindEvents() {
     applyLanguageUI(langSelect.value);
   });
 
+  themeToggleBtn.addEventListener("click", toggleTheme);
+  mobileMenuBtn.addEventListener("click", openMobileSidebar);
+  closeSidebarBtn.addEventListener("click", closeMobileSidebar);
+  sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+
   uploadBtn.addEventListener("click", () => imageUpload.click());
   imageUpload.addEventListener("change", handlePhotoUpload);
 
-  newChatBtn.addEventListener("click", clearChat);
-  mobileNewChat.addEventListener("click", clearChat);
-  clearBtn.addEventListener("click", clearChat);
+  newChatBtn.addEventListener("click", startNewChat);
+  clearBtn.addEventListener("click", clearCurrentChat);
 
   starterChipsContainer.addEventListener("click", (e) => {
     const chip = e.target.closest(".starter-chip");
