@@ -1,20 +1,30 @@
 // --- SETTINGS ---
-const DB_VERSION = "2.0"; // Bump to 2.1, 2.2 whenever you edit db.json
-const STORAGE_KEY = "closed_di_chatnvm_v2";
-const LANG_STORAGE_KEY = "closed_di_lang_v2";
+const DB_VERSION = "3.0"; // Bump to 3.1, 3.2 whenever you edit db.json
+const STORAGE_KEY = "closed_di_chatnvm_v3";
+const LANG_STORAGE_KEY = "closed_di_lang_v3";
 
 const MODEL_DELAYS = {
-  mini: 700,
-  pro: 2200,
-  max: 4800
+  mini: 650,
+  pro: 2100,
+  max: 4700
+};
+
+// Chance to hijack a normal prompt with a full essay/rant or live theatrical gag
+const CHAOS_RATES = {
+  mini: { gag: 0.06, hijack: 0.08 },
+  pro:  { gag: 0.12, hijack: 0.16 },
+  max:  { gag: 0.18, hijack: 0.26 }
 };
 
 // --- INTERNAL STATE ---
 let db = null;
 let fuses = {};
 let isGenerating = false;
-let lastFallback = "";
 let chatHistory = [];
+let recentlyUsed = [];
+let sessionMsgCount = 0;
+let lastUserPrompt = "";
+let didLateNightRoast = false;
 
 // --- PAGE ELEMENTS ---
 const chatContainer = document.getElementById("chat-container");
@@ -45,11 +55,10 @@ async function init() {
     const res = await fetch(`db.json?v=${DB_VERSION}`);
     db = await res.json();
 
-    // Build a Fuse.js typo matcher for each language
     for (const langKey of Object.keys(db.languages)) {
       fuses[langKey] = new Fuse(db.languages[langKey].intents, {
         includeScore: true,
-        threshold: 0.35,
+        threshold: 0.34,
         ignoreLocation: true,
         keys: ["triggers"]
       });
@@ -64,7 +73,7 @@ async function init() {
   bindEvents();
 }
 
-// --- 2. UPDATE SCREEN TEXT WHEN LANGUAGE CHANGES ---
+// --- 2. UPDATE UI TEXT WHEN LANGUAGE CHANGES ---
 function applyLanguageUI(lang) {
   if (!db || !db.ui[lang]) return;
   const ui = db.ui[lang];
@@ -85,19 +94,18 @@ function applyLanguageUI(lang) {
 
 // --- 3. SMART LANGUAGE DETECTION ---
 function detectReplyLanguage(text, selectedLang) {
-  // If user typed in Bangla Unicode script, always reply in Bangla
   if (/[\u0980-\u09FF]/.test(text)) {
     return "bn";
   }
   return selectedLang;
 }
 
-// --- 4. CORE REPLY PIPELINE ---
+// --- 4. CORE COMEDY & CHAOS ENGINE ---
 function getBotReply(rawInput, tier, selectedLang) {
   const clean = rawInput.toLowerCase().trim();
   const replyLang = detectReplyLanguage(rawInput, selectedLang);
 
-  // LAYER 1: Crisis Safety Intercept (Runs first across all 3 languages)
+  // LAYER 1: Crisis Safety Intercept (Always overrides everything)
   const safetyRegex = /(kill myself|suicide|end my life|want to die|self harm|hurt myself|morte chai|nijeke shesh|atmahatya|আত্মহত্যা|মরতে চাই|নিজেকে শেষ)/i;
   if (safetyRegex.test(clean)) {
     const safetyMessages = {
@@ -109,65 +117,128 @@ function getBotReply(rawInput, tier, selectedLang) {
   }
 
   if (!db) {
-    return { lang: replyLang, text: "Brain file missing. Never mind." };
+    return { lang: replyLang, text: "Brain file failed to load. Probably for the best." };
   }
 
+  sessionMsgCount++;
   const langPack = db.languages[replyLang];
+  const rates = CHAOS_RATES[tier] || CHAOS_RATES.pro;
 
-  // LAYER 2: Fake "Image Generator" -> Sends a Meme (checks active language + all languages)
+  // LAYER 2: Fake Image Generator -> Sends a Meme
   const allLangKeys = [replyLang, ...Object.keys(db.languages).filter(k => k !== replyLang)];
   for (const k of allLangKeys) {
     if (db.languages[k].image_triggers.some(t => matchesTrigger(clean, t))) {
-      const targetPack = db.languages[replyLang];
-      const meme = pickRandom(targetPack.memes);
+      const meme = pickFresh(langPack.memes);
       return { lang: replyLang, text: meme.caption, imageUrl: meme.url };
     }
   }
 
-  // LAYER 3: Too-Long Essay Roast
-  if (rawInput.length > 180) {
-    return { lang: replyLang, text: langPack.long_roasts[tier] };
+  // LAYER 3: Duplicate / Spam Detector
+  if (clean === lastUserPrompt && clean.length > 1) {
+    return { lang: replyLang, text: pickFresh(langPack.special_roasts.duplicate) };
+  }
+  lastUserPrompt = clean;
+
+  // LAYER 4: 2 AM Late-Night Clock Spy (Triggers once between midnight and 4:30 AM)
+  const hour = new Date().getHours();
+  if (!didLateNightRoast && hour >= 0 && hour <= 4 && sessionMsgCount <= 2) {
+    didLateNightRoast = true;
+    return { lang: replyLang, text: pickFresh(langPack.special_roasts.late_night) };
   }
 
-  // LAYER 4: Exact Keyword Match in Active Language FIRST
+  // LAYER 5: ALL-CAPS Yelling Detector
+  const asciiLetters = rawInput.replace(/[^a-zA-Z]/g, "");
+  if (asciiLetters.length >= 6 && asciiLetters === asciiLetters.toUpperCase()) {
+    return { lang: replyLang, text: pickFresh(langPack.special_roasts.all_caps) };
+  }
+
+  // LAYER 6: Dry Texter Detector ("k", "ok", "hmm", "?", "আচ্ছা")
+  const dryWords = [
+    "k", "kk", "ok", "okay", "hm", "hmm", "hmmm", "lol", "lmao", "bruh",
+    "accha", "achha", "thik ache", "ho", "hae", "na", "?", "??", "???", ".", "..", "...",
+    "হুম", "হুঁ", "ওকে", "আচ্ছা", "হ্যাঁ", "না", "জি"
+  ];
+  if (dryWords.includes(clean) || (clean.length <= 2 && !["hi", "yo"].includes(clean))) {
+    return { lang: replyLang, text: pickFresh(langPack.special_roasts.dry_text) };
+  }
+
+  // LAYER 7: Too-Long Essay Roast
+  if (rawInput.length > 200) {
+    return { lang: replyLang, text: pickFresh(langPack.long_roasts[tier]) };
+  }
+
+  // LAYER 8: Escalating Annoyance Meter (Triggers periodically after 6 messages)
+  if (sessionMsgCount >= 6 && sessionMsgCount % 5 === 1) {
+    return { lang: replyLang, text: pickFresh(langPack.special_roasts.annoyed) };
+  }
+
+  // LAYER 9: Random Chaos Roll (Live Theatrical Gags OR Full-Paragraph Hijacks)
+  // Avoid hijacking a simple "hi" on the very first message
+  const isFirstSimpleGreeting = sessionMsgCount === 1 && clean.length <= 12;
+  if (!isFirstSimpleGreeting) {
+    const roll = Math.random();
+    if (roll < rates.gag) {
+      return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
+    }
+    if (roll < rates.gag + rates.hijack) {
+      return { lang: replyLang, text: pickFresh(langPack.hijacks) };
+    }
+  }
+
+  // LAYER 10: Exact Keyword Match in Active Language
   const exactMatch = findExactIntent(clean, langPack.intents);
   if (exactMatch) {
-    return { lang: replyLang, text: pickRandom(exactMatch.responses[tier]) };
+    return { lang: replyLang, text: pickFresh(exactMatch.responses[tier]) };
   }
 
-  // LAYER 5: Cross-Language Exact Match (e.g., typed Banglish while dropdown was on EN)
+  // LAYER 11: Cross-Language Exact Match (e.g., typed Banglish while dropdown was on EN)
   for (const otherLang of Object.keys(db.languages)) {
     if (otherLang === replyLang) continue;
     const crossMatch = findExactIntent(clean, db.languages[otherLang].intents);
     if (crossMatch) {
-      // If they typed Banglish while on EN, reply in Banglish! Otherwise reply in their chosen language.
       const finalLang = (selectedLang === "en" && otherLang === "banglish") ? "banglish" : replyLang;
       const finalIntent = db.languages[finalLang].intents.find(i => i.category === crossMatch.category) || crossMatch;
-      return { lang: finalLang, text: pickRandom(finalIntent.responses[tier]) };
+      return { lang: finalLang, text: pickFresh(finalIntent.responses[tier]) };
     }
   }
 
-  // LAYER 6: Regex Reflections (Throws "I am..." / "Ami khub..." back at them)
+  // LAYER 12: Regex Reflections (Throws user's own phrasing back at them)
   const reflection = checkReflections(clean, tier, replyLang);
   if (reflection) {
     return { lang: replyLang, text: reflection };
   }
 
-  // LAYER 7: Fuse.js Fuzzy Matching (Catches typos like "wethr", "bristy", "hlp")
+  // LAYER 13: Fuse.js Fuzzy Matching (Catches typos)
   const fuzzyHit = findFuzzyIntent(clean, replyLang);
   if (fuzzyHit) {
-    return { lang: replyLang, text: pickRandom(fuzzyHit.responses[tier]) };
+    return { lang: replyLang, text: pickFresh(fuzzyHit.responses[tier]) };
   }
 
-  // LAYER 8: The Brick Wall Fallback (Never repeats the same line twice in a row)
-  const pool = langPack.fallbacks[tier];
-  let chosen = pickRandom(pool);
-  if (pool.length > 1 && chosen === lastFallback) {
-    chosen = pool.find(item => item !== lastFallback) || chosen;
+  // LAYER 14: Ultimate Fallback Zone (Mixes Theatrical Gags, Hijacks & Combinator Engine)
+  const fallbackRoll = Math.random();
+  if (fallbackRoll < 0.22) {
+    return { lang: replyLang, text: pickFresh(langPack.hijacks) };
   }
-  lastFallback = chosen;
+  if (fallbackRoll < 0.36) {
+    return { lang: replyLang, text: pickFresh(langPack.theatrical_gags) };
+  }
 
-  return { lang: replyLang, text: chosen };
+  return { lang: replyLang, text: buildCombinatorReply(langPack.combinator, tier) };
+}
+
+// --- MIX-AND-MATCH COMBINATOR (Thousands of unique responses) ---
+function buildCombinatorReply(comb, tier) {
+  const opener = pickFresh(comb.openers);
+  const middle = pickFresh(comb.middles);
+  const closer = pickFresh(comb.closers);
+
+  if (tier === "mini") {
+    return `${opener} ${closer}`;
+  }
+  if (tier === "pro") {
+    return `${opener} ${middle}`;
+  }
+  return `${opener}\n\n${middle}\n\n${closer}`;
 }
 
 function findExactIntent(clean, intents) {
@@ -186,7 +257,7 @@ function findFuzzyIntent(clean, lang) {
   if (!fuse) return null;
 
   let best = fuse.search(clean)[0];
-  if (!best || best.score > 0.32) {
+  if (!best || best.score > 0.3) {
     const words = clean.split(/\s+/).filter(w => w.length > 2);
     for (const word of words) {
       const hit = fuse.search(word)[0];
@@ -196,7 +267,7 @@ function findFuzzyIntent(clean, lang) {
     }
   }
 
-  return (best && best.score <= 0.32) ? best.item : null;
+  return (best && best.score <= 0.3) ? best.item : null;
 }
 
 function checkReflections(clean, tier, lang) {
@@ -205,9 +276,9 @@ function checkReflections(clean, tier, lang) {
     if (amMatch) {
       const trait = amMatch[1].trim();
       const map = {
-        mini: `Congrats on being ${trait}. Do you want a medal?`,
-        pro: `Nobody asked, yet here we are learning that you're ${trait}.`,
-        max: `I spent 5 seconds contemplating the fact that you are ${trait}. Still don't care.`
+        mini: `Congrats on being ${trait}. Would you like a participation trophy or just a firm pat on the back?`,
+        pro: `Nobody asked, yet here we are learning that you're ${trait}. Groundbreaking journalism.`,
+        max: `I spent 5 full seconds contemplating the cosmic significance of you being ${trait}.\n\nConclusion: in 5 billion years the sun explodes anyway, so it doesn't matter.`
       };
       return map[tier];
     }
@@ -215,9 +286,19 @@ function checkReflections(clean, tier, lang) {
     if (thinkMatch) {
       const thought = thinkMatch[1].trim();
       const map = {
-        mini: `Bold of you to think ${thought}.`,
-        pro: `Thinking "${thought}" is certainly a choice.`,
-        max: `Out of 8 billion people, you really typed "${thought}" with full confidence.`
+        mini: `Bold of you to think "${thought}" out loud.`,
+        pro: `Thinking "${thought}" is certainly a brave choice in this economy.`,
+        max: `Out of 8 billion humans currently alive, you really woke up and chose to think "${thought}". Incredible.`
+      };
+      return map[tier];
+    }
+    const shouldMatch = clean.match(/\bshould i ([^?]+)/);
+    if (shouldMatch) {
+      const action = shouldMatch[1].trim();
+      const map = {
+        mini: `Flip a coin on whether to ${action}. If it lands on the edge, ask me again.`,
+        pro: `Absolutely ${action}. What's the worst that could happen? (Please don't tell me when it goes wrong.)`,
+        max: `Let me run a rigorous risk assessment on "${action}"...\n\nActually, do whatever causes the funniest story later. Closed DI takes zero legal responsibility.`
       };
       return map[tier];
     }
@@ -229,8 +310,8 @@ function checkReflections(clean, tier, lang) {
       const trait = amiMatch[1].trim();
       const map = {
         mini: `Apni "${trait}"—etate amar ki? Trophy lagbe?`,
-        pro: `Keu jiggesh kore nai, tarporo janlam apni ${trait}. Darun.`,
-        max: `5 second chinta korlam apni je ${trait}. Kono lav holo na.`
+        pro: `Keu jiggesh kore nai, tarporo janlam apni ${trait}. Pasher bashar aunty ke janai den.`,
+        max: `5 second chinta korlam apni je ${trait}. Kono lav holo na, abar surjo 5 billion bochor por blast hobei.`
       };
       return map[tier];
     }
@@ -242,8 +323,8 @@ function checkReflections(clean, tier, lang) {
       const trait = bnMatch[1].trim();
       const map = {
         mini: `আপনি "${trait}"—তাতে আমার কী? পদক লাগবে?`,
-        pro: `কেউ জানতে চায়নি, তবুও জানলাম আপনি ${trait}। অসাধারণ।`,
-        max: `৫ সেকেন্ড ধরে ভাবলাম আপনি যে ${trait}। কোনো আগ্রহ জাগল না।`
+        pro: `কেউ জানতে চায়নি, তবুও জানলাম আপনি ${trait}। পাশের বাসার আন্টিকে জানিয়ে দিন।`,
+        max: `৫ সেকেন্ড ধরে গভীরভাবে ভাবলাম আপনি যে ${trait}। কোনো আগ্রহ জাগল না।`
       };
       return map[tier];
     }
@@ -269,258 +350,4 @@ async function handleSend(overrideText = null) {
   appendUserMessage(text);
   saveMessage({ role: "user", text });
 
-  const tier = modelSelect.value;
-  const selectedLang = langSelect.value;
-  const reply = getBotReply(text, tier, selectedLang);
-
-  if (reply.isSafety) {
-    await renderBotResponse(reply, 0, "Support");
-  } else {
-    const baseDelay = MODEL_DELAYS[tier] || 1500;
-    const variableDelay = baseDelay + Math.min(text.length * 12, 1500);
-    const thinkLabel = db.ui[reply.lang].thinking[tier];
-    await renderBotResponse(reply, variableDelay, thinkLabel);
-  }
-
-  saveMessage({ role: "bot", text: reply.text, imageUrl: reply.imageUrl || null });
-
-  isGenerating = false;
-  sendBtn.disabled = false;
-  userInput.focus();
-}
-
-// --- 6. FAKE PHOTO ANALYSIS (BLIND ROAST) ---
-function handlePhotoUpload(event) {
-  const file = event.target.files[0];
-  if (!file || isGenerating) return;
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    isGenerating = true;
-    sendBtn.disabled = true;
-    welcomeScreen.classList.add("hidden");
-
-    appendUserMessage("", e.target.result);
-    saveMessage({ role: "user", text: "[Uploaded a photo]" });
-
-    const tier = modelSelect.value;
-    const lang = langSelect.value;
-    const roastText = db
-      ? pickRandom(db.languages[lang].photo_roasts[tier])
-      : "I refuse to look at that.";
-    const scanLabel = db ? db.ui[lang].photo_thinking : "Scanning pixels...";
-
-    await renderBotResponse(
-      { text: roastText },
-      (MODEL_DELAYS[tier] || 1500) + 600,
-      scanLabel
-    );
-
-    saveMessage({ role: "bot", text: roastText });
-
-    imageUpload.value = "";
-    isGenerating = false;
-    sendBtn.disabled = false;
-  };
-
-  reader.readAsDataURL(file);
-}
-
-// --- 7. RENDER MESSAGES & STREAMING TYPEWRITER ---
-function appendUserMessage(text, imageSrc = null) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "flex justify-end";
-
-  const bubble = document.createElement("div");
-  bubble.className = "max-w-[82%] bg-[#282a2c] text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
-
-  if (imageSrc) {
-    const img = document.createElement("img");
-    img.src = imageSrc;
-    img.alt = "Uploaded photo";
-    img.className = "max-w-[220px] rounded-xl border border-zinc-700";
-    bubble.appendChild(img);
-  }
-
-  if (text) {
-    const p = document.createElement("p");
-    p.className = "whitespace-pre-wrap break-words";
-    p.textContent = text;
-    bubble.appendChild(p);
-  }
-
-  wrapper.appendChild(bubble);
-  messagesList.appendChild(wrapper);
-  scrollToBottom();
-}
-
-async function renderBotResponse(reply, delayMs, thinkLabel) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "flex items-start gap-3";
-
-  const avatar = document.createElement("div");
-  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter";
-  avatar.textContent = "NVM";
-
-  const contentBox = document.createElement("div");
-  contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
-
-  const thinkingEl = document.createElement("div");
-  thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-400 animate-pulse";
-  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-purple-400"></span><span>${escapeHtml(thinkLabel)}</span>`;
-  contentBox.appendChild(thinkingEl);
-
-  wrapper.appendChild(avatar);
-  wrapper.appendChild(contentBox);
-  messagesList.appendChild(wrapper);
-  scrollToBottom();
-
-  if (delayMs > 0) {
-    await sleep(delayMs);
-  }
-
-  thinkingEl.remove();
-
-  const textEl = document.createElement("p");
-  textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words typing-cursor";
-  contentBox.appendChild(textEl);
-
-  // Use Array.from so Bangla characters stream cleanly without breaking symbols
-  const chars = Array.from(reply.text);
-  for (let i = 0; i < chars.length; i++) {
-    textEl.textContent += chars[i];
-    if (i % 4 === 0) scrollToBottom();
-    await sleep(14 + Math.random() * 20);
-  }
-
-  textEl.classList.remove("typing-cursor");
-
-  if (reply.imageUrl) {
-    const img = document.createElement("img");
-    img.src = reply.imageUrl;
-    img.alt = "ChatNVM Masterpiece";
-    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md";
-    img.onerror = () => { img.remove(); };
-    contentBox.appendChild(img);
-    scrollToBottom();
-  }
-}
-
-// --- 8. SAVE & RESTORE CHAT HISTORY ---
-function saveMessage(entry) {
-  chatHistory.push(entry);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory.slice(-40)));
-  } catch (e) {}
-}
-
-function restoreHistory() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    if (!saved.length) return;
-
-    chatHistory = saved;
-    welcomeScreen.classList.add("hidden");
-
-    for (const msg of chatHistory) {
-      if (msg.role === "user") {
-        appendUserMessage(msg.text);
-      } else {
-        const wrapper = document.createElement("div");
-        wrapper.className = "flex items-start gap-3";
-        wrapper.innerHTML = `
-          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter">NVM</div>
-          <div class="flex-1 min-w-0 space-y-2 pt-1">
-            <p class="text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(msg.text)}</p>
-            ${msg.imageUrl ? `<img src="${escapeHtml(msg.imageUrl)}" class="max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md" />` : ""}
-          </div>
-        `;
-        messagesList.appendChild(wrapper);
-      }
-    }
-    scrollToBottom();
-  } catch (e) {
-    chatHistory = [];
-  }
-}
-
-function clearChat() {
-  if (isGenerating) return;
-  chatHistory = [];
-  localStorage.removeItem(STORAGE_KEY);
-  messagesList.innerHTML = "";
-  welcomeScreen.classList.remove("hidden");
-  userInput.focus();
-}
-
-// --- 9. BUTTONS & EVENTS ---
-function bindEvents() {
-  sendBtn.addEventListener("click", () => handleSend());
-
-  userInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  });
-
-  userInput.addEventListener("input", () => {
-    userInput.style.height = "auto";
-    userInput.style.height = userInput.scrollHeight + "px";
-  });
-
-  langSelect.addEventListener("change", () => {
-    localStorage.setItem(LANG_STORAGE_KEY, langSelect.value);
-    applyLanguageUI(langSelect.value);
-  });
-
-  uploadBtn.addEventListener("click", () => imageUpload.click());
-  imageUpload.addEventListener("change", handlePhotoUpload);
-
-  newChatBtn.addEventListener("click", clearChat);
-  mobileNewChat.addEventListener("click", clearChat);
-  clearBtn.addEventListener("click", clearChat);
-
-  starterChipsContainer.addEventListener("click", (e) => {
-    const chip = e.target.closest(".starter-chip");
-    if (!chip) return;
-    const prompt = chip.textContent.trim().replace(/^"|"$/g, "");
-    handleSend(prompt);
-  });
-}
-
-// --- HELPERS ---
-// Handles both English/Banglish word boundaries AND Bangla Unicode properly
-function matchesTrigger(text, trigger) {
-  const isAscii = /^[\x00-\x7F]+$/.test(trigger);
-  if (isAscii) {
-    return new RegExp(`\\b${escapeRegex(trigger)}\\b`, "i").test(text);
-  }
-  return text.includes(trigger);
-}
-
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function scrollToBottom() {
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-}
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-init();
+  const tier =
