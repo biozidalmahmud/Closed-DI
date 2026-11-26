@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>ChatNVM — by Closed DI</title>
 
+  <!-- Custom Blue NVM Browser Tab Icon (Favicon) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0%25' stop-color='%232563eb'/%3E%3Cstop offset='100%25' stop-color='%2338bdf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ctext x='32' y='40' font-family='system-ui,sans-serif' font-size='21' font-weight='800' fill='white' text-anchor='middle' letter-spacing='-1'%3ENVM%3C/text%3E%3C/svg%3E" />
+
   <!-- Social Media Preview (WhatsApp, Messenger, Facebook, X) -->
   <meta property="og:title" content="ChatNVM by Closed DI" />
   <meta property="og:description" content="English, Banglish & বাংলা Dumb Intelligence. Zero AI. Zero helpfulness. 100% attitude." />
@@ -65,7 +68,7 @@
     <!-- Mobile Sidebar Backdrop -->
     <div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black/40 z-30 md:hidden"></div>
 
-    <!-- Left Sidebar (Desktop fixed + Mobile slide-out drawer) -->
+    <!-- Left Sidebar -->
     <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-64 -translate-x-full md:translate-x-0 flex flex-col bg-slate-100 dark:bg-[#191c24] border-r border-slate-200 dark:border-zinc-800 p-3 shrink-0 transition-transform duration-200">
       <div class="px-2 pb-3 mb-2 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between">
         <span class="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400">Closed DI</span>
@@ -82,12 +85,25 @@
         <div id="chat-list" class="space-y-1 text-sm"></div>
       </div>
 
-      <div class="pt-3 border-t border-slate-200 dark:border-zinc-800 text-xs text-zinc-500 px-2 space-y-1">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-          <span>0 GPUs • Saved Locally</span>
+      <!-- Fake Upgrade Plan Button + Footer -->
+      <div class="pt-3 border-t border-slate-200 dark:border-zinc-800 space-y-3">
+        <button id="upgrade-plan-btn" type="button" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white text-xs font-semibold shadow-sm transition">
+          <span class="flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+            <span>Upgrade Plan</span>
+          </span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/20">$999</span>
+        </button>
+
+        <div class="text-xs text-zinc-500 px-2 space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span>0 GPUs • Saved Locally</span>
+          </div>
+          <p class="text-[11px] text-zinc-400 dark:text-zinc-600">© Closed DI Research Lab</p>
         </div>
-        <p class="text-[11px] text-zinc-400 dark:text-zinc-600">© Closed DI Research Lab</p>
       </div>
     </aside>
 
@@ -97,7 +113,6 @@
       <!-- Top Header -->
       <header class="flex items-center justify-between gap-2 px-3 md:px-4 py-3 border-b border-slate-200 dark:border-zinc-800/80 bg-white/85 dark:bg-[#111318]/90 backdrop-blur shrink-0">
         <div class="flex items-center gap-2 min-w-0">
-          <!-- Mobile Sidebar Menu Button -->
           <button id="mobile-menu-btn" type="button" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0" title="Saved Chats">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -116,14 +131,12 @@
         </div>
 
         <div class="flex items-center gap-1.5 shrink-0">
-          <!-- Language Selector -->
           <select id="lang-select" class="bg-slate-100 dark:bg-[#191c24] hover:bg-slate-200/80 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs md:text-sm font-medium px-2 py-1.5 rounded-lg border border-slate-300 dark:border-zinc-700/80 outline-none cursor-pointer transition">
             <option value="en">EN</option>
             <option value="banglish" selected>Banglish</option>
             <option value="bn">বাংলা</option>
           </select>
 
-          <!-- Light / Dark Mode Toggle -->
           <button id="theme-toggle-btn" type="button" title="Switch Light / Dark Mode" class="p-1.5 rounded-lg bg-slate-100 dark:bg-[#191c24] hover:bg-slate-200 dark:hover:bg-zinc-800 border border-slate-300 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-200 transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
@@ -154,11 +167,9 @@
               Jiggesh koren, tarpor nijei bolben "never mind."
             </p>
 
-            <!-- Clickable Starter Prompts -->
             <div id="starter-chips-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-xl mx-auto pt-4 text-left"></div>
           </div>
 
-          <!-- Active Messages List -->
           <div id="messages-list" class="space-y-6"></div>
 
         </div>
@@ -169,17 +180,14 @@
         <div class="max-w-3xl mx-auto">
           <div class="flex items-end gap-2 bg-white dark:bg-[#191c24] border border-slate-300 dark:border-zinc-700/80 focus-within:border-blue-500 dark:focus-within:border-blue-500 rounded-3xl px-3 py-2 shadow-sm dark:shadow-lg transition">
 
-            <!-- Hidden Photo Uploader -->
             <input type="file" id="image-upload" accept="image/*" class="hidden" />
 
-            <!-- Paperclip Button -->
             <button id="upload-btn" type="button" title="Upload a photo to get roasted" class="p-2.5 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-zinc-700/60 transition shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
               </svg>
             </button>
 
-            <!-- Text Box (Grammarly disabled) -->
             <textarea
               id="user-input"
               rows="1"
@@ -190,7 +198,6 @@
               class="flex-1 bg-transparent text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 resize-none outline-none py-2.5 max-h-36 text-sm md:text-base"
             ></textarea>
 
-            <!-- Send Button -->
             <button id="send-btn" type="button" class="p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 text-white disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
@@ -205,6 +212,39 @@
       </footer>
 
     </main>
+  </div>
+
+  <!-- Fake "$999/mo" Closed DI Ultra Upgrade Modal -->
+  <div id="upgrade-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-3xl bg-white dark:bg-[#191c24] border border-slate-200 dark:border-zinc-700 shadow-2xl p-6 space-y-5 relative">
+      <button id="close-upgrade-btn" type="button" class="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition">✕</button>
+
+      <div class="space-y-1">
+        <span class="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+          Closed DI Ultra
+        </span>
+        <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Upgrade to Peak Laziness</h2>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400">Why get ignored for free when you can pay premium prices?</p>
+      </div>
+
+      <div class="flex items-baseline gap-1">
+        <span class="text-4xl font-extrabold text-zinc-900 dark:text-white">$999</span>
+        <span class="text-sm text-zinc-500 dark:text-zinc-400">/ month (non-refundable)</span>
+      </div>
+
+      <ul class="space-y-2.5 text-sm text-zinc-700 dark:text-zinc-300">
+        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span><strong>15-second</strong> dramatic thinking delays</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span><strong>Priority ignoring</strong> during peak hours</span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span>Exclusive early access to <strong>Goru Rochona 2.0</strong></span></li>
+        <li class="flex items-center gap-2"><span class="text-blue-600 dark:text-blue-400 font-bold">✓</span> <span>0% accuracy guarantee, backed by 0 GPUs</span></li>
+      </ul>
+
+      <div id="upgrade-roast-box" class="hidden p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800/70 text-sm text-blue-900 dark:text-blue-200 font-medium"></div>
+
+      <button id="fake-subscribe-btn" type="button" class="w-full py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-semibold text-sm shadow-md transition">
+        Subscribe with bKash / Kidney
+      </button>
+    </div>
   </div>
 
   <script src="bot.js"></script>
