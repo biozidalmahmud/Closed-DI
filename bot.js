@@ -350,4 +350,309 @@ async function handleSend(overrideText = null) {
   appendUserMessage(text);
   saveMessage({ role: "user", text });
 
-  const tier =
+  const tier = modelSelect.value;
+  const selectedLang = langSelect.value;
+  const reply = getBotReply(text, tier, selectedLang);
+
+  let finalVisibleText = reply.text;
+
+  if (reply.isSafety) {
+    finalVisibleText = await renderBotResponse(reply, 0, "Support");
+  } else {
+    const baseDelay = MODEL_DELAYS[tier] || 1500;
+    const variableDelay = baseDelay + Math.min(text.length * 10, 1400);
+    const thinkLabel = pickFresh(db.ui[reply.lang].thinking[tier]);
+    finalVisibleText = await renderBotResponse(reply, variableDelay, thinkLabel);
+  }
+
+  saveMessage({ role: "bot", text: finalVisibleText, imageUrl: reply.imageUrl || null });
+
+  isGenerating = false;
+  sendBtn.disabled = false;
+  userInput.focus();
+}
+
+// --- 6. FAKE PHOTO ANALYSIS (BLIND ROAST) ---
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file || isGenerating) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    isGenerating = true;
+    sendBtn.disabled = true;
+    welcomeScreen.classList.add("hidden");
+
+    appendUserMessage("", e.target.result);
+    saveMessage({ role: "user", text: "[Uploaded a photo]" });
+
+    const tier = modelSelect.value;
+    const lang = langSelect.value;
+    const roastText = db
+      ? pickFresh(db.languages[lang].photo_roasts[tier])
+      : "I refuse to look at that.";
+    const scanLabel = db ? db.ui[lang].photo_thinking : "Scanning pixels...";
+
+    const visible = await renderBotResponse(
+      { text: roastText },
+      (MODEL_DELAYS[tier] || 1500) + 600,
+      scanLabel
+    );
+
+    saveMessage({ role: "bot", text: visible });
+
+    imageUpload.value = "";
+    isGenerating = false;
+    sendBtn.disabled = false;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// --- 7. RENDER MESSAGES & LIVE THEATRICAL TYPEWRITER ---
+function appendUserMessage(text, imageSrc = null) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex justify-end";
+
+  const bubble = document.createElement("div");
+  bubble.className = "max-w-[82%] bg-[#282a2c] text-zinc-100 px-4 py-3 rounded-3xl rounded-br-md text-sm md:text-base leading-relaxed space-y-2";
+
+  if (imageSrc) {
+    const img = document.createElement("img");
+    img.src = imageSrc;
+    img.alt = "Uploaded photo";
+    img.className = "max-w-[220px] rounded-xl border border-zinc-700";
+    bubble.appendChild(img);
+  }
+
+  if (text) {
+    const p = document.createElement("p");
+    p.className = "whitespace-pre-wrap break-words";
+    p.textContent = text;
+    bubble.appendChild(p);
+  }
+
+  wrapper.appendChild(bubble);
+  messagesList.appendChild(wrapper);
+  scrollToBottom();
+}
+
+async function renderBotResponse(reply, delayMs, thinkLabel) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "flex items-start gap-3";
+
+  const avatar = document.createElement("div");
+  avatar.className = "w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter";
+  avatar.textContent = "NVM";
+
+  const contentBox = document.createElement("div");
+  contentBox.className = "flex-1 min-w-0 space-y-2 pt-1";
+
+  const thinkingEl = document.createElement("div");
+  thinkingEl.className = "flex items-center gap-2 text-xs md:text-sm text-zinc-400 animate-pulse";
+  thinkingEl.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-purple-400"></span><span>${escapeHtml(thinkLabel)}</span>`;
+  contentBox.appendChild(thinkingEl);
+
+  wrapper.appendChild(avatar);
+  wrapper.appendChild(contentBox);
+  messagesList.appendChild(wrapper);
+  scrollToBottom();
+
+  if (delayMs > 0) {
+    await sleep(delayMs);
+  }
+
+  thinkingEl.remove();
+
+  const textEl = document.createElement("p");
+  textEl.className = "text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words typing-cursor";
+  contentBox.appendChild(textEl);
+
+  let finalSavedText = reply.text;
+
+  // LIVE GAG 1: {ERASE} -> Types a helpful bait, pauses, backspaces it away, then types the lazy punchline
+  if (reply.text.includes("{ERASE}")) {
+    const [bait, punchline] = reply.text.split("{ERASE}");
+    await streamChars(textEl, bait, 18);
+    await sleep(1050);
+
+    // Rapidly backspace the helpful answer
+    let currentChars = Array.from(textEl.textContent);
+    while (currentChars.length > 0) {
+      currentChars.splice(-3);
+      textEl.textContent = currentChars.join("");
+      await sleep(16);
+    }
+
+    await sleep(420);
+    await streamChars(textEl, punchline, 20);
+    finalSavedText = punchline;
+  }
+  // LIVE GAG 2: {PAUSE} -> Stops mid-sentence dramatically, then continues
+  else if (reply.text.includes("{PAUSE}")) {
+    const parts = reply.text.split("{PAUSE}");
+    for (let p = 0; p < parts.length; p++) {
+      await streamChars(textEl, parts[p], 16);
+      if (p < parts.length - 1) {
+        await sleep(2300);
+      }
+    }
+    finalSavedText = parts.join("");
+  }
+  // STANDARD STREAMING (Speeds up slightly for long essays so users don't wait forever)
+  else {
+    const speed = reply.text.length > 220 ? 9 : 16;
+    await streamChars(textEl, reply.text, speed);
+  }
+
+  textEl.classList.remove("typing-cursor");
+
+  if (reply.imageUrl) {
+    const img = document.createElement("img");
+    img.src = reply.imageUrl;
+    img.alt = "ChatNVM Masterpiece";
+    img.className = "max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md";
+    img.onerror = () => { img.remove(); };
+    contentBox.appendChild(img);
+    scrollToBottom();
+  }
+
+  return finalSavedText;
+}
+
+async function streamChars(el, text, baseSpeed) {
+  const chars = Array.from(text);
+  for (let i = 0; i < chars.length; i++) {
+    el.textContent += chars[i];
+    if (i % 5 === 0) scrollToBottom();
+    await sleep(baseSpeed + Math.random() * 14);
+  }
+  scrollToBottom();
+}
+
+// --- 8. SAVE & RESTORE CHAT HISTORY ---
+function saveMessage(entry) {
+  chatHistory.push(entry);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatHistory.slice(-40)));
+  } catch (e) {}
+}
+
+function restoreHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    if (!saved.length) return;
+
+    chatHistory = saved;
+    welcomeScreen.classList.add("hidden");
+
+    for (const msg of chatHistory) {
+      if (msg.role === "user") {
+        appendUserMessage(msg.text);
+      } else {
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex items-start gap-3";
+        wrapper.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 mt-0.5 tracking-tighter">NVM</div>
+          <div class="flex-1 min-w-0 space-y-2 pt-1">
+            <p class="text-zinc-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words">${escapeHtml(msg.text)}</p>
+            ${msg.imageUrl ? `<img src="${escapeHtml(msg.imageUrl)}" class="max-w-[260px] w-full rounded-2xl border border-zinc-700 mt-2 shadow-md" />` : ""}
+          </div>
+        `;
+        messagesList.appendChild(wrapper);
+      }
+    }
+    scrollToBottom();
+  } catch (e) {
+    chatHistory = [];
+  }
+}
+
+function clearChat() {
+  if (isGenerating) return;
+  chatHistory = [];
+  sessionMsgCount = 0;
+  lastUserPrompt = "";
+  localStorage.removeItem(STORAGE_KEY);
+  messagesList.innerHTML = "";
+  welcomeScreen.classList.remove("hidden");
+  userInput.focus();
+}
+
+// --- 9. EVENTS ---
+function bindEvents() {
+  sendBtn.addEventListener("click", () => handleSend());
+
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  userInput.addEventListener("input", () => {
+    userInput.style.height = "auto";
+    userInput.style.height = userInput.scrollHeight + "px";
+  });
+
+  langSelect.addEventListener("change", () => {
+    localStorage.setItem(LANG_STORAGE_KEY, langSelect.value);
+    applyLanguageUI(langSelect.value);
+  });
+
+  uploadBtn.addEventListener("click", () => imageUpload.click());
+  imageUpload.addEventListener("change", handlePhotoUpload);
+
+  newChatBtn.addEventListener("click", clearChat);
+  mobileNewChat.addEventListener("click", clearChat);
+  clearBtn.addEventListener("click", clearChat);
+
+  starterChipsContainer.addEventListener("click", (e) => {
+    const chip = e.target.closest(".starter-chip");
+    if (!chip) return;
+    const prompt = chip.textContent.trim().replace(/^"|"$/g, "");
+    handleSend(prompt);
+  });
+}
+
+// --- HELPERS ---
+function matchesTrigger(text, trigger) {
+  const isAscii = /^[\x00-\x7F]+$/.test(trigger);
+  if (isAscii) {
+    return new RegExp(`\\b${escapeRegex(trigger)}\\b`, "i").test(text);
+  }
+  return text.includes(trigger);
+}
+
+// Anti-repeat picker: avoids repeating the last 25 outputs
+function pickFresh(arr) {
+  if (!arr || !arr.length) return "";
+  const fresh = arr.filter(item => !recentlyUsed.includes(item));
+  const pool = fresh.length ? fresh : arr;
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  recentlyUsed.push(chosen);
+  if (recentlyUsed.length > 25) recentlyUsed.shift();
+  return chosen;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function scrollToBottom() {
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+init();
